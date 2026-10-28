@@ -17,6 +17,7 @@
 <body>
 <style>
 /* 布局：左侧参数+结果，右侧 3D 与工程图；手机单列 */
+[hidden]{display:none!important}
 @font-face{font-family:"TC Pixel";src:url(data:font/woff;base64,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) format("woff");font-display:swap}
 /* 火花橙：石墨灰底 + 切削火花橙；标题与数字用点阵数控屏字体（单一深色风格） */
 :root{
@@ -143,8 +144,12 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
       <div class="f t-disc"><label for="t_D">盘形铣刀外径<b>mm</b></label><input id="t_D" type="number" step="any" inputmode="decimal" value="100"></div>
       <div class="f t-slot"><label for="t_g">插刀前角 γ<b>°</b></label><input id="t_g" type="number" step="any" inputmode="decimal" value="0"></div>
       <div class="f t-slot"><label for="t_a">插刀后角 α<b>°</b></label><input id="t_a" type="number" step="any" inputmode="decimal" value="6"></div>
+      <div class="f t-form"><label for="t_base">齿高 H 基准</label><select id="t_base"><option value="low">刀齿最低点</option><option value="center">槽底中心（按根圆）</option></select></div>
       <div class="f t-slot"><label for="t_rel">后角形式</label><select id="t_rel"><option value="tilt">整体倾斜（棱柱刀倾斜安装）</option><option value="plane">平面后角（刃后磨出 / 锥度线切割）</option></select></div>
+      <div class="f t-slot t-tilt"><label for="t_as">侧后角 αs<b>°</b></label><input id="t_as" type="number" step="any" inputmode="decimal" value="0"></div>
       <div class="f t-slot"><label for="t_sec">坐标表截面</label><select id="t_sec"></select></div>
+      <div class="f t-slot"><label for="t_Ds">刀柄直径<b>0=自动</b></label><input id="t_Ds" type="number" step="any" inputmode="decimal" value="0"></div>
+      <div class="f t-slot"><label for="t_Lh">刀头长度<b>0=自动</b></label><input id="t_Lh" type="number" step="any" inputmode="decimal" value="0"></div>
       <div class="f t-finger"><label for="mode">槽底处理</label><select id="mode"><option value="corner">角部到位（中心略深）</option><option value="center">中心到根圆（角部残留）</option></select></div>
       <div class="sep">齿顶倒角 / 倒圆</div>
       <div class="f"><label for="m_tip">齿顶处理</label><select id="m_tip" data-m="tip"><option value="none">不处理</option><option value="chamfer">倒角</option><option value="round">倒圆</option></select></div>
@@ -247,7 +252,8 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
     <h2>计算方法</h2>
     <p><b>外齿轮 / 渐开线花键</b>：用基本齿条（含齿顶圆角）在端面内展成，得到渐开线 + 齿根过渡曲线；有根切时自动去掉自交环，与实际滚齿齿形一致。也可选“切圆弧”齿根。<b>内齿轮</b>为渐开线 + 与根圆相切的过渡圆弧；<b>矩形花键</b>为平行键侧 + 小径圆角。</p>
     <p><b>插刀后角形式与廓形补偿</b>：① <b>整体倾斜</b>：刀具做成等截面棱柱，装刀时倾斜 α 得到后角。刀具廓形按后刀面法向截面给出，齿高 × cos(α+γ)/cosγ，宽度不变；侧刃后角随齿侧倾斜变小。② <b>平面后角</b>：刀具竖直安装，后刀面沿刃口法向磨出（或锥度线切割出）后角 α，侧刃后角处处等于 α。前角 γ = 0 时刃口就是齿槽形状，不需要补偿；γ ≠ 0 时，齿高 H 处的刃口比刀尖靠后 H·tanγ，后刀面在那里已经向内收了 H·tanγ·tanα，所以过刀尖、垂直刀具轴线的基准截面（线切割或磨削编程用）要把齿槽形状沿法向向外放大 H·tanγ·tanα；离基准截面 z 处的截面 = 基准截面沿法向向内收 z·tanα（锥度线切割的另一个面按这个算）。刃口在前刀面内的齿高 = H ÷ cosγ。不考虑重磨。</p>
-    <p><b>成形插刀</b>：单齿插刀沿齿向往复插削，切削刃在端面的投影就是齿槽形状，外齿、内齿都适用（只限直齿）。有前角 γ、后角 α 时，刃口在前刀面内的齿高 = 端面齿高 ÷ cosγ；磨刀用的后刀面法向截面齿高 = 端面齿高 × cos(α+γ) ÷ cosγ，宽度方向不变。侧刃的实际后角 = arctan(tanα × sinψ)，ψ 是刃口切线与刀具中心线的夹角，齿侧越接近平行于中心线，侧后角越小，程序会给出最小侧后角。</p>
+    <p><b>成形插刀</b>：单齿插刀沿齿向往复插削，切削刃在端面的投影就是齿槽形状，外齿、内齿都适用（只限直齿）。有前角 γ、后角 α 时，刃口在前刀面内的齿高 = 端面齿高 ÷ cosγ；磨刀用的后刀面法向截面齿高 = 端面齿高 × cos(α+γ) ÷ cosγ，宽度方向不变。侧刃的实际后角 = arctan(tanα × sinψ)，ψ 是刃口切线与刀具中心线的夹角，齿侧越接近平行于中心线，侧后角越小，程序会给出最小侧后角。矩形花键这类平行侧壁几乎没有侧后角，要在“侧后角 αs”里另磨 1°–3°（只在刃口后面收窄，不改变刃口形状和廓形）。</p>
+    <p><b>圆柄插刀与刀杆检查</b>：3D 按圆柄单齿插刀显示——前端刀头 + 缩颈 + 刀柄，刀具轴线平行于工件轴线，偏心放置使刀尖正好到达齿根圆；动画为切削行程、抬刀回程、刀头退出工件后分度一个齿。内齿（内花键）时缩颈在内孔里，程序按内孔（小径）自动限制缩颈直径，并给出切削时和抬刀回程时缩颈与孔壁的最小间隙；外齿时给出刀柄与零件外圆的间隙。刀柄直径、刀头长度只影响 3D 和干涉检查，不影响刀具廓形。</p>
     <p><b>盘形铣刀</b>：刀轴与齿槽垂直，刀齿廓形就是齿槽的端面形状，槽底按齿根圆铣成圆弧，所以刀齿顶是一段内凹圆弧（结果里的“刀齿顶圆弧凹深”）。只用于直齿外齿轮和花键，坐标表里 X 为刀齿半宽。</p>
     <p><b>直齿</b>：刀轴沿齿槽对称线，刀具轴向廓形 = 端面齿槽廓形。<b>斜齿</b>：刀轴垂直并相交于齿轮轴线，沿螺旋线进给；对每个齿面点求“齿面法线与刀轴相交”的接触点，得到精确的刀具回转廓形。图中虚线为分度圆处的法向截面，供对比。</p>
     <p><b>齿形修正</b>：修缘量从修缘高度起点按直线或抛物线增加，到齿顶达到 Ca；倒角按“高度 × 宽度”给出：高度从齿顶圆沿径向往下量，宽度沿齿顶圆从原齿顶角往齿中间量，两腿相等即 C 型倒角；倒圆为与齿面、齿顶圆同时相切的圆弧。<b>留磨量</b>沿齿面法向把刀具每侧收窄 q，只影响刀具，图中黑线仍是成品齿形；<b>挖根量</b>让刀具在齿根过渡区比成品多铣 pr，磨齿时砂轮不碰齿根、不留台阶，过渡区内两者平滑衔接。斜齿时以上修正都按端面截面计算。</p>
@@ -467,6 +473,15 @@ var G = (function () {
       const pts = arcFillet(flank, rf, P.rhoF * P.mn, false);
       if (!pts) throw new Error('无法在槽底构造过渡圆弧：请减小圆角系数');
       res = { pts, Rinv: pts.Rinv, W: [], r, rb, ra, rf, mt, at, rho: P.rhoF * P.mn, kind: 'int', z: P.z, k: P.beta ? Math.tan(P.beta) / r : 0, st, trimmed: false };
+    } else if (P.type === 'rect' && P.side === 'int') {
+      // 矩形内花键（孔）：齿槽 = 键槽，两侧壁平行（x = ±B/2），槽底为大径圆弧，槽口在小径（内孔）
+      const B = P.B, ri = P.d / 2, ro = P.D / 2;
+      if (B >= P.d * Math.sin(PI / P.N) * 2 * 0.98 || B >= P.d) throw new Error('键槽宽 B 太大，小径处相邻键槽之间没有剩余的齿');
+      const y0 = Math.sqrt(ro * ro - B * B / 4), y1 = Math.sqrt(ri * ri - B * B / 4);
+      const flank = t => [B / 2, y0 - (y0 - y1) * t];
+      const pts = arcFillet(flank, ro, P.rr, false);
+      if (!pts) throw new Error('无法在大径处构造槽底圆角：请减小圆角半径');
+      res = { pts, Rinv: pts.Rinv, W: [], ra: ri, rf: ro, r: (ri + ro) / 2, rb: 0, kind: 'int', z: P.N, k: 0, rho: P.rr, trimmed: false, st: 0 };
     } else if (P.type === 'rect') {
       const a = PI / P.N, B = P.B, ri = P.d / 2, ro = P.D / 2;
       if (B >= P.d * Math.sin(PI / P.N) * 2 * 0.98 || B >= P.d) throw new Error('键宽 B 太大，键槽在小径处没有空间');
@@ -679,7 +694,8 @@ var G = (function () {
     // 刀齿顶圆弧：槽底（根圆）那一段的高度差。外齿刀齿顶内凹，内齿刀齿顶外凸
     let k = 0; const tolR = 1e-4 * geo.rf;
     while (k < src.length - 1 && Math.abs(hyp(src[k + 1][0], src[k + 1][1]) - geo.rf) < tolR) k++;
-    const arcDepth = Math.abs(prof[0][0] - prof[k][0]);
+    // 外齿：槽底中心比两侧最低点高出的量；内齿：槽底中心（刀尖）比根圆弧两端高出的量
+    const arcDepth = isExt ? prof[0][0] : Math.abs(prof[k][0] - prof[0][0]);
     return { prof, hEdge: b[0], yTip: yT, sag: 0, residual: 0, mono: true, contact: pts, hP, RP, isExt, disc: tool === 'disc', slot: tool === 'slot', formTool: true, arcDepth, arcHalfW: prof[k][1], bulge: arcDepth };
   }
   function makeCutter(geo, ext, mode, tool) {
@@ -753,7 +769,7 @@ if (typeof module !== 'undefined') module.exports = G;
       ['preset', '压力角 / 齿根', 'sel', [['30f', '30° 平齿根'], ['30r', '30° 圆齿根'], ['37.5', '37.5° 圆齿根'], ['45', '45° 圆齿根'], ['din', 'DIN 5480（30°）']]], ['x', '变位系数 x', '', 0],
       ['ha', '齿顶高系数', '', 0.5], ['hfS', '齿根高系数', '', 0.75], ['rhoF', '齿根圆角系数', '', 0.2],
       ['ds', '齿厚减薄 Δs', 'mm', 0], ['da', '齿顶圆直径 da', '0=自动', 0], ['df', '齿根圆直径 df', '0=自动', 0], ['b', '花键长度', 'mm', 40]],
-    rect: [['N', '键数 N', '', 6], ['d', '小径 d', 'mm', 28], ['D', '大径 D', 'mm', 34], ['B', '键宽 B', 'mm', 7],
+    rect: [['side', '内 / 外花键', 'sel', [['ext', '外花键（轴）'], ['int', '内花键（孔）']]], ['N', '键数 N', '', 6], ['d', '小径 d', 'mm', 28], ['D', '大径 D', 'mm', 34], ['B', '键宽 B', 'mm', 7],
       ['rr', '槽底圆角 r', 'mm', 0.2], ['b', '花键长度', 'mm', 40]],
   };
   const store = {};
@@ -847,7 +863,7 @@ if (typeof module !== 'undefined') module.exports = G;
     return { DFe, DFi: m * (z + hs[1]) + 2 * cF, Dii: DFe + 2 * cF, Dei: D + 2 * sp[2] * m, Dee: D + 2 * sp[1] * m, Die: D - 2 * sp[2] * m };
   }
   function toP(v) {
-    if (type === 'rect') return { type, N: Math.round(v.N), d: v.d, D: v.D, B: v.B, rr: Math.max(0, v.rr || 0), b: v.b };
+    if (type === 'rect') return { type, side: v.side === 'int' ? 'int' : 'ext', N: Math.round(v.N), d: v.d, D: v.D, B: v.B, rr: Math.max(0, v.rr || 0), b: v.b };
     if (type === 'spline') {
       const r = v.mn * Math.round(v.z) / 2, x = v.x || 0, m = v.mn, z = Math.round(v.z);
       if (v.side === 'int') {
@@ -998,11 +1014,12 @@ if (typeof module !== 'undefined') module.exports = G;
     'spline.da': '外花键为大径 Dee（齿顶），内花键为小径 Dii（齿顶，即内孔）。0 = 按标准：内花键小径按 DFe max + 2cF。外花键大径（齿顶圆）。可以照图纸写公差，例如 250 0 -0.46，程序自动取中值。',
     'spline.df': '外花键为小径 Die（齿根），内花键为大径 Dei（齿根），由刀尖决定。0 = 按标准。可以照图纸写公差，例如 237.5 0 -0.46，程序自动取中值。',
     'spline.b': '花键长度只用于 3D 显示，不影响刀具廓形。',
+    'rect.side': '外花键：轴上的矩形花键，刀具加工键与键之间的槽，槽底在小径。内花键：孔里的矩形花键，刀具加工键槽，两侧壁平行、槽底在大径，一般用成形插刀插削或拉削。',
     'rect.N': '键数（键槽数）。矩形花键标记一般写作 N×d×D×B；有的图纸写成 N-D×d×B（如 6-54×46.3×9.3：键数 6、大径 54、小径 46.3、键宽 9.3），注意大小径别填反。',
     'rect.d': '小径。小径定心的花键，小径一般还要磨削，指型铣刀铣出的平底会比小径圆弧略深。',
     'rect.D': '大径，即键的外圆直径。',
-    'rect.B': '键宽。有公差时建议填公差中值。',
-    'rect.rr': '槽底和键侧之间的圆角半径，图纸没有就取 0.2 左右，太小刀尖容易崩。',
+    'rect.B': '外花键填键宽，内花键填键槽宽（即配合轴的键宽）。有公差时建议填公差中值。',
+    'rect.rr': '槽底和键侧之间的圆角半径（外花键在小径处，内花键在大径处），图纸没有就取 0.2 左右，太小刀尖容易崩。插刀刀尖两角的圆角就是它。',
     'rect.b': '花键长度只用于 3D 显示，不影响刀具廓形。',
     'q.src': '图纸用哪种方式规定齿厚，就选哪一种：跨棒距（内齿为棒间距）、公法线长度，或直接给出齿厚（花键的“实际齿厚”、内齿的“齿槽宽”）。只能选一种。',
     'q.pick': '新刀一般按公差中值设计。刀具磨损后齿槽变窄、齿变厚，所以也可以取齿厚下限（跨棒距、公法线的下限），给磨损留出空间。',
@@ -1015,6 +1032,7 @@ if (typeof module !== 'undefined') module.exports = G;
     'spline.side': '外花键：轴上的花键，刀具铣齿槽。内花键：孔里的花键，刀具加工内花键自己的齿槽，公差按 H、检测用棒间距。',
     't_g': '插刀前角 γ，一般 0°–10°。有前角时，刃口在前刀面里的齿高要按 ÷cosγ 放大，才能插出正确的端面齿形。',
     't_a': '插刀后角 α（沿插削方向的后角），一般 4°–8°。侧刃实际后角会小于这个值，程序会算出最小侧后角。',
+    't_base': '外齿用盘形铣刀或插刀时，刀齿顶是一段内凹圆弧（按齿根圆），两侧最低、中间略高。刀齿最低点：H 从两侧最低点量起。槽底中心：H 从槽底中心（根圆与对称线的交点）量起，刀具图纸上的齿高尺寸一般用这个基准，角点处会出现很小的负值。',
     't_rel': '整体倾斜：等截面棱柱刀倾斜安装得到后角，磨刀截面要按 cos(α+γ)/cosγ 缩短齿高，侧刃后角会变小。平面后角：刀具竖直安装，后刀面沿刃口法向磨出（或锥度线切割）后角，侧刃后角处处等于 α；前角为 0 时刃口就是齿槽形状，有前角时基准截面要沿法向放大 H·tanγ·tanα。',
     't_sec': '平面后角时“基准截面”是过刀尖、垂直刀具轴线的截面，线切割或磨削编程用；离它 z 处的截面再沿法向向内收 z·tanα。整体倾斜时，后刀面法向截面：磨刀、检测刀具时用的截面，齿高 = 端面齿高 × cos(α+γ) ÷ cosγ。前刀面内：刃口本身的形状。端面投影：等于零件齿槽形状。宽度方向三种截面相同。',
     'm.tip': '齿顶倒角或倒圆，铣齿时顺便去掉齿顶尖棱，防止毛刺和热处理崩角。没有要求选“不处理”。斜齿图纸的倒角一般标在法向齿形上（如 C0.5），换到端面：宽度 ≈ 法向宽度 ÷ cosβ，高度不变。矩形花键标记末尾的数（如 6-54×46.3×9.3×0.6 的 0.6）通常是键顶倒角。',
@@ -1023,8 +1041,11 @@ if (typeof module !== 'undefined') module.exports = G;
     'm.q': '铣齿后还要磨齿时，每侧齿面留给磨削的余量（法向）。只影响刀具，成品齿形不变。直接精铣成品填 0。',
     'm.pr': '挖根量：刀具在齿根过渡区比成品多铣的深度，磨齿时砂轮不碰齿根、不留台阶。只在留磨量大于 0 时使用。',
     'ext': '刀刃在齿顶圆以外再延长的长度，保证齿顶处切削完整并覆盖齿顶圆公差，一般 1–2 mm。',
-    't_kind': '指型铣刀沿齿向进给，适用于外齿、内齿、斜齿。盘形铣刀的刀齿廓形与齿槽端面形状相同，槽底可以铣成圆弧，只适用于直齿外齿轮、外花键和矩形花键。成形插刀（单齿）在插床或数控插削上一个槽一个槽地插，外齿、内齿都可以，只适用于直齿。',
+    't_kind': '指型铣刀沿齿向进给，适用于外齿、内齿、斜齿。盘形铣刀的刀齿廓形与齿槽端面形状相同，槽底可以铣成圆弧，只适用于直齿外齿轮、外花键和矩形外花键。成形插刀（单齿）在插床或数控插削上一个槽一个槽地插，外齿、内齿都可以，只适用于直齿。成形插刀按圆柄单齿插刀考虑：刀具轴线平行于工件轴线，沿轴向往复插削，每插完一个槽工件分度一次。',
     't_D': '盘形铣刀外径，只影响 3D 显示，不影响刀齿廓形。',
+    't_as': '侧刃另外磨出的侧后角：只在刃口后面向内收窄，刃口本身形状不变，所以不影响刀具廓形，一般 1°–3°。整体倾斜得到的侧刃后角只有 atan(tanα·sinψ)，侧壁越陡越小，矩形花键的平行侧壁几乎为 0，必须另磨侧后角。',
+    't_Ds': '圆柄插刀的刀柄直径，只影响 3D 显示和刀杆干涉检查，不影响刀具廓形。0 = 自动：约为刀齿宽度的 3 倍取标准直径，内孔加工时不超过内孔的 0.6 倍。',
+    't_Lh': '刀头（刃部）沿插削方向的长度，只影响 3D 显示。0 = 自动，约等于齿高。',
     'a_std': 'GB/T 10095 与 ISO 1328-1 等级相同。AGMA 2015 用 A 级（A8 ≈ ISO 8 级）；AGMA 2000 用 Q 级，数字越大越精密，约为 ISO 17 − Q 级。图纸只写“8/AGMA”时，请向客户确认是哪个版本。',
     'a_q': '图纸上的精度等级数字，例如 7/ISO 1328 填 7。精度等级不参与刀具廓形计算，只用来算零件公差和刀具廓形公差建议。',
     'mode': '指型铣刀沿齿向进给，槽底只能铣成平底。角部到位：圆角处完全成形，槽底中心比根圆略深。中心到根圆：槽底中心正好在根圆，圆角处留下少量残留。',
@@ -1181,12 +1202,15 @@ if (typeof module !== 'undefined') module.exports = G;
     const k = $('t_kind').value;
     document.querySelectorAll('.t-disc').forEach(el => el.hidden = k !== 'disc');
     document.querySelectorAll('.t-slot').forEach(el => el.hidden = k !== 'slot');
+    document.querySelectorAll('.t-form').forEach(el => el.hidden = k === 'finger');
     document.querySelectorAll('.t-finger').forEach(el => el.hidden = k !== 'finger');
+    document.querySelectorAll('.t-tilt').forEach(el => el.hidden = k !== 'slot' || $('t_rel').value !== 'tilt');
   }
   $('t_kind').addEventListener('change', () => { syncTool(); schedule(); });
-  ['t_D', 't_g', 't_a'].forEach(id => $(id).addEventListener('input', schedule));
+  ['t_D', 't_g', 't_a', 't_as', 't_Ds', 't_Lh'].forEach(id => $(id).addEventListener('input', schedule));
   $('t_sec').addEventListener('change', () => { if (cut) { fillTable(); } });
-  $('t_rel').addEventListener('change', () => { syncSecOpts(); schedule(); });
+  $('t_rel').addEventListener('change', () => { syncSecOpts(); syncTool(); schedule(); });
+  $('t_base').addEventListener('change', () => { if (cut) fillTable(); });
   // 成形插刀：截面换算系数（齿高方向）与侧后角
   const SEC_OPTS = {
     tilt: [['normal', '后刀面法向截面（磨刀用）'], ['rake', '前刀面内（刃口）'], ['face', '端面投影（= 齿槽形状）']],
@@ -1215,20 +1239,55 @@ if (typeof module !== 'undefined') module.exports = G;
     return out;
   }
   function profOut() {
-    if (!cut.slot) return cut.prof;
+    if (!cut.formTool) return cut.prof;
+    // H 基准：外齿刀齿顶是内凹圆弧，“槽底中心”基准把 H 从两侧最低点改为从槽底中心量起（与常见刀具图纸一致）
+    const sh = $('t_base').value === 'center' && cut.isExt ? cut.prof[0][0] : 0;
+    const base = sh ? cut.prof.map(q => [q[0] - sh, q[1]]) : cut.prof;
+    if (!cut.slot) return base;
     const s = slotSec();
-    if (s.sec === 'ref') return planeRef(cut.prof, s.g, s.al);
-    return cut.prof.map(q => [q[0] * s.k, q[1]]);
+    if (s.sec === 'ref') return planeRef(base, s.g, s.al);
+    return base.map(q => [q[0] * s.k, q[1]]);
   }
   function sideClear() {
     const s0 = slotSec(); if (s0.rel === 'plane') return { min: s0.al / D2R, at: 0, uniform: true };
-    const al = s0.al, pr = cut.prof; let mn = Infinity, at = 0;
+    const al = s0.al, as = (parseFloat($('t_as').value) || 0) * D2R, pr = cut.prof; let mn = Infinity, at = 0;
     for (let i = 1; i < pr.length - 1; i++) {
       if (pr[i][0] > cut.hEdge + 1e-9) break;
       const dH = pr[i][0] - pr[i - 1][0], dX = pr[i][1] - pr[i - 1][1], L = Math.hypot(dH, dX); if (L < 1e-9) continue;
-      const v = Math.atan(Math.tan(al) * Math.abs(dX) / L); if (v < mn) { mn = v; at = pr[i][0]; }
+      // 后刀面相对刃口的退让：倾斜得到 tanα（齿高方向），侧磨得到 tanαs（宽度方向），投到刃口法向
+      if (Math.abs(dH) < Math.abs(dX)) continue;          // 刀尖顶刃（接近横向）的后角就是 α，不算侧刃
+      const v = Math.atan((Math.tan(al) * Math.abs(dX) + Math.tan(as) * Math.abs(dH)) / L); if (v < mn) { mn = v; at = pr[i][0]; }
     }
     return { min: mn / D2R, at };
+  }
+  // 圆柄成形插刀（单齿）：刀柄 + 缩颈 + 前端刀头，刀具轴线平行于工件轴线，偏心放置使刀尖到达齿根
+  // 内齿：缩颈在内孔里，切削时和抬刀回程时都不能碰到小径；外齿：刀柄在零件外圆之外
+  function slotGeom() {
+    const cp = cut.prof, Ht = cp[cp.length - 1][0], Xt = cp[cp.length - 1][1], isExt = cut.isExt, sg = isExt ? 1 : -1;
+    const yTip = cut.yTip, DsIn = parseFloat($('t_Ds').value) || 0, LhIn = parseFloat($('t_Lh').value) || 0;
+    const Lh = LhIn > 0 ? LhIn : Math.min(Math.max(3, Ht * 0.9), 60);
+    const STD = [6, 8, 10, 12, 16, 20, 25, 32, 40, 50, 63, 80, 100], W = [];
+    const pick = lim => (STD.filter(d => d <= lim).pop() || STD[0]) / 2;
+    let Rs, Rn, yc, c, lift, clr, clrRet, limited = false;
+    if (!isExt) {
+      const rB = geo.ra;                                   // 内孔（小径）半径
+      c = Math.max(0.2, 0.01 * rB); lift = Math.max(0.1, 0.004 * rB);
+      const RnMax = rB - c - lift / 2;
+      Rs = DsIn > 0 ? DsIn / 2 : pick(Math.min(1.2 * rB, Math.max(20, 6.4 * Xt)));   // 不超过内孔 0.6 倍，约为刀齿宽的 3 倍
+      Rn = Math.min(0.78 * Rs, 0.85 * RnMax); limited = 0.78 * Rs > 0.85 * RnMax;
+      yc = rB - c - Rn;                                    // 缩颈顶部贴着允许的最小间隙
+      clr = rB - (yc + Rn);
+      clrRet = Math.min(rB - (yc - lift + Rn), rB - Math.abs(yc - lift - Rn));   // 抬刀后两侧孔壁的较小间隙
+      if (Rn < Math.max(1.5, 0.6 * Xt)) W.push('内孔太小：插刀缩颈最大只能做到 ∅' + f2(2 * Rn) + '，刚性不足，请核对能否插削');
+      else if (limited && DsIn > 0) W.push('刀柄 ∅' + f2(DsIn) + ' 进不了内孔，缩颈按内孔限制为 ∅' + f2(2 * Rn));
+    } else {
+      c = Math.max(0.3, 0.01 * geo.ra); lift = Math.max(0.1, 0.004 * geo.ra);
+      Rs = DsIn > 0 ? DsIn / 2 : pick(Math.max(10, 3 * Ht, 6.4 * Xt));
+      Rn = Rs;
+      yc = Math.max(yTip + Ht, geo.ra + c) + Rs;          // 刀柄最低点在零件外圆之外
+      clr = yc - Rs - geo.ra; clrRet = clr + lift;
+    }
+    return { Rs, Rn, yc, Lh, c, lift, clr, clrRet, Ht, Xt, sg, yTip, ecc: Math.abs(yc), W };
   }
   function syncModUI() {
     const t = $('m_tip').value;
@@ -1265,7 +1324,7 @@ if (typeof module !== 'undefined') module.exports = G;
   document.querySelectorAll('[data-m]').forEach(el => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => { syncModUI(); schedule(); }));
 
   // ---------- 计算 ----------
-  let geo = null, cut = null, P = null, timer = 0;
+  let geo = null, cut = null, P = null, timer = 0, stool = null;
   function schedule() { clearTimeout(timer); timer = setTimeout(compute, 120); }
   function compute() {
     const FV = readForm(); lastFV = FV; P = toP(FV); applyQA(P); syncLocks(FV, P);
@@ -1289,8 +1348,10 @@ if (typeof module !== 'undefined') module.exports = G;
     if ($('t_kind').value === 'slot') {
       if (geo.k) W.push('斜齿不能用单齿成形插刀直接插削（需要螺旋导轨），当前刀具廓形只是法向截面近似值');
       const sc = sideClear();
-      if (!sc.uniform && isFinite(sc.min) && sc.min < 2) W.push('插刀侧刃最小后角只有 ' + sc.min.toFixed(1) + '°（齿高 H≈' + f2(sc.at) + ' 处），建议加大后角或在侧刃另磨侧后角');
+      if (!sc.uniform && isFinite(sc.min) && sc.min < 2) W.push('插刀侧刃最小后角只有 ' + sc.min.toFixed(1) + '°（齿高 H≈' + f2(sc.at) + ' 处），建议在“侧后角 αs”里另磨 1°–3° 侧后角，或改用平面后角');
+      stool = slotGeom(); W.push(...stool.W);
     }
+    if ($('t_kind').value !== 'slot') stool = null;
     accWarn = []; accRes = calcAcc();
     if (qaInfo && qaInfo.err) W.push(qaInfo.err);
     if (!cut.mono) W.push('刀具廓形高度方向不单调，已做单调化处理，请复核');
@@ -1314,7 +1375,9 @@ if (typeof module !== 'undefined') module.exports = G;
         ['端面槽宽 et', f3(et)], ['法向槽宽 en', f3(et * cb)],
         ['齿顶厚 sa', f3(geo.tipThick)], ['齿根圆角 ρf', f3(geo.rho)]);
     } else {
-      rows.push(['小径 d', f3(geo.rf * 2)], ['大径 D', f3(geo.ra * 2)], ['键宽 B', f3(P.B)], ['槽底圆角 r', f3(P.rr)]);
+      const ri = Math.min(geo.ra, geo.rf), ro = Math.max(geo.ra, geo.rf);
+      rows.push(['小径 d', f3(ri * 2)], ['大径 D', f3(ro * 2)], [geo.kind === 'int' ? '键槽宽 B' : '键宽 B', f3(P.B)], ['槽底圆角 r', f3(P.rr)]);
+      if (geo.kind === 'int') rows.push(['小径处齿宽', f3(geo.tipThick)]);
     }
     const pr = cut.prof, tipR = pr[1][1], edge = pr[pr.length - 2];
     const hl = cut.formTool
@@ -1332,6 +1395,10 @@ if (typeof module !== 'undefined') module.exports = G;
         hl.push(['法向齿高系数', (Math.cos(ss.al + ss.g) / Math.cos(ss.g)).toFixed(5)]);
         if (isFinite(sc.min)) hl.push(['最小侧后角', sc.min.toFixed(2) + '°']);
       }
+    }
+    if (cut.slot && stool) {
+      hl.push(['刀柄 / 缩颈', '∅' + f2(2 * stool.Rs) + ' / ∅' + f2(2 * stool.Rn)], ['刀轴距工件中心', f3(stool.ecc)]);
+      hl.push(cut.isExt ? ['刀柄与外圆间隙', f2(stool.clr)] : ['孔内间隙 切削 / 回程', f2(stool.clr) + ' / ' + f2(stool.clrRet)]);
     }
     if (cut.isExt && !cut.formTool) hl.push(cut.residual > 0 ? ['圆角处残留高度', f3(cut.residual)] : ['槽底中心多铣', f3(cut.sag)]);
     if (geo.k && !cut.formTool) {
@@ -1451,7 +1518,7 @@ if (typeof module !== 'undefined') module.exports = G;
     const ol = outline(half, -1, 1);
     const pitchW = 2 * PI / geo.z * geo.ra;
     const W = Math.min(0.95 * pitchW, geo.ra * 0.9);
-    const m = P.mn || (geo.ra - geo.rf);
+    const m = P.mn || Math.abs(geo.ra - geo.rf);
     const ys = ol.filter(p => Math.abs(p[0]) < W).map(p => p[1]);
     const yTop = (isExt ? geo.ra : geo.rf) + 0.35 * m + (isExt ? (parseFloat($('ext').value) || 0) : 0);
     let yBot = Math.min(...ys) - 0.35 * m;
@@ -1751,29 +1818,76 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     if (idx.length === 3) tris.push(idx[0], idx[1], idx[2]);
     return tris;
   }
+  // 圆柄单齿插刀：前端刀头（前刀面按前角倾斜，后刀面按后角形式退让）+ 缩颈 + 刀柄。
+  // 网格直接用工件坐标（x, y），z 为刀具局部坐标：前刀面在 z≈0，刀体向 +z 延伸，切削行程沿 −z。
+  function cylMesh(R0, R1, z0, z1, yc, c, caps) {
+    const S = 56, pos = [], col = [], idx = [];
+    for (let j = 0; j <= 1; j++) for (let i = 0; i <= S; i++) {
+      const t = 2 * PI * i / S, R = j ? R1 : R0; pos.push(R * Math.sin(t), yc + R * Math.cos(t), j ? z1 : z0); col.push(...c);
+    }
+    for (let i = 0; i < S; i++) { const a = i, b = i + 1, d = S + 1 + i, e = S + 2 + i; idx.push(a, b, e, a, e, d); }
+    meshes.push(mkMesh(new Float32Array(pos), new Uint32Array(idx), new Float32Array(col)));
+    for (const [z, R, on] of [[z0, R0, caps & 1], [z1, R1, caps & 2]]) {
+      if (!on) continue;
+      const p2 = [0, yc, z], c2 = [...c], i2 = [];
+      for (let i = 0; i <= S; i++) { const t = 2 * PI * i / S; p2.push(R * Math.sin(t), yc + R * Math.cos(t), z); c2.push(...c); }
+      for (let i = 1; i <= S; i++) i2.push(0, i, i + 1);
+      meshes.push(mkMesh(new Float32Array(p2), new Uint32Array(i2), new Float32Array(c2), [0, 0, z === z0 ? -1 : 1]));
+    }
+  }
   function slotMesh() {
-    const cp = G.resample(cut.prof, Math.max(0.02, (cut.prof[cut.prof.length - 1][0] + cut.prof[cut.prof.length - 1][1]) / 120));
-    const Ht = cp[cp.length - 1][0], Xt = cp[cp.length - 1][1], Hs = Ht + Math.max(Ht * 1.2, 4), sg = cut.isExt ? 1 : -1;
-    const right = cp.map(q => [q[1], q[0]]), left = right.slice(1).reverse().map(q => [-q[0], q[1]]);
-    const sec = left.concat(right, [[Xt, Hs], [-Xt, Hs]]).map(q => [q[0], sg * q[1]]);
-    const n = sec.length, Lt = Math.max(Ht * 3, 12);
-    const tin = col3('--cut3d', '#DBA829'), sh = col3('--shank3d', '#8C949E');
-    const colOf = (y, front) => Math.abs(y) <= Ht + 1e-9 ? (front ? tin.map(v => v * 1.1) : tin) : sh;
-    // 侧面（每条边独立顶点，棱角分明）
+    const T = stool || slotGeom(), s0 = slotSec(), sg = T.sg;
+    const tg = Math.tan(s0.g), ta = Math.tan(s0.al), tas = s0.rel === 'tilt' ? Math.tan((parseFloat($('t_as').value) || 0) * D2R) : 0;
+    const cp = G.resample(cut.prof, Math.max(0.01, (cut.prof[cut.prof.length - 1][0] + cut.prof[cut.prof.length - 1][1]) / 160));
+    const Lh = T.Lh, Hb = Math.max(T.Ht, Math.abs(T.yc - T.yTip));          // 刀头向刀体一直连到刀具轴线
+    // 半边刃口（H, X），从刀尖中心到外延端；法向（指向刀具实体外侧）
+    const nrm = cp.map((q, i) => {
+      if (i === 0) return [-1, 0];
+      const a = cp[Math.max(0, i - 1)], b = cp[Math.min(cp.length - 1, i + 1)];
+      let dH = b[0] - a[0], dX = b[1] - a[1]; const L = Math.hypot(dH, dX) || 1; return [-dX / L, dH / L];
+    });
+    // 截面顶点：[H, X, 是否刃口, 法向]
+    const right = cp.map((q, i) => [q[0], q[1], 1, nrm[i]]);
+    const left = right.slice(1).reverse().map(q => [q[0], -q[1], 1, [q[3][0], -q[3][1]]]);
+    const sec = left.concat(right, [[Hb, T.Xt, 0, [0, 0]], [Hb, -T.Xt, 0, [0, 0]]]);
+    const n = sec.length, toXY = (H, X) => [X, T.yTip + sg * H];
+    const F = [], B = [];
+    for (const [H, X, e, nv] of sec) {
+      const zf = H * tg, d = Lh - zf;                   // 前刀面 z = H·tanγ；d = 该点刃口到刀头后端的距离
+      F.push([...toXY(H, X), zf]);
+      let Hb_ = H, Xb_ = X;
+      if (e) {
+        if (s0.rel === 'plane') { Hb_ = H - nv[0] * d * ta; Xb_ = X - nv[1] * d * ta; }   // 沿法向向内收
+        else { Hb_ = H + d * ta; Xb_ = Math.sign(X) * Math.max(0, Math.abs(X) - d * tas); } // 倾斜：径向退让；侧磨：宽度收窄
+      }
+      B.push([...toXY(Hb_, Xb_), Lh]);
+    }
+    const tin = col3('--cut3d', '#DBA829'), face = tin.map(v => Math.min(1, v * 1.18)), sh = col3('--shank3d', '#8C949E');
+    // 侧面
     const pos = [], col = [], idx = [];
     for (let i = 0; i < n; i++) {
-      const A = sec[i], B = sec[(i + 1) % n], o = pos.length / 3;
-      for (const [x, y, z] of [[A[0], A[1], 0], [B[0], B[1], 0], [B[0], B[1], Lt], [A[0], A[1], Lt]]) { pos.push(x, y, z); const c = colOf((A[1] + B[1]) / 2, false); col.push(...c); }
+      const j = (i + 1) % n, o = pos.length / 3, c = sec[i][2] && sec[j][2] ? tin : sh;
+      for (const v of [F[i], F[j], B[j], B[i]]) { pos.push(...v); col.push(...c); }
       idx.push(o, o + 1, o + 2, o, o + 2, o + 3);
     }
     meshes.push(mkMesh(new Float32Array(pos), new Uint32Array(idx), new Float32Array(col)));
-    const tri = earClip(sec);
-    for (const [z, nz] of [[0, -1], [Lt, 1]]) {
-      const p2 = new Float32Array(n * 3), c2 = new Float32Array(n * 3);
-      sec.forEach((q, i) => { p2.set([q[0], q[1], z], i * 3); c2.set(colOf(q[1], z === 0), i * 3); });
-      meshes.push(mkMesh(p2, new Uint32Array(tri), c2, [0, 0, nz]));
+    // 前刀面（亮色）与刀头后端面
+    for (const [Q, c, nz] of [[F, face, null], [B, sh, [0, 0, 1]]]) {
+      const tri = earClip(Q.map(v => [v[0], v[1]])), p2 = new Float32Array(n * 3), c2 = new Float32Array(n * 3);
+      Q.forEach((v, i) => { p2.set(v, i * 3); c2.set(c, i * 3); });
+      meshes.push(mkMesh(p2, new Uint32Array(tri), c2, nz || [0, -tg * sg, -1]));
     }
-    return Lt;
+    // 缩颈（内齿在孔里）+ 45° 过渡 + 刀柄
+    const over = Math.max(2, 0.05 * scene.b + 1), Ln = Lh + scene.b + 2 * over;
+    const tinS = sh.map(v => v * 0.94);
+    // 缩颈前端退到前刀面之后（前刀面在缩颈顶部处的 z = H·tanγ）
+    const zN = Math.min(Lh * 0.8, Math.max(Lh * 0.15, Math.abs(T.yTip - (T.yc - sg * T.Rn)) * Math.max(0, tg) + 0.02 * Lh));
+    if (T.sg < 0) {
+      cylMesh(T.Rn, T.Rn, zN, Ln, T.yc, tinS, 1);
+      cylMesh(T.Rn, T.Rs, Ln, Ln + Math.max(0.01, T.Rs - T.Rn), T.yc, sh, 0);
+      cylMesh(T.Rs, T.Rs, Ln + Math.max(0.01, T.Rs - T.Rn), Ln + (T.Rs - T.Rn) + 5 * T.Rs, T.yc, sh, 2);
+    } else cylMesh(T.Rs, T.Rs, zN, Ln + 5 * T.Rs, T.yc, sh, 3);
+    return { over, Ln };
   }
   function build3D() {
     if (!gl) return;
@@ -1784,7 +1898,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     scene.nGear = meshes.length;
     scene.disc = !!cut.disc; scene.slot = !!cut.slot; scene.Rd = Math.max(10, (parseFloat($('t_D').value) || 100) / 2, cut.prof[cut.prof.length - 1][0] * 3);
     scene.nCut0 = meshes.length;
-    if (scene.slot) scene.Lt = slotMesh(); else meshes.push(scene.disc ? discMesh(scene.Rd) : cutterMesh());
+    if (scene.slot) scene.st = slotMesh(); else meshes.push(scene.disc ? discMesh(scene.Rd) : cutterMesh());
     scene.Hc = scene.disc ? scene.Rd : cut.prof[cut.prof.length - 1][0];
     setView(scene.view || 'tool', scene.kind === geo.kind); scene.kind = geo.kind;
     requestDraw();
@@ -1793,7 +1907,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     scene.view = v;
     document.querySelectorAll('[data-v]').forEach(btn => btn.classList.toggle('on', btn.dataset.v === v));
     const isExt = geo.kind === 'ext', yMid = isExt ? (cut.yTip + geo.ra) / 2 : (cut.yTip + geo.ra) / 2;
-    if (v === 'tool') { cam.tgt = [0, yMid, scene.b * 0.5]; cam.dist = scene.disc ? scene.Rd * 3.4 : Math.max(scene.Hc * 7, (P.mn || 2) * 12); cam.follow = true; }
+    if (v === 'tool') { cam.tgt = [0, yMid, scene.b * 0.5]; cam.dist = scene.disc ? scene.Rd * 3.4 : Math.max(scene.Hc * 7, (P.mn || 2) * 12, scene.slot && stool ? stool.Rs * 6 : 0); cam.follow = true; }
     else if (v === 'face') { cam.tgt = [0, yMid, scene.b / 2]; cam.dist = Math.max(scene.b * 1.5, scene.Hc * 6); cam.follow = false; }
     else { cam.tgt = [0, 0, scene.b / 2]; cam.dist = Math.max(geo.ra, scene.Rc) * 3.1 + scene.b; cam.follow = false; }
     if (!keepAngles) { cam.th = 0.75; cam.ph = geo.kind === 'int' && v !== 'all' ? -0.42 : 0.5; }
@@ -1819,6 +1933,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   };
   let rafId = 0;
   function requestDraw() { if (!rafId && gl) rafId = requestAnimationFrame(frame); }
+  window.__fc3d = { cam, anim, scene, draw: () => requestDraw() };   // 调试 / 截图用
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduce) { anim.playing = false; $('play').textContent = '播放'; }
   function frame(ts) {
@@ -1828,7 +1943,18 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     const b = scene.b, z0 = -scene.Hc * 1.2, z1 = b + scene.Hc * 1.2;
     if (anim.playing) { anim.ph = ((anim.ph || 0.35) + dt / 7) % 2; anim.spin += dt * 7; }
     const ph = anim.ph ?? 0.35, u = ph < 1 ? ph : 2 - ph;
-    const zc = scene.slot ? (-(scene.Lt || 0) * 0.2 + (b + (scene.Lt || 0) * 0.2) * (0.5 - 0.5 * Math.cos(PI * ph * 3))) - (scene.Lt || 0) * 0.0 : z0 + (z1 - z0) * u;
+    // 插削循环：切削行程（沿 −z）→ 抬刀回程 → 刀头退出工件后分度一个齿
+    let zc, liftY = 0, idxA = 0;
+    if (scene.slot) {
+      if (anim.playing) anim.st = (anim.st || 0) + dt / 2.6;
+      const cyc = anim.st || 0.3, f = cyc % 1, nI = Math.floor(cyc), st = scene.st || { over: 2 }, zA = b + st.over, zB = -st.over;
+      const lift = (stool ? Math.max(stool.lift, 0.06 * stool.Ht) : 0) * (stool ? stool.sg : 0);
+      const ease = t => 0.5 - 0.5 * Math.cos(PI * Math.min(1, Math.max(0, t)));
+      if (f < 0.55) zc = zA + (zB - zA) * (f / 0.55);
+      else if (f < 0.85) { zc = zB + (zA - zB) * ease((f - 0.55) / 0.3); liftY = lift * Math.min(1, (f - 0.55) / 0.04, (0.85 - f) / 0.04); }
+      else zc = zA;
+      idxA = 2 * PI / geo.z * (nI + (f < 0.88 ? 0 : ease((f - 0.88) / 0.12)));
+    } else zc = z0 + (z1 - z0) * u;
     const dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, h = cv.clientHeight;
     if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(h * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr); }
     gl.viewport(0, 0, cv.width, cv.height);
@@ -1839,9 +1965,10 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     const VP = M4.mul(M4.persp(0.62, w / Math.max(1, h), cam.dist * 0.01, cam.dist * 30), M4.look(eye, tgt, [0, 1, 0]));
     gl.uniformMatrix4fv(prog.uVP, false, VP); gl.uniform3fv(prog.uE, eye);
     // 齿轮随刀具轴向位置转动，使齿槽始终对准刀具
-    const gM = M4.rz(-scene.k * Math.min(Math.max(zc, 0), b));
-    const cM = scene.slot ? M4.tr(0, cut.yTip, zc) : scene.disc ? M4.mul(M4.tr(0, cut.yTip + scene.Rd, zc), M4.rx(-anim.spin * 0.4)) : geo.kind === 'ext' ? M4.mul(M4.tr(0, cut.yTip, zc), M4.ry(anim.spin)) : M4.mul(M4.tr(0, cut.yTip, zc), M4.mul(M4.rx(PI), M4.ry(anim.spin)));
+    const gM = scene.slot ? M4.rz(idxA) : M4.rz(-scene.k * Math.min(Math.max(zc, 0), b));
+    const cM = scene.slot ? M4.tr(0, liftY, zc) : scene.disc ? M4.mul(M4.tr(0, cut.yTip + scene.Rd, zc), M4.rx(-anim.spin * 0.4)) : geo.kind === 'ext' ? M4.mul(M4.tr(0, cut.yTip, zc), M4.ry(anim.spin)) : M4.mul(M4.tr(0, cut.yTip, zc), M4.mul(M4.rx(PI), M4.ry(anim.spin)));
     meshes.forEach((m, i) => {
+      if (scene.hideGear && i < scene.nGear) return;
       gl.uniformMatrix4fv(prog.uM, false, i < scene.nGear ? gM : cM);
       for (const [a, buf] of [['aP', m.p], ['aN', m.n], ['aC', m.c]]) { gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.enableVertexAttribArray(prog[a]); gl.vertexAttribPointer(prog[a], 3, gl.FLOAT, false, 0, 0); }
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.i); gl.drawElements(gl.TRIANGLES, m.count, gl.UNSIGNED_INT, 0);
