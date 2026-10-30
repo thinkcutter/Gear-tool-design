@@ -1,0 +1,619 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>滚插刀检测图解</title>
+<style>
+
+:root{
+  --bg:#F4F1EA; --card:#FFFFFF; --ink:#1E2328; --muted:#66707A; --line:#D9D4CA;
+  --steel:#C9CED4; --steel2:#AEB5BD; --gear:#DDE3E9; --gear2:#F2D9B8;
+  --accent:#E06A1B; --blue:#2F6FB5; --green:#2E8B57; --red:#C8402E; --violet:#7A4FB0;
+  --chip:#F7EFE3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121417; --card:#1B1E22; --ink:#ECEDEE; --muted:#9AA3AD; --line:#2E333A;
+    --steel:#4A525B; --steel2:#5E6772; --gear:#3A434D; --gear2:#6A4B2C;
+    --accent:#FF8A3D; --blue:#6FA8E8; --green:#5CC28C; --red:#F07A68; --violet:#B591E6; --chip:#2A2520;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121417; --card:#1B1E22; --ink:#ECEDEE; --muted:#9AA3AD; --line:#2E333A;
+  --steel:#4A525B; --steel2:#5E6772; --gear:#3A434D; --gear2:#6A4B2C;
+  --accent:#FF8A3D; --blue:#6FA8E8; --green:#5CC28C; --red:#F07A68; --violet:#B591E6; --chip:#2A2520;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:28px 16px 60px}
+header h1{font-size:30px;margin:0 0 6px;letter-spacing:1px}
+header p{margin:0;color:var(--muted)}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 8px}
+.toc a{font-size:13px;color:var(--ink);text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 20px 16px;margin:18px 0}
+.no{display:inline-block;font-size:12px;font-weight:700;color:var(--accent);border:1.5px solid var(--accent);border-radius:6px;padding:0 6px;margin-right:8px;vertical-align:3px}
+h2{font-size:22px;margin:0 0 4px}
+.sym{font-family:"Times New Roman",serif;font-style:italic;color:var(--accent);font-weight:400}
+.meta{color:var(--muted);font-size:14px;margin-bottom:10px}
+.fig{width:100%;display:block;margin:6px 0 6px}
+.say{background:var(--chip);border-radius:10px;padding:10px 14px;margin:10px 0;font-size:15px}
+.say b{color:var(--accent)}
+ul{margin:6px 0 6px;padding-left:20px}
+li{margin:2px 0}
+.f{display:inline-block;font-family:"Times New Roman",serif;font-size:17px;background:var(--chip);border-radius:6px;padding:1px 8px;margin:2px 4px 2px 0}
+.vo{border-left:3px solid var(--blue);padding:2px 0 2px 12px;margin:10px 0 0;color:var(--muted);font-size:14px}
+.vo::before{content:"旁白：";color:var(--blue);font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+td .f{font-size:15px}
+.play{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.play{grid-template-columns:1.1fr 1fr}}
+.ctl label{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-top:8px}
+.ctl input[type=range]{width:100%}
+.ctl select{width:100%;font-size:15px;padding:4px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px}
+.out td:last-child{font-family:"Times New Roman",serif;font-size:16px;text-align:right}
+svg text{font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif}
+svg .math{font-family:"Times New Roman",serif;font-style:italic}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
+
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>滚插刀检测图解</h1>
+  <p>滚插刀（Power Skiving，也叫强力刮齿刀、车齿刀）磨好以后，要上测量中心逐项检测，合格才能出厂；每次重磨后也要再测。下面说清楚测哪些参数、怎么测、用什么设备。</p>
+  <p class="meta">示例刀具：盘形滚插刀 z₀ = 31，法向模数 2，台阶式前刀面（就是上一份《滚插刀参数图解》里那把）。图中的测量曲线、柱状图是示意数据，用来说明怎么看报告。</p>
+  <nav class="toc" id="toc"></nav>
+</header>
+
+<section class="card" id="s0">
+  <h2><span class="no">00</span>一把滚插刀要检测什么</h2>
+  <div class="meta">先看全貌：基准、刃口、分齿、前后刀面、刃口钝化</div>
+  <svg class="fig" id="f0" viewBox="0 0 150 92"></svg>
+  <div class="say">滚插刀是靠<b>前刀面上的那条刃口</b>切出齿形的，所以检测的核心是刃口：形状对不对（廓形）、每个齿位置分得匀不匀（齿距）、转起来晃不晃（跳动）。再加上前刀面、后刀面的角度，以及刃口钝化。所有项目都以刀具的<b>安装基准</b>（内孔 + 支承端面，或刀柄）为准。</div>
+  <ul>
+    <li>滚插刀目前没有自己专门的检测标准，行业里一般参照<b>插齿刀标准 DIN 1829</b>（精度分 AA、A、B 级），再加上刀具厂和用户约定的项目。</li>
+    <li>测量中心软件里需要输入刀具的<b>理论刃口</b>（设计数据），才能算出偏差——所以设计方要把刃口数据一起交给检测。</li>
+  </ul>
+  <div class="vo">一把滚插刀要测的东西很多，但核心只有一个：前刀面上那条刃口，形状对不对、分得匀不匀、转起来晃不晃。</div>
+</section>
+
+<section class="card" id="s1">
+  <h2><span class="no">01</span>装夹与基准：先测“地基”</h2>
+  <div class="meta">刀装在测量芯轴上，先确认基准是正的</div>
+  <svg class="fig" id="f1" viewBox="0 0 150 70"></svg>
+  <div class="say">刀具装在测量中心的芯轴（或刀柄夹头）上，跟着转台转。正式测之前先测<b>基准的径向跳动</b>（内孔、刀柄，或刀上和内孔一起磨出的检查凸台）和<b>支承端面的端面跳动</b>：这两个面就是刀在机床上的安装面，后面所有偏差都是相对它们算的。基准面本身不正，刀磨得再准，装到机床上也会晃。</div>
+  <ul>
+    <li>内孔直径和公差、支承端面平面度，一般也在这里一起检。</li>
+    <li>芯轴自身的跳动要先校好，否则会被算到刀具头上。</li>
+  </ul>
+  <div class="vo">先测安装基准：内孔和支承端面转一圈晃多少。地基不正，后面测得再准也没用。</div>
+</section>
+
+<section class="card" id="s2">
+  <h2><span class="no">02</span>刃口廓形：最核心的一项</h2>
+  <div class="meta">测针沿刃口走一遍，和理论刃口比</div>
+  <svg class="fig" id="f2" viewBox="0 0 150 80"></svg>
+  <div class="say">3D 扫描测针贴着刃口，从一侧齿根经过刀尖走到另一侧齿根，测出实际刃口，再和<b>设计的理论刃口</b>逐点比较。偏差按齿轮齿形的方法评定：<span class="f">F<sub>α</sub></span> 总偏差、<span class="f">f<sub>fα</sub></span> 形状偏差（波纹）、<span class="f">f<sub>Hα</sub></span> 倾斜偏差（压力角偏差）。一般圆周上均布测 3～4 个齿，左右刃都要测。</div>
+  <ul>
+    <li>滚插刀的刃口不是平面里的渐开线（台阶式刃口在每个齿自己的前刀面上），普通齿轮软件直接按渐开线评定会出错，要用<b>专门的刀具测量软件</b>或按理论刃口点评定。</li>
+    <li>刀尖圆角处（切齿根的部分）也要看：圆角大小、和侧刃接得顺不顺。</li>
+  </ul>
+  <div class="vo">测针贴着刃口走一遍，测出来的线和设计的理论刃口比。偏差的大小、斜不斜、有没有波纹，都在这张图里。</div>
+</section>
+
+<section class="card" id="s3">
+  <h2><span class="no">03</span>齿距：每个齿分得匀不匀</h2>
+  <div class="meta">一个齿一个齿地测，看相邻差和累积差</div>
+  <svg class="fig" id="f3" viewBox="0 0 150 72"></svg>
+  <div class="say">测针在分度圆附近依次碰每个刀齿的同一侧刃口，记下每个齿的实际位置。<span class="f">f<sub>p</sub></span> 单个齿距偏差：相邻两齿的间隔差了多少；<span class="f">f<sub>u</sub></span> 相邻齿距差；<span class="f">F<sub>p</sub></span> 齿距累积总偏差：转一圈下来，所有齿的位置误差最大最小之差。</div>
+  <ul>
+    <li>F<sub>p</sub> 通常是一条“正弦”样的曲线，多半来自磨削时的偏心；这部分会直接复制到工件上，变成工件的齿距累积误差和跳动。</li>
+    <li>两侧刃都要测。</li>
+  </ul>
+  <div class="vo">每个齿的位置一个个测出来，相邻的差多少、转一圈累积差多少，就是齿距偏差。</div>
+</section>
+
+<section class="card" id="s4">
+  <h2><span class="no">04</span>径向跳动：转起来晃不晃</h2>
+  <div class="meta">测球放进每个齿槽，读半径方向的位置</div>
+  <svg class="fig" id="f4" viewBox="0 0 150 72"></svg>
+  <div class="say">把一个测球依次放进每个齿槽（同时碰两侧刃口），读它在半径方向的位置，一圈下来最大减最小就是<b>齿圈径向跳动</b> <span class="f">F<sub>r</sub></span>。再测一圈齿顶，得到<b>齿顶圆跳动</b>。跳动大，切出来的工件齿厚就忽大忽小。</div>
+  <ul>
+    <li>也可以由齿距测量的数据直接算出来，不用单独测。</li>
+  </ul>
+  <div class="vo">测球放进每个齿槽量一下高低，转一圈最大减最小，就是径向跳动。</div>
+</section>
+
+<section class="card" id="s5">
+  <h2><span class="no">05</span>前刀面与前角</h2>
+  <div class="meta">台阶式要看每个齿的前刀面是不是在同一高度</div>
+  <svg class="fig" id="f5" viewBox="0 0 150 70"></svg>
+  <div class="say">前刀面决定了刃口在哪儿、前角多大。台阶式刀具的每个齿都有自己的前刀面，要测<b>每个齿前刀面的轴向位置</b>（台阶高度是否一致，相当于前刀面的端面跳动）和<b>前角</b>；平前刀面的刀要测整个端面的<b>平面度和端面跳动</b>。</div>
+  <ul>
+    <li>前刀面高低不一致，等于各个齿的刃口在不同的“重磨位置”上，刃口形状和直径都会跟着变。</li>
+    <li>前角在前刀面上扫一条线，用它的倾斜算出来。</li>
+  </ul>
+  <div class="vo">台阶式的刀，每个齿的前刀面都要测一下高低，再测前角。高低不齐，各个齿切出来的就不一样。</div>
+</section>
+
+<section class="card" id="s6">
+  <h2><span class="no">06</span>后刀面：螺旋角、后角和能不能重磨</h2>
+  <div class="meta">不光测刃口，刃口后面也要测</div>
+  <svg class="fig" id="f6" viewBox="0 0 150 66"></svg>
+  <div class="say">刀齿后面那段（后刀面）决定了：刀齿螺旋角 <span class="f">β₀</span> 对不对、顶刃后角 <span class="f">α<sub>k</sub></span> 和锥角对不对，以及<b>重磨以后齿形还准不准</b>。所以要沿齿向扫后刀面，并在刃口后面几个位置（比如 0、2、4、6 mm）分别检查齿形。</div>
+  <ul>
+    <li>螺旋线（导程）偏差 <span class="f">f<sub>Hβ</sub></span>：两侧刃后刀面的螺旋角偏差。</li>
+    <li>如果后面几个截面齿形差得越来越多，说明这把刀磨几次以后就会超差，可用的重磨量变少。</li>
+  </ul>
+  <div class="vo">刃口后面的那段齿也要测。它决定了刀磨掉一层以后，齿形还准不准。</div>
+</section>
+
+<section class="card" id="s7">
+  <h2><span class="no">07</span>刃口钝化</h2>
+  <div class="meta">刃口不是绝对锋利，而是磨出一个小圆角</div>
+  <svg class="fig" id="f7" viewBox="0 0 150 62"></svg>
+  <div class="say">磨好的刃口要做钝化（刷、喷砂等），形成几微米到几十微米的小圆角，再涂层，刃口才不容易崩。用<b>光学测量</b>看刃口截面：钝化半径 <span class="f">r<sub>β</sub></span>，以及前刀面一侧和后刀面一侧倒掉的长度 <span class="f">S<sub>γ</sub></span>、<span class="f">S<sub>α</sub></span>，比值 <span class="f">K = S<sub>γ</sub> / S<sub>α</sub></span> 表示圆角偏向哪边。同时检查有没有<b>崩刃</b>。</div>
+  <ul>
+    <li>滚插切出侧前角为负、刀刃在“挤”，钝化做得均匀对寿命影响很大。</li>
+    <li>涂层厚度也会让刃口和齿厚略微变化，精密刀具在涂层后要复测。</li>
+  </ul>
+  <div class="vo">刃口要磨出一个很小的圆角，用光学仪器看它的大小和偏向，还要看有没有崩口。</div>
+</section>
+
+<section class="card" id="s8">
+  <h2><span class="no">08</span>用什么设备测</h2>
+  <div class="meta">齿轮测量中心为主，光学设备看刃口</div>
+  <table>
+    <tr><th>设备</th><th>典型型号</th><th>适合测什么</th></tr>
+    <tr><td><b>Klingelnberg（克林贝格）</b> 精密测量中心</td><td>P 16 / P 26 / P 40 / P 65 等 P 系列（P 26 工件最大 Ø260，P 40 最大 Ø400），3D NANOSCAN 扫描测头</td><td>刃口廓形、齿距、跳动、前刀面、后刀面，可测刃口上和刃口后面；滚刀、插齿刀、滚插刀等齿轮刀具都能测，行业里很常用</td></tr>
+    <tr><td><b>Gleason（格里森）</b> GMS 系列</td><td>475GMS ～ 3000GMS</td><td>官方说明可检测滚刀、插齿刀和 Power Skiving 刀具</td></tr>
+    <tr><td><b>Hexagon（海克斯康）</b> 三坐标 + QUINDOS 齿轮刀具软件</td><td>Leitz 等高精度三坐标</td><td>插齿刀按 DIN 1829 评定：刃口角度、廓形、螺旋线、齿距、跳动、齿厚，支持锥形和台阶式前刀面</td></tr>
+    <tr><td><b>Werth</b> 光学 / 多传感器坐标测量机</td><td>VideoCheck、ScopeCheck 等</td><td>刃口上的齿形、齿距、后角、台阶式前刀面；适合小模数刀具的非接触测量</td></tr>
+    <tr><td><b>Zoller（卓勒）</b> 刃口测量</td><td>pomSkpGo 等</td><td>刃口钝化：几何形状、半径、K 值、崩刃</td></tr>
+    <tr><td>磨床在机测量</td><td>例如 ANCA GCX Linear 的模拟测头</td><td>磨削过程中测齿距和齿形，及时补偿砂轮磨损；出厂仍要上测量中心终检</td></tr>
+  </table>
+  <ul>
+    <li>其他齿轮测量机品牌（例如大阪精密等）能不能测滚插刀，关键看有没有对应的<b>刀具测量软件</b>。</li>
+    <li>直径小、模数小的刀，用小型测量中心；大盘形刀要看测量中心的最大直径和承重。</li>
+  </ul>
+</section>
+
+<section class="card" id="s9">
+  <h2><span class="no">09</span>精度等级：多准才算合格</h2>
+  <div class="meta">参照插齿刀 DIN 1829：AA 级最高</div>
+  <svg class="fig" id="f9" viewBox="0 0 150 58"></svg>
+  <div class="say">DIN 1829 把插齿刀分为 <b>AA、A、B</b> 三级，滚插刀一般也按这个分级；高精度工件（比如要直接作为最终工序的内齿）用 AA 级。公差数值随模数和直径变化，具体以标准表格为准。图里是一个小模数刀具按 AA 级的例子。</div>
+  <ul>
+    <li>工件要求越高，刀具等级越高；也可以按工件公差反推刀具公差（例如刀具齿形公差取工件的 1/4 左右）。</li>
+    <li>国内插齿刀标准（GB/T 6081）同样分 AA、A、B 三级。</li>
+  </ul>
+  <div class="vo">滚插刀的精度一般参照插齿刀标准分三级，最高是 AA 级，单项齿形误差只有两微米左右。</div>
+</section>
+
+<section class="card" id="s10">
+  <h2><span class="no">10</span>重磨以后还要测</h2>
+  <div class="meta">刀变小了，数据要更新给机床</div>
+  <svg class="fig" id="f10" viewBox="0 0 150 46"></svg>
+  <div class="say">滚插刀磨的是前刀面。每次重磨后要复测<b>前角、前刀面跳动（台阶高度）、刃口廓形</b>，再测出新的<b>齿顶圆直径</b>和<b>齿厚</b>（或变位量）。这些新数据要交给滚插机床，重新计算中心距和轴向位置，切出来的齿形和齿厚才不变。</div>
+  <ul>
+    <li>记录每次重磨后的直径，能看出这把刀还剩多少可用重磨量。</li>
+  </ul>
+  <div class="vo">刀每磨一次都会变小一点。重磨后要重新测，把新的直径和齿厚告诉机床。</div>
+</section>
+
+<section class="card" id="s11">
+  <h2><span class="no">11</span>检测项目速查</h2>
+  <table>
+    <tr><th>项目</th><th>符号</th><th>怎么测</th><th>不合格会怎样</th></tr>
+    <tr><td>内孔 / 刀柄径向跳动</td><td>—</td><td>测头碰内孔或刀柄，转一圈</td><td>刀装上就偏心，所有齿一起错</td></tr>
+    <tr><td>支承端面跳动</td><td>—</td><td>测头碰支承端面，转一圈</td><td>刀装上就歪，两侧刃不一样</td></tr>
+    <tr><td>刃口廓形</td><td><span class="f">F<sub>α</sub>, f<sub>fα</sub>, f<sub>Hα</sub></span></td><td>沿刃口扫描，和理论刃口比，测 3～4 个齿</td><td>工件齿形超差</td></tr>
+    <tr><td>齿距</td><td><span class="f">f<sub>p</sub>, f<sub>u</sub>, F<sub>p</sub></span></td><td>逐齿测同侧刃口位置</td><td>工件齿距、跳动变差</td></tr>
+    <tr><td>径向跳动</td><td><span class="f">F<sub>r</sub></span></td><td>测球逐个放入齿槽</td><td>工件齿厚忽大忽小</td></tr>
+    <tr><td>前刀面位置 / 平面度</td><td>—</td><td>台阶式逐齿测前刀面轴向位置</td><td>各齿刃口不一致</td></tr>
+    <tr><td>前角</td><td><span class="f">γ</span></td><td>在前刀面上扫线</td><td>齿形变、切削性能变</td></tr>
+    <tr><td>螺旋线 / 后角 / 锥角</td><td><span class="f">f<sub>Hβ</sub>, α<sub>k</sub></span></td><td>沿齿向扫后刀面，多截面查齿形</td><td>重磨后齿形跑偏、可重磨量少</td></tr>
+    <tr><td>齿顶圆直径、齿厚</td><td><span class="f">d<sub>a0</sub>, s</span></td><td>测量中心直接算出</td><td>机床设定错，齿厚、齿根不对</td></tr>
+    <tr><td>刃口钝化、崩刃</td><td><span class="f">r<sub>β</sub>, K</span></td><td>光学测刃口截面</td><td>早期崩刃、寿命短</td></tr>
+  </table>
+</section>
+<footer>刃口形状用示例刀具的设计刃口绘制；测量曲线、柱状图为示意数据。设备信息来自各厂商公开资料。</footer>
+</div>
+
+<script type="application/json" id="skdata">{"edge":[[-2.0081,30.9895],[-1.9566,31.2417],[-1.9295,31.4484],[-1.8993,31.6367],[-1.8675,31.8088],[-1.835,31.9667],[-1.8024,32.1126],[-1.77,32.2482],[-1.7378,32.3753],[-1.706,32.4951],[-1.6722,32.6165],[-1.6408,32.7253],[-1.6093,32.8303],[-1.5777,32.9323],[-1.5459,33.0322],[-1.5137,33.1307],[-1.4808,33.2285],[-1.447,33.3262],[-1.4122,33.4247],[-1.376,33.5245],[-1.3356,33.6334],[-1.2956,33.7387],[-1.2531,33.8479],[-1.2076,33.9621],[-1.1585,34.0824],[-1.105,34.2104],[-1.0462,34.3476],[-0.9808,34.496],[-0.9075,34.6581],[-0.8243,34.8368],[-0.7217,35.0502],[-0.6032,35.2511],[-0.4504,35.3808],[-0.2788,35.4584],[-0.0978,35.4889],[0.0855,35.4892],[0.2669,35.4619],[0.4394,35.3875],[0.5938,35.2617],[0.7148,35.0644],[0.8183,34.8494],[0.9023,34.6695],[0.9762,34.5064],[1.042,34.3571],[1.1012,34.2192],[1.1551,34.0907],[1.2044,33.9699],[1.2502,33.8553],[1.2928,33.7458],[1.333,33.6403],[1.3736,33.5312],[1.4098,33.4313],[1.4447,33.3328],[1.4785,33.235],[1.5115,33.1372],[1.5438,33.0388],[1.5756,32.9391],[1.6072,32.8372],[1.6387,32.7324],[1.6701,32.6239],[1.7039,32.5029],[1.7357,32.3835],[1.7678,32.2569],[1.8003,32.1219],[1.8328,31.9768],[1.8653,31.8197],[1.8972,31.6487],[1.9276,31.4615],[1.9549,31.2561],[2.0081,30.9895]],"z0":31}</script>
+<script>
+(() => {
+const PI = Math.PI, D2R = PI / 180, inv = a => Math.tan(a) - a;
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const txt = (parent, x, y, s, o = {}) => { const t = el('text', Object.assign({ x, y, 'font-size': o.fs || 3, fill: o.fill || 'var(--ink)', 'text-anchor': o.anchor || 'middle', 'dominant-baseline': 'middle', stroke: 'var(--card)', 'stroke-width': (o.fs || 3) * 0.2, 'stroke-linejoin': 'round', 'paint-order': 'stroke' }, o.attr || {}), parent); if (o.math) t.setAttribute('class', 'math'); setT(t, s); return t; };
+function setT(t, s) { s = String(s); if (s.indexOf('_{') < 0) { t.textContent = s; return; } t.textContent = ''; const re = /_\{([^}]*)\}/g; let last = 0, m; const fs = parseFloat(t.getAttribute('font-size')); while ((m = re.exec(s))) { if (m.index > last) el('tspan', {}, t).textContent = s.slice(last, m.index); const sp = el('tspan', { 'font-size': fs * 0.7, dy: fs * 0.25 }, t); sp.textContent = m[1]; el('tspan', { dy: -fs * 0.25 }, t).textContent = '\u200b'; last = re.lastIndex; } if (last < s.length) el('tspan', {}, t).textContent = s.slice(last); }
+const f = v => v.toFixed(2);
+
+// ---------- 渐开线外齿轮轮廓（屏幕坐标，y 向下；齿 0 的中心在 +x 方向） ----------
+function gearPts(m, z, alDeg, x = 0, o = {}) {
+  const al = alDeg * D2R, r = m * z / 2, rb = r * Math.cos(al), ha = o.ha ?? 1, c = o.c ?? 0.25, ds = o.ds || 0;
+  const ra = r + (ha + x) * m, rf = r - (ha + c - x) * m;
+  const s = m * (PI / 2 + 2 * x * Math.tan(al)) - ds, psiP = s / (2 * r);
+  const half = R => psiP + inv(al) - inv(Math.acos(Math.min(1, rb / R)));
+  const r0 = Math.max(rb, rf), N = o.n || 14, pts = [];
+  let raE = ra; if (half(ra) < 0) { let lo = r0, hi = ra; for (let i = 0; i < 40; i++) { const mm = (lo + hi) / 2; if (half(mm) > 0) lo = mm; else hi = mm; } raE = lo; }
+  const P = (R, t) => [R * Math.cos(t), -R * Math.sin(t)];
+  // 基圆以内用一段圆滑的过渡曲线接到齿根圆（示意的齿根圆角，牙根比基圆处更宽）
+  const gam = rf < rb ? Math.max(0, 0.45 * (PI / z - half(rb))) : 0, NF = 6;
+  for (let k = 0; k < z; k++) {
+    const tc = 2 * PI * k / z;
+    if (rf < rb) for (let i = 0; i < NF; i++) { const u = i / NF; pts.push(P(rf + (rb - rf) * (1 - (1 - u) * (1 - u)), tc - half(rb) - gam * (1 - u) * (1 - u) * (1 - u))); }
+    for (let i = 0; i <= N; i++) { const R = r0 + (raE - r0) * i / N; pts.push(P(R, tc - half(R))); }
+    for (let i = N; i >= 0; i--) { const R = r0 + (raE - r0) * i / N; pts.push(P(R, tc + half(R))); }
+    if (rf < rb) for (let i = NF - 1; i >= 0; i--) { const u = i / NF; pts.push(P(rf + (rb - rf) * (1 - (1 - u) * (1 - u)), tc + half(rb) + gam * (1 - u) * (1 - u) * (1 - u))); }
+    const a1 = tc + half(r0) + gam, a2 = tc + 2 * PI / z - half(r0) - gam;
+    for (let i = 1; i < 6; i++) pts.push(P(rf, a1 + (a2 - a1) * i / 6));
+  }
+  return { pts, r, rb, ra, rf, s, half, raE };
+}
+const pathOf = pts => 'M' + pts.map(p => p[0].toFixed(3) + ' ' + p[1].toFixed(3)).join('L') + 'Z';
+const circle = (g, cx, cy, r, o = {}) => el('circle', Object.assign({ cx, cy, r, fill: 'none', stroke: o.stroke || 'var(--muted)', 'stroke-width': o.w || 0.3, 'stroke-dasharray': o.dash || '' }, o.attr || {}), g);
+const line = (g, x1, y1, x2, y2, o = {}) => el('line', Object.assign({ x1, y1, x2, y2, stroke: o.stroke || 'var(--ink)', 'stroke-width': o.w || 0.3, 'stroke-dasharray': o.dash || '' }, o.attr || {}), g);
+function defsArrow(svg, id, color) {
+  const d = svg.querySelector('defs') || el('defs', {}, svg);
+  const mk = el('marker', { id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' }, d);
+  el('path', { d: 'M0 1 L10 5 L0 9 Z', fill: color }, mk);
+}
+const arrow = (g, x1, y1, x2, y2, id, o = {}) => el('line', { x1, y1, x2, y2, stroke: o.stroke || 'var(--accent)', 'stroke-width': o.w || 0.35, 'marker-end': `url(#${id})`, 'marker-start': o.both ? `url(#${id})` : '' }, g);
+const rot = (e, deg, cx = 0, cy = 0) => e.setAttribute('transform', `rotate(${deg} ${cx} ${cy})`);   // 屏幕坐标里正角度为顺时针
+const D = JSON.parse(document.getElementById('skdata').textContent);
+const scenes = [];
+const pl = (g, pts, o = {}) => el('polyline', Object.assign({ points: pts.map(p => p[0].toFixed(3) + ',' + p[1].toFixed(3)).join(' '), fill: 'none', stroke: o.stroke || 'var(--ink)', 'stroke-width': o.w || 0.3, 'stroke-linejoin': 'round', 'stroke-dasharray': o.dash || '' }, o.attr || {}), g);
+const pg = (g, pts, o = {}) => el('path', Object.assign({ d: pathOf(pts), fill: o.fill || 'none', stroke: o.stroke || 'var(--ink)', 'stroke-width': o.w || 0.3, 'stroke-linejoin': 'round' }, o.attr || {}), g);
+const setPts = (e, pts) => e.setAttribute('points', pts.map(p => p[0].toFixed(3) + ',' + p[1].toFixed(3)).join(' '));
+const R2 = (p, th) => [p[0] * Math.cos(th) - p[1] * Math.sin(th), p[0] * Math.sin(th) + p[1] * Math.cos(th)];
+const arcPath = (cx, cy, r, a1, a2) => { const p1 = [cx + r * Math.cos(a1), cy + r * Math.sin(a1)], p2 = [cx + r * Math.cos(a2), cy + r * Math.sin(a2)]; return `M${p1[0]} ${p1[1]} A${r} ${r} 0 ${Math.abs(a2 - a1) > PI ? 1 : 0} ${a2 > a1 ? 1 : 0} ${p2[0]} ${p2[1]}`; };
+const smooth = u => u <= 0 ? 0 : u >= 1 ? 1 : u * u * (3 - 2 * u);
+const fmt = (v, n = 1) => (v < 0 ? '−' : '') + Math.abs(v).toFixed(n);
+// 伪随机（固定种子，保证每次一样）
+const rnd = (() => { let s = 12345; return () => { s = (s * 16807) % 2147483647; return s / 2147483647 - 0.5; }; })();
+const E = D.edge, Z = D.z0, RT = 35.49, RR = Math.hypot(E[0][0], E[0][1]), RP = 32.99, RB = 15.875;
+// 刀具端面齿形（刀具坐标，齿 0 在 +y）
+const toothPts = (() => { const t = E.slice(), aEnd = Math.atan2(E[E.length - 1][0], E[E.length - 1][1]), aGap = 2 * PI / Z - 2 * aEnd; for (let i = 1; i < 6; i++) { const a = aEnd + aGap * i / 6; t.push([RR * Math.sin(a), RR * Math.cos(a)]); } return t; })();
+const toolOutline = (cx, cy, s, th) => { const pts = []; for (let k = 0; k < Z; k++) toothPts.forEach(p => { const q = R2(p, -(th + 2 * PI * k / Z)); pts.push([cx + s * q[0], cy - s * q[1]]); }); return pts; };
+const ptAt = (cx, cy, s, r, a) => [cx + s * r * Math.sin(a), cy - s * r * Math.cos(a)];   // a：从 +y 顺时针
+function drawTool(g, cx, cy, s, o = {}) {
+  const body = pg(g, toolOutline(cx, cy, s, 0), { fill: 'var(--gear)', stroke: 'var(--ink)', w: 0.3 });
+  const bore = el('circle', { cx, cy, r: RB * s, fill: 'var(--card)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g);
+  return { body, bore };
+}
+
+// ================= 00 总览 =================
+{
+  const svg = document.getElementById('f0'), cx = 40, cy = 48, s = 0.95;
+  const T = drawTool(svg, cx, cy, s);
+  const items = [];
+  const add = (lab, lx, ly, ax, ay, els, anchor = 'start') => { const ld = line(svg, ax, ay, lx + (anchor === 'start' ? -1 : 1), ly, { stroke: 'var(--muted)', w: 0.2 }); const t = txt(svg, lx, ly, lab, { fs: 2.8, anchor }); items.push({ els, t, ld }); };
+  // 刃口（齿 0）
+  const e0 = pl(svg, E.map(p => [cx + s * p[0], cy - s * p[1]]), { stroke: 'var(--blue)', w: 0.5 });
+  add('刃口廓形', 8, 6, cx - 1.5, cy - s * 34, [e0], 'start');
+  const tip = circle(svg, cx, cy, RT * s, { stroke: 'var(--muted)', w: 0.25, dash: '1 0.8' });
+  const pT = ptAt(cx, cy, s, RT, 0.75); add('齿顶圆直径', 66, 8, pT[0], pT[1], [tip]);
+  const a1 = 2 * PI * 3 / Z, a2 = 2 * PI * 4 / Z;
+  const pa = el('path', { d: arcPath(cx, cy, RP * s, -PI / 2 + a1, -PI / 2 + a2), fill: 'none', stroke: 'var(--violet)', 'stroke-width': 0.5 }, svg);
+  const pA = ptAt(cx, cy, s, RP, (a1 + a2) / 2); add('齿距', 80, 36, pA[0], pA[1], [pa]);
+  const gA = 2 * PI * 9.5 / Z, gp = ptAt(cx, cy, s, 33.3, gA), ball = el('circle', { cx: gp[0], cy: gp[1], r: 1.6, fill: 'none', stroke: 'var(--green)', 'stroke-width': 0.5 }, svg);
+  add('径向跳动', 76, 76, gp[0] + 1.2, gp[1] + 1, [ball]);
+  add('内孔（基准）', 2, 88, cx - RB * s * 0.7, cy + RB * s * 0.7, [T.bore]);
+  // 刃口钝化：放大圈
+  const zp = ptAt(cx, cy, s, RT, -2 * PI * 4 / Z), zc = [9, 27];
+  const zl = line(svg, zp[0], zp[1], zc[0] + 4, zc[1] - 3, { stroke: 'var(--muted)', w: 0.2 });
+  const zcirc = el('circle', { cx: zc[0], cy: zc[1], r: 6, fill: 'var(--card)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  const zedge = el('path', { d: `M${zc[0] - 4.5} ${zc[1] + 4} L${zc[0] - 0.8} ${zc[1] - 2.4} Q${zc[0]} ${zc[1] - 3.8} ${zc[0] + 0.8} ${zc[1] - 2.4} L${zc[0] + 4.5} ${zc[1] + 4}`, fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.35 }, svg);
+  const zt = txt(svg, zc[0], zc[1] + 9, '刃口钝化', { fs: 2.8 }); items.push({ els: [zcirc, zedge], t: zt, ld: zl });
+  // 侧视半剖
+  const X0 = 98, X1 = 110, X2 = 100, X3 = 116, sl = 1.4;
+  const yv = r => cy - r * s, yv2 = r => cy + r * s;
+  const tooth = [], bodyS = [];
+  [[yv, 1], [yv2, -1]].forEach(([f, sg]) => {
+    tooth.push(pg(svg, [[X0, f(RR)], [X0, f(RT)], [X1, f(RT) + sg * sl], [X1, f(RR) + sg * sl]], { fill: 'var(--gear)', stroke: 'var(--ink)', w: 0.3 }));
+    bodyS.push(pg(svg, [[X2, f(RB)], [X2, f(RR)], [X1, f(RR) + sg * sl], [X3, f(RR) + sg * sl], [X3, f(RB)]], { fill: 'var(--steel)', stroke: 'var(--ink)', w: 0.3 }));
+  });
+  line(svg, X0 - 4, cy, X3 + 4, cy, { stroke: 'var(--muted)', w: 0.25, dash: '3 1 0.6 1' });
+  const fr = line(svg, X0, yv(RT), X0, yv(RR), { stroke: 'var(--accent)', w: 0.7 });
+  add('前刀面 / 前角', 121, 14, X0 - 0.3, yv(RT) + 2, [fr]);
+  const tl = line(svg, X0, yv(RT), X1, yv(RT) + sl, { stroke: 'var(--ink)', w: 0.6 });
+  add('后刀面：后角、螺旋角', 121, 22, X1 - 3, yv(RT) + sl * 0.8, [tl]);
+  const bf = line(svg, X3, yv(RR) + sl, X3, yv(RB), { stroke: 'var(--ink)', w: 0.6 });
+  add('支承端面（基准）', 121, 40, X3, cy - 22, [bf]);
+  txt(svg, (X0 + X3) / 2, 88, '侧面剖视', { fs: 2.5, fill: 'var(--muted)' });
+  txt(svg, cx, cy, '端面视图', { fs: 2.5, fill: 'var(--muted)' });
+  const base = items.map(it => it.els.map(e => [e.getAttribute('stroke'), e.getAttribute('stroke-width')]));
+  scenes.push(t => {
+    const k = Math.floor(t / 1.4) % (items.length + 1);
+    items.forEach((it, i) => { const on = i === k; it.els.forEach((e, j) => { e.setAttribute('stroke', on ? 'var(--accent)' : base[i][j][0]); e.setAttribute('stroke-width', on ? Math.max(0.8, base[i][j][1] * 2.2) : base[i][j][1]); }); it.t.setAttribute('fill', on ? 'var(--accent)' : 'var(--ink)'); it.t.setAttribute('font-weight', on ? 700 : 400); it.ld.setAttribute('stroke', on ? 'var(--accent)' : 'var(--muted)'); });
+  });
+}
+
+// ================= 01 基准 =================
+{
+  const svg = document.getElementById('f1'); defsArrow(svg, 'a1', 'var(--ink)');
+  const ax = 34;
+  el('rect', { x: 8, y: 60, width: 52, height: 6, rx: 1, fill: 'var(--steel2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  txt(svg, 34, 68.5, '测量中心转台', { fs: 2.4, fill: 'var(--muted)' });
+  el('rect', { x: ax - 3, y: 6, width: 6, height: 54, fill: 'var(--steel)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  el('rect', { x: ax - 10, y: 46, width: 20, height: 4, fill: 'var(--steel2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  txt(svg, ax + 15, 52.5, '芯轴', { fs: 2.4, fill: 'var(--muted)', anchor: 'start' });
+  el('rect', { x: ax - 24, y: 38, width: 48, height: 8, fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  el('rect', { x: ax - 9, y: 32, width: 18, height: 6, fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  txt(svg, ax - 15, 42, '滚插刀', { fs: 2.6 });
+  line(svg, ax - 24, 46, ax + 24, 46, { stroke: 'var(--accent)', w: 0.7 });
+  txt(svg, ax - 24, 48.5, '支承端面', { fs: 2.3, anchor: 'start', fill: 'var(--accent)' });
+  // 测头
+  const pR = el('g', {}, svg); line(pR, ax - 9, 35, ax - 26, 35, { stroke: 'var(--ink)', w: 0.6 }); el('circle', { cx: ax - 9.8, cy: 35, r: 0.8, fill: 'var(--red)' }, pR);
+  el('rect', { x: ax - 32, y: 32.5, width: 6, height: 5, rx: 0.8, fill: 'var(--steel2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, pR);
+  txt(svg, ax - 20, 31, '径向测头', { fs: 2.3 });
+  const pA = el('g', {}, svg); line(pA, ax + 18, 38, ax + 18, 22, { stroke: 'var(--ink)', w: 0.6 }); el('circle', { cx: ax + 18, cy: 37.2, r: 0.8, fill: 'var(--red)' }, pA);
+  el('rect', { x: ax + 15.5, y: 17, width: 5, height: 5, rx: 0.8, fill: 'var(--steel2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, pA);
+  txt(svg, ax + 18, 14.5, '轴向测头', { fs: 2.3 });
+  txt(svg, ax + 4, 29.5, '检查凸台', { fs: 2.3, fill: 'var(--muted)', anchor: 'start' });
+  const mk = el('circle', { r: 1, fill: 'var(--blue)' }, svg);
+  const rarr = el('path', { d: arcPath(ax, 8, 7, PI * 0.15, PI * 0.85), fill: 'none', stroke: 'var(--ink)', 'stroke-width': 0.3, 'marker-end': 'url(#a1)' }, svg);
+  // 曲线
+  const C = [{ y0: 6, lab: '径向跳动（检查凸台 / 内孔）', f: a => 0.9 * Math.cos(a - 0.6) + 0.15 * Math.sin(3 * a), col: 'var(--red)' }, { y0: 38, lab: '端面跳动（支承端面）', f: a => 0.6 * Math.sin(a + 0.4) + 0.25 * Math.cos(2 * a), col: 'var(--blue)' }];
+  const X0 = 80, X1 = 146, H = 22;
+  C.forEach(c => {
+    el('rect', { x: X0, y: c.y0 + 3, width: X1 - X0, height: H, fill: 'none', stroke: 'var(--line)', 'stroke-width': 0.3 }, svg);
+    line(svg, X0, c.y0 + 3 + H / 2, X1, c.y0 + 3 + H / 2, { stroke: 'var(--line)', w: 0.3 });
+    txt(svg, X0, c.y0 + 1, c.lab, { fs: 2.5, anchor: 'start', attr: { 'font-weight': 700 } });
+    txt(svg, X0 - 1, c.y0 + 3 + 2, '+2 µm', { fs: 2, anchor: 'end', fill: 'var(--muted)' }); txt(svg, X0 - 1, c.y0 + 3 + H - 2, '−2 µm', { fs: 2, anchor: 'end', fill: 'var(--muted)' });
+    c.pl = pl(svg, [], { stroke: c.col, w: 0.55 }); c.val = txt(svg, X1, c.y0 + 1, '', { fs: 2.5, anchor: 'end', fill: c.col });
+    c.Y = v => c.y0 + 3 + H / 2 - v * (H / 2) / 2.2;
+  });
+  txt(svg, (X0 + X1) / 2, 66.5, '转一圈 0° → 360°', { fs: 2.3, fill: 'var(--muted)' });
+  scenes.push(t => {
+    const per = 6, tt = t % (per + 2), u = Math.min(1, tt / per), a = u * 2 * PI;
+    mk.setAttribute('cx', ax + 23.5 * Math.sin(t * 2 * PI / per)); mk.setAttribute('cy', 42); mk.setAttribute('opacity', Math.cos(t * 2 * PI / per) > 0 ? 1 : 0.25);
+    C.forEach(c => { const pts = []; let mn = 9, mx = -9; for (let i = 0; i <= 120 * u; i++) { const aa = i / 120 * 2 * PI, v = c.f(aa); mn = Math.min(mn, v); mx = Math.max(mx, v); pts.push([X0 + (X1 - X0) * i / 120, c.Y(v)]); } setPts(c.pl, pts); c.val.textContent = pts.length > 1 ? `${u >= 1 ? '结果' : '当前'} ${(mx - mn).toFixed(1)} µm` : ''; });
+  });
+}
+
+// ================= 02 刃口廓形 =================
+{
+  const svg = document.getElementById('f2');
+  const k = 12, cx = 33, yb = 36.1, M = p => [cx + p[0] * k, 8 + (yb - p[1]) * k];
+  const n = E.length;
+  // 偏差（µm）：左刃 0..27，刀尖 28..41，右刃 42..69
+  const devL = v => -0.9 + 1.9 * v + 0.35 * Math.sin(9.4 * v), devR = v => 0.5 - 1.1 * v + 0.3 * Math.sin(11 * v + 1);
+  const dev = E.map((p, i) => i <= 27 ? devL(i / 27) : i >= 42 ? devR((69 - i) / 27) : devL(1) + (devR(1) - devL(1)) * smooth((i - 27) / 15));
+  const nrm = E.map((p, i) => { const a = E[Math.max(0, i - 1)], b = E[Math.min(n - 1, i + 1)], tx = b[0] - a[0], ty = b[1] - a[1], L = Math.hypot(tx, ty); return [-ty / L, tx / L]; });
+  const G = 1.7 / k;   // 1 µm 显示为 1.7 单位
+  const off = (i, d) => [E[i][0] + nrm[i][0] * d * G, E[i][1] + nrm[i][1] * d * G];
+  pg(svg, E.map(M), { fill: 'var(--gear)', stroke: 'none' });
+  const tol = 1.5;
+  pl(svg, E.map((p, i) => M(off(i, tol))), { stroke: 'var(--muted)', w: 0.25, dash: '1 0.7' }); pl(svg, E.map((p, i) => M(off(i, -tol))), { stroke: 'var(--muted)', w: 0.25, dash: '1 0.7' });
+  pl(svg, E.map(M), { stroke: 'var(--blue)', w: 0.5 });
+  const act = pl(svg, [], { stroke: 'var(--red)', w: 0.6 });
+  const probe = el('g', {}, svg); const stem = line(probe, 0, 0, 0, 0, { stroke: 'var(--ink)', w: 0.6 }); const pb = el('circle', { r: 1.3, fill: 'var(--red)', 'fill-opacity': 0.85, stroke: 'var(--ink)', 'stroke-width': 0.2 }, probe);
+  txt(svg, cx, 76.5, '蓝：理论刃口　红：实测（偏差放大约 1700 倍）　虚线：公差带', { fs: 2.3, fill: 'var(--muted)' });
+  // 齿形图（左右刃）
+  const charts = [{ x: 84, lab: '左刃', idx: [...Array(28).keys()] }, { x: 118, lab: '右刃', idx: [...Array(28).keys()].map(i => 69 - i) }], y0 = 10, y1 = 62, sx = 3;
+  charts.forEach(c => {
+    line(svg, c.x, y0, c.x, y1, { stroke: 'var(--ink)', w: 0.3 });
+    [-tol, tol].forEach(v => line(svg, c.x + v * sx, y0, c.x + v * sx, y1, { stroke: 'var(--muted)', w: 0.25, dash: '1 0.7' }));
+    txt(svg, c.x, y0 - 3.5, c.lab + '齿形', { fs: 2.7, attr: { 'font-weight': 700 } });
+    c.pl = pl(svg, [], { stroke: 'var(--red)', w: 0.55 });
+    const v = c.idx.map(i => dev[i]), N = v.length, xs = v.map((_, j) => j / (N - 1));
+    const mx = xs.reduce((a, b) => a + b) / N, my = v.reduce((a, b) => a + b) / N; let sxy = 0, sxx = 0; xs.forEach((x, j) => { sxy += (x - mx) * (v[j] - my); sxx += (x - mx) ** 2; });
+    const b = sxy / sxx, res = v.map((y, j) => y - (my + b * (xs[j] - mx)));
+    c.vals = { Fa: Math.max(...v) - Math.min(...v), ffa: Math.max(...res) - Math.min(...res), fHa: b };
+    c.Y = j => y1 - (y1 - y0) * j / (N - 1);
+    c.t = [0, 1, 2].map(q => txt(svg, c.x + 8, 66 + q * 4, '', { fs: 2.5, anchor: 'end' }));
+  });
+  txt(svg, 84, y1 + 1.8, '齿根', { fs: 2, fill: 'var(--muted)', anchor: 'end' }); txt(svg, 84, y0 + 0.5, '刀尖', { fs: 2, fill: 'var(--muted)', anchor: 'end' });
+  txt(svg, 141, y0 + 6, `±${tol} µm`, { fs: 2.2, fill: 'var(--muted)' }); txt(svg, 141, y0 + 9.5, '公差带', { fs: 2.2, fill: 'var(--muted)' });
+  scenes.push(t => {
+    const per = 7, tt = t % (per + 2.5), u = Math.min(1, tt / per), m = Math.round(u * (n - 1));
+    setPts(act, E.slice(0, m + 1).map((p, i) => M(off(i, dev[i]))));
+    const P = M(off(m, dev[m])), q = [P[0] + nrm[m][0] * 1.3, P[1] - nrm[m][1] * 1.3];
+    pb.setAttribute('cx', q[0]); pb.setAttribute('cy', q[1]); stem.setAttribute('x1', q[0]); stem.setAttribute('y1', q[1]); stem.setAttribute('x2', q[0] + nrm[m][0] * 9); stem.setAttribute('y2', q[1] - nrm[m][1] * 9);
+    charts.forEach(c => {
+      const pts = []; c.idx.forEach((i, j) => { if (i <= m) pts.push([c.x + dev[i] * sx, c.Y(j)]); }); if (c.lab === '右刃') pts.reverse();
+      setPts(c.pl, pts);
+      const done = c.idx.every(i => i <= m);
+      c.t[0].textContent = done ? `F_α ${c.vals.Fa.toFixed(1)} µm` : ''; c.t[1].textContent = done ? `f_fα ${c.vals.ffa.toFixed(1)} µm` : ''; c.t[2].textContent = done ? `f_Hα ${fmt(c.vals.fHa)} µm` : '';
+      c.t.forEach(e => setT(e, e.textContent.replace(/_(\S+)/, '_{$1}')));
+    });
+  });
+}
+
+// ================= 03 齿距 =================
+const pitchF = (() => { const F = []; for (let i = 0; i < Z; i++) F.push(2.6 * Math.sin(2 * PI * i / Z + 0.7) + 0.55 * rnd() * 2); const c = F[0]; return F.map(v => v - c); })();
+{
+  const svg = document.getElementById('f3'), cx = 34, cy = 37, s = 0.86;
+  const tg = el('g', {}, svg); const T = drawTool(tg, 0, 0, s);
+  const marks = []; for (let k = 0; k < Z; k++) { const p = ptAt(0, 0, s, 27, 2 * PI * k / Z); marks.push(txt(tg, p[0], p[1], String(k + 1), { fs: 1.7, fill: 'var(--muted)' })); }
+  circle(tg, 0, 0, RP * s, { stroke: 'var(--accent)', w: 0.2, dash: '1 0.8' });
+  // 测头：在右侧（3 点钟），从右往左碰齿的上侧刃
+  const hp = [cx + RP * s, cy];
+  line(svg, hp[0] + 1, hp[1], hp[0] + 8, hp[1], { stroke: 'var(--ink)', w: 0.6 }); el('circle', { cx: hp[0], cy: hp[1], r: 1, fill: 'var(--red)' }, svg);
+  el('rect', { x: hp[0] + 7.5, y: hp[1] - 2.5, width: 5, height: 5, rx: 0.8, fill: 'var(--steel2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  const X0 = 80, X1 = 146, yA = 6, yB = 30, yC = 40, yD = 64, bw = (X1 - X0) / Z;
+  txt(svg, X0, yA - 2, '齿距累积偏差（每个齿的位置误差）', { fs: 2.4, anchor: 'start', attr: { 'font-weight': 700 } });
+  el('rect', { x: X0, y: yA, width: X1 - X0, height: yB - yA, fill: 'none', stroke: 'var(--line)', 'stroke-width': 0.3 }, svg); line(svg, X0, (yA + yB) / 2, X1, (yA + yB) / 2, { stroke: 'var(--line)', w: 0.3 });
+  txt(svg, X0, yC - 2, '单个齿距偏差 f_{p}（相邻两齿间隔）', { fs: 2.4, anchor: 'start', attr: { 'font-weight': 700 } });
+  el('rect', { x: X0, y: yC, width: X1 - X0, height: yD - yC, fill: 'none', stroke: 'var(--line)', 'stroke-width': 0.3 }, svg); line(svg, X0, (yC + yD) / 2, X1, (yC + yD) / 2, { stroke: 'var(--line)', w: 0.3 });
+  const fpv = pitchF.map((v, i) => v - pitchF[(i - 1 + Z) % Z]);
+  const Fl = pl(svg, [], { stroke: 'var(--violet)', w: 0.6 }), bars = fpv.map(() => el('rect', { width: bw * 0.7, fill: 'var(--blue)', opacity: 0 }, svg));
+  const YA = v => (yA + yB) / 2 - v * (yB - yA) / 2 / 4, YC = v => (yC + yD) / 2 - v * (yD - yC) / 2 / 2.5;
+  txt(svg, X0 - 1, yA + 2, '+4', { fs: 2, anchor: 'end', fill: 'var(--muted)' }); txt(svg, X0 - 1, yB - 2, '−4', { fs: 2, anchor: 'end', fill: 'var(--muted)' });
+  txt(svg, X0 - 1, yC + 2, '+2.5', { fs: 2, anchor: 'end', fill: 'var(--muted)' }); txt(svg, X0 - 1, yD - 2, '−2.5', { fs: 2, anchor: 'end', fill: 'var(--muted)' });
+  txt(svg, X1, yD + 3, 'µm　齿号 1 → 31', { fs: 2.1, anchor: 'end', fill: 'var(--muted)' });
+  const Fp = Math.max(...pitchF) - Math.min(...pitchF), fp = Math.max(...fpv.map(Math.abs)); let fu = 0; for (let i = 0; i < Z; i++) fu = Math.max(fu, Math.abs(fpv[i] - fpv[(i - 1 + Z) % Z]));
+  const res = txt(svg, 34, 71, '', { fs: 2.7, attr: { 'font-weight': 700 } });
+  scenes.push(t => {
+    const per = 0.34, cyc = Z * per + 3, tt = t % cyc, kf = tt / per, k = Math.min(Z - 1, Math.floor(kf)), fr = Math.min(1, (kf - k) / 0.55);
+    const th = 90 - 180 / Z - (k - 1 + smooth(fr)) * 360 / Z;
+    tg.setAttribute('transform', `translate(${cx} ${cy}) rotate(${th})`);
+    const m = tt >= Z * per ? Z - 1 : k;
+    setPts(Fl, pitchF.slice(0, m + 1).map((v, i) => [X0 + bw * (i + 0.5), YA(v)]));
+    bars.forEach((b, i) => { const v = fpv[i]; b.setAttribute('x', X0 + bw * (i + 0.15)); b.setAttribute('y', Math.min(YC(v), YC(0))); b.setAttribute('height', Math.abs(YC(v) - YC(0))); b.setAttribute('opacity', i <= m ? 1 : 0); });
+    marks.forEach((e, i) => e.setAttribute('fill', i === m ? 'var(--red)' : 'var(--muted)'));
+    setT(res, tt >= Z * per ? `F_{p} ${Fp.toFixed(1)}　f_{p} ${fp.toFixed(1)}　f_{u} ${fu.toFixed(1)} µm` : `测第 ${m + 1} 齿`);
+  });
+}
+
+// ================= 04 径向跳动 =================
+{
+  const svg = document.getElementById('f4'), cx = 34, cy = 39, s = 0.86;
+  const rv = []; for (let i = 0; i < Z; i++) rv.push(1.6 * Math.cos(2 * PI * i / Z - 0.9) + 0.35 * rnd() * 2);
+  const tg = el('g', {}, svg); drawTool(tg, 0, 0, s);
+  const gp = ptAt(cx, cy, s, 33.2, 0);
+  line(svg, gp[0], gp[1] - 1.6, gp[0], gp[1] - 14, { stroke: 'var(--ink)', w: 0.6 });
+  const ball = el('circle', { cx: gp[0], cy: gp[1], r: 1.75, fill: 'var(--green)', 'fill-opacity': 0.85, stroke: 'var(--ink)', 'stroke-width': 0.25 }, svg);
+  el('rect', { x: gp[0] - 2.5, y: gp[1] - 19, width: 5, height: 5, rx: 0.8, fill: 'var(--steel2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  txt(svg, gp[0] + 4, gp[1] - 12, '测球放进齿槽', { fs: 2.4, anchor: 'start' });
+  const PX = 112, PY = 37, R0 = 20, sc = 3;
+  circle(svg, PX, PY, R0, { stroke: 'var(--muted)', w: 0.3 }); circle(svg, PX, PY, R0 + 2 * sc, { stroke: 'var(--line)', w: 0.25, dash: '1 0.7' }); circle(svg, PX, PY, R0 - 2 * sc, { stroke: 'var(--line)', w: 0.25, dash: '1 0.7' });
+  txt(svg, PX, PY - 3, '极坐标图', { fs: 2.4, fill: 'var(--muted)' }); txt(svg, PX, PY + 1, '每格 2 µm', { fs: 2.1, fill: 'var(--muted)' });
+  const tr = pl(svg, [], { stroke: 'var(--green)', w: 0.6 }), dot = el('circle', { r: 0.9, fill: 'var(--green)' }, svg);
+  const Fr = Math.max(...rv) - Math.min(...rv), res = txt(svg, PX, 68, '', { fs: 2.8, attr: { 'font-weight': 700 } });
+  scenes.push(t => {
+    const per = 0.32, cyc = Z * per + 3, tt = t % cyc, kf = tt / per, k = Math.min(Z - 1, Math.floor(kf)), fr = Math.min(1, (kf - k) / 0.5);
+    const th = -(k - 1 + smooth(fr)) * 360 / Z - 180 / Z;
+    tg.setAttribute('transform', `translate(${cx} ${cy}) rotate(${th})`);
+    const m = tt >= Z * per ? Z - 1 : k, lift = (1 - Math.sin(PI * Math.min(1, (kf - k) / 0.5))) * 0;
+    ball.setAttribute('cy', gp[1] - rv[m] * 0.15);
+    const pts = []; for (let i = 0; i <= m; i++) { const a = 2 * PI * i / Z - PI / 2, r = R0 + rv[i] * sc; pts.push([PX + r * Math.cos(a), PY + r * Math.sin(a)]); }
+    if (m === Z - 1 && tt >= Z * per) pts.push(pts[0]);
+    setPts(tr, pts); const L = pts[Math.min(m, pts.length - 1)]; dot.setAttribute('cx', L[0]); dot.setAttribute('cy', L[1]);
+    setT(res, tt >= Z * per ? `齿圈径向跳动 F_{r} = ${Fr.toFixed(1)} µm` : `第 ${m + 1} 个齿槽`);
+  });
+}
+
+// ================= 05 前刀面 =================
+{
+  const svg = document.getElementById('f5'), b = 20 * D2R, L = 22, w = 6, gap = 3.2, top = 12, N = 9, x0 = 10;
+  const pitch = (w + gap) / Math.cos(b), d = [Math.sin(b), -Math.cos(b)];
+  const zv = []; for (let i = 0; i < N; i++) zv.push(1.1 * Math.sin(i * 0.9 + 0.4) + 0.4 * rnd() * 2);
+  const faces = [];
+  for (let k = 0; k < N; k++) {
+    const BL = [x0 + k * pitch, top + L], BR = [BL[0] + w / Math.cos(b), top + L], TL = [BL[0] + L * 0.92 * d[0], BL[1] + L * 0.92 * d[1]], TR = [TL[0] + w * Math.cos(b), TL[1] + w * Math.sin(b)];
+    pg(svg, [BL, TL, TR, BR], { fill: 'var(--gear)', stroke: 'var(--ink)', w: 0.3 });
+    faces.push({ f: line(svg, TL[0], TL[1], TR[0], TR[1], { stroke: 'var(--accent)', w: 0.8 }), c: [(TL[0] + TR[0]) / 2, (TL[1] + TR[1]) / 2] });
+  }
+  txt(svg, 50, 3, '展开看刀齿，橙线：每个齿的前刀面', { fs: 2.5, fill: 'var(--muted)' });
+  const pr = el('g', {}, svg); line(pr, 0, -1, 0, -8, { stroke: 'var(--ink)', w: 0.6 }); el('circle', { cx: 0, cy: -0.4, r: 0.8, fill: 'var(--red)' }, pr); el('rect', { x: -2.5, y: -12, width: 5, height: 4, rx: 0.8, fill: 'var(--steel2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, pr);
+  const yC = 42, yD = 64, bx0 = 10, bx1 = 96, bw = (bx1 - bx0) / N, YC = v => (yC + yD) / 2 - v * (yD - yC) / 2 / 2.5;
+  el('rect', { x: bx0, y: yC, width: bx1 - bx0, height: yD - yC, fill: 'none', stroke: 'var(--line)', 'stroke-width': 0.3 }, svg); line(svg, bx0, (yC + yD) / 2, bx1, (yC + yD) / 2, { stroke: 'var(--line)', w: 0.3 });
+  txt(svg, bx0, yC - 2, '各齿前刀面轴向位置偏差（µm）', { fs: 2.4, anchor: 'start', attr: { 'font-weight': 700 } });
+  const bars = zv.map(() => el('rect', { width: bw * 0.6, fill: 'var(--accent)', opacity: 0 }, svg));
+  const res = txt(svg, 123, 30, '', { fs: 2.8, attr: { 'font-weight': 700 } });
+  txt(svg, 123, 44, '前角：在前刀面上扫一条线', { fs: 2.4, fill: 'var(--muted)' }); const gtx = txt(svg, 123, 48.5, '', { fs: 2.6 });
+  txt(svg, 123, 56, '平前刀面的刀：测整个端面', { fs: 2.4, fill: 'var(--muted)' }); txt(svg, 123, 60, '的平面度和端面跳动', { fs: 2.4, fill: 'var(--muted)' });
+  scenes.push(t => {
+    const per = 0.9, cyc = N * per + 3, tt = t % cyc, kf = tt / per, k = Math.min(N - 1, Math.floor(kf)), fr = kf - k, m = tt >= N * per ? N - 1 : k;
+    const c = faces[m].c, cprev = faces[Math.max(0, m - 1)].c, mv = smooth(Math.min(1, fr / 0.5)), down = fr > 0.5 && tt < N * per ? Math.sin(PI * (fr - 0.5) / 0.5) : 0;
+    const x = m === 0 ? c[0] : cprev[0] + (c[0] - cprev[0]) * mv, y = (m === 0 ? c[1] : cprev[1] + (c[1] - cprev[1]) * mv) - 3 + 3 * down;
+    pr.setAttribute('transform', `translate(${x} ${y})`);
+    bars.forEach((bb, i) => { const v = zv[i], on = i < m || (i === m && (fr > 0.75 || tt >= N * per)); bb.setAttribute('x', bx0 + bw * (i + 0.2)); bb.setAttribute('y', Math.min(YC(v), YC(0))); bb.setAttribute('height', Math.abs(YC(v) - YC(0))); bb.setAttribute('opacity', on ? 1 : 0); });
+    faces.forEach((f, i) => f.f.setAttribute('stroke-width', i === m ? 1.3 : 0.8));
+    const rg = Math.max(...zv) - Math.min(...zv);
+    res.textContent = tt >= N * per ? `前刀面跳动 ${rg.toFixed(1)} µm` : `测第 ${m + 1} 个齿的前刀面`;
+    gtx.textContent = tt >= N * per ? '实测前角 0.02°（设计 0°）' : '';
+  });
+}
+
+// ================= 06 后刀面 =================
+{
+  const svg = document.getElementById('f6');
+  const X0 = 12, XB = 92, yT0 = 26, hT = 14, akd = 8 * D2R, tip = x => yT0 + (x - X0) * Math.tan(akd);
+  pg(svg, [[X0, tip(X0) + hT], [X0, tip(X0)], [XB, tip(XB)], [XB, tip(XB) + hT]], { fill: 'var(--gear)', stroke: 'var(--ink)', w: 0.3 });
+  pg(svg, [[X0, tip(X0) + hT], [XB, tip(XB) + hT], [XB, 62], [X0, 62]], { fill: 'var(--steel)', stroke: 'var(--ink)', w: 0.3 });
+  line(svg, X0, tip(X0), X0, tip(X0) + hT, { stroke: 'var(--accent)', w: 1 });
+  txt(svg, X0 - 1.5, tip(X0) + hT / 2, '刃口', { fs: 2.4, anchor: 'end', fill: 'var(--accent)' });
+  const secs = [0, 2, 4, 6], mm = (XB - X0 - 8) / 7, sx = d => X0 + 1 + d * mm;
+  const minis = secs.map((d, i) => {
+    const x = sx(d); line(svg, x, tip(x) - 1, x, tip(x) + hT + 1, { stroke: 'var(--violet)', w: 0.3, dash: '1 0.7' });
+    txt(svg, x, tip(x) + hT + 4, `${d} mm`, { fs: 2.2, fill: 'var(--violet)' });
+    const g = el('g', { opacity: 0 }, svg); el('rect', { x: x - 6, y: 3, width: 12, height: 13, rx: 1, fill: 'var(--card)', stroke: 'var(--line)', 'stroke-width': 0.3 }, g);
+    line(g, x, 5, x, 14, { stroke: 'var(--ink)', w: 0.25 }); [-1, 1].forEach(q => line(g, x + q * 3, 5, x + q * 3, 14, { stroke: 'var(--muted)', w: 0.2, dash: '0.8 0.5' }));
+    const pts = []; for (let j = 0; j <= 12; j++) pts.push([x + (0.5 + 0.35 * i) * (j / 12 - 0.5) * 2 + 0.25 * Math.sin(j * 1.3 + i), 14 - 9 * j / 12]); pl(g, pts, { stroke: 'var(--red)', w: 0.4 });
+    txt(g, x, 18.5, i < 3 ? '齿形 ✓' : '齿形 ✓（接近公差）', { fs: 1.9, fill: i < 3 ? 'var(--green)' : 'var(--accent)' });
+    return g;
+  });
+  const pr = el('g', {}, svg); line(pr, 0, -1, 0, -7, { stroke: 'var(--ink)', w: 0.6 }); el('circle', { cx: 0, cy: -0.4, r: 0.8, fill: 'var(--red)' }, pr);
+  txt(svg, (X0 + XB) / 2, 60, '刀体', { fs: 2.5, fill: 'var(--muted)' });
+  const r1 = txt(svg, 122, 22, '', { fs: 2.7 }), r2 = txt(svg, 122, 28, '', { fs: 2.7 }), r3 = txt(svg, 122, 34, '', { fs: 2.7 });
+  txt(svg, 122, 44, '后面几个截面都在公差内', { fs: 2.4, fill: 'var(--muted)' }); txt(svg, 122, 48, '→ 这段都可以重磨使用', { fs: 2.4, fill: 'var(--muted)' });
+  txt(svg, 122, 14, '示意结果', { fs: 2.3, fill: 'var(--muted)' });
+  scenes.push(t => {
+    const per = 7, tt = t % (per + 2.5), u = Math.min(1, tt / per), x = X0 + 1 + u * (XB - X0 - 3);
+    pr.setAttribute('transform', `translate(${x} ${tip(x)})`);
+    minis.forEach((g, i) => g.setAttribute('opacity', x >= sx(secs[i]) ? 1 : 0));
+    setT(r1, u > 0.3 ? '顶刃后角 α_{k}：5.03°（设计 5°）' : ''); setT(r2, u > 0.6 ? '螺旋线偏差 f_{Hβ}：1.4 µm' : ''); r3.textContent = u >= 1 ? '可用重磨量 ≥ 6 mm' : '';
+  });
+}
+
+// ================= 07 刃口钝化 =================
+{
+  const svg = document.getElementById('f7'); defsArrow(svg, 'a7', 'var(--ink)');
+  const C = [62, 20], ga = 5 * D2R, al = 6 * D2R, uR = [-Math.cos(ga), Math.sin(ga)], uF = [Math.sin(al), 1];   // 前刀面向左、后刀面向下
+  const nF = Math.hypot(...uF); uF[0] /= nF; uF[1] /= nF;
+  const shape = el('path', { fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.45 }, svg);
+  const ghost = el('path', { fill: 'none', stroke: 'var(--muted)', 'stroke-width': 0.3, 'stroke-dasharray': '1 0.7' }, svg);
+  ghost.setAttribute('d', `M${C[0] + uR[0] * 55} ${C[1] + uR[1] * 55} L${C[0]} ${C[1]} L${C[0] + uF[0] * 40} ${C[1] + uF[1] * 40}`);
+  const dG = arrow(svg, 0, 0, 0, 0, 'a7', { stroke: 'var(--blue)', w: 0.3, both: true }), dA = arrow(svg, 0, 0, 0, 0, 'a7', { stroke: 'var(--green)', w: 0.3, both: true });
+  const tG = txt(svg, 0, 0, '', { fs: 2.6, fill: 'var(--blue)' }), tA = txt(svg, 0, 0, '', { fs: 2.6, fill: 'var(--green)', anchor: 'start' });
+  txt(svg, 20, 16, '前刀面', { fs: 2.6 }); txt(svg, 72, 52, '后刀面', { fs: 2.6, anchor: 'start' });
+  txt(svg, C[0] + 8, C[1] - 8, '虚线：理论锐边', { fs: 2.3, fill: 'var(--muted)', anchor: 'start' });
+  const k1 = txt(svg, 118, 26, '', { fs: 3.2, attr: { 'font-weight': 700 } }), k2 = txt(svg, 118, 32, '', { fs: 2.6 });
+  txt(svg, 118, 42, '截面放大约 1000 倍', { fs: 2.3, fill: 'var(--muted)' }); txt(svg, 118, 46, '（光学测量）', { fs: 2.3, fill: 'var(--muted)' });
+  scenes.push(t => {
+    const ph = (Math.sin(t * 0.6) + 1) / 2, K = 0.6 + ph * 1.0, Sa = 18 / Math.sqrt(K), Sg = Sa * K;   // 单位：µm，1 单位 = 1 µm
+    const P1 = [C[0] + uR[0] * Sg, C[1] + uR[1] * Sg], P2 = [C[0] + uF[0] * Sa, C[1] + uF[1] * Sa];
+    const A = [C[0] + uR[0] * 55, C[1] + uR[1] * 55], B = [C[0] + uF[0] * 40, C[1] + uF[1] * 40];
+    shape.setAttribute('d', `M${A[0]} ${A[1]} L${P1[0]} ${P1[1]} C${P1[0] - uR[0] * Sg * 0.55} ${P1[1] - uR[1] * Sg * 0.55} ${P2[0] - uF[0] * Sa * 0.55} ${P2[1] - uF[1] * Sa * 0.55} ${P2[0]} ${P2[1]} L${B[0]} ${B[1]} L${A[0]} ${B[1]} Z`);
+    const o = 5; dG.setAttribute('x1', C[0]); dG.setAttribute('y1', C[1] - o); dG.setAttribute('x2', P1[0]); dG.setAttribute('y2', P1[1] - o);
+    tG.setAttribute('x', (C[0] + P1[0]) / 2); tG.setAttribute('y', C[1] - o - 2.6); setT(tG, `S_{γ} ${Sg.toFixed(0)} µm`);
+    dA.setAttribute('x1', C[0] + o); dA.setAttribute('y1', C[1]); dA.setAttribute('x2', P2[0] + o); dA.setAttribute('y2', P2[1]);
+    tA.setAttribute('x', C[0] + o + 1.5); tA.setAttribute('y', (C[1] + P2[1]) / 2); setT(tA, `S_{α} ${Sa.toFixed(0)} µm`);
+    k1.textContent = `K = ${K.toFixed(2)}`; k2.textContent = K < 0.9 ? '圆角偏向后刀面' : K > 1.1 ? '圆角偏向前刀面' : '对称圆角';
+  });
+}
+
+// ================= 09 精度等级 =================
+{
+  const svg = document.getElementById('f9');
+  const rows = [['单个齿距偏差 f_{p}', 2.5], ['齿距累积偏差 F_{p}', 7], ['相邻齿距差 f_{u}', 3], ['齿形形状偏差 f_{fα}', 2], ['齿形总偏差 F_{α}', 3], ['齿形倾斜偏差 f_{Hα}', 2.5]];
+  const X0 = 46, sc = 11, y0 = 8, h = 6.4;
+  txt(svg, 4, 3, '例：小模数滚插刀 DIN AA 级限值（µm）', { fs: 2.6, anchor: 'start', attr: { 'font-weight': 700 } });
+  const bars = rows.map(([n, v], i) => { const y = y0 + i * h; txt(svg, X0 - 2, y + 2, n, { fs: 2.5, anchor: 'end' }); const b = el('rect', { x: X0, y: y, width: 0, height: 4, rx: 0.8, fill: 'var(--blue)' }, svg); const t = txt(svg, X0, y + 2, '', { fs: 2.5, anchor: 'start', attr: { 'font-weight': 700 } }); return { b, t, v }; });
+  const hy = y0 + 6 * h + 2; txt(svg, X0 - 2, hy + 2, '一根头发丝 ≈ 70 µm', { fs: 2.5, anchor: 'end', fill: 'var(--muted)' });
+  el('rect', { x: X0, y: hy, width: 150 - X0 - 3, height: 4, rx: 0.8, fill: 'var(--steel)' }, svg);
+  txt(svg, 147 - 1, hy + 2, '按同一比例，要比最长的那条还长 10 倍', { fs: 2.2, anchor: 'end', fill: 'var(--ink)' });
+  scenes.push(t => { const u = smooth(((t % 6) / 2)); bars.forEach(({ b, t: tx, v }, i) => { const w = v * sc * smooth(u * 1.4 - i * 0.07); b.setAttribute('width', Math.max(0, w)); tx.setAttribute('x', X0 + w + 1.5); tx.textContent = w > 1 ? `${v} µm` : ''; }); });
+}
+
+// ================= 10 重磨后复检 =================
+{
+  const svg = document.getElementById('f10'); defsArrow(svg, 'a10', 'var(--muted)');
+  const steps = ['重磨前刀面', '测前角、\n前刀面跳动', '测刃口廓形', '测齿顶圆、\n齿厚', '新数据\n交给机床', '切齿'], w = 20, gap = 4.6, y = 12, h = 16, x0 = 3;
+  const boxes = steps.map((s, i) => { const x = x0 + i * (w + gap); const r = el('rect', { x, y, width: w, height: h, rx: 2, fill: 'var(--card)', stroke: 'var(--line)', 'stroke-width': 0.5 }, svg); const ls = s.split('\n'); const ts = ls.map((l, j) => txt(svg, x + w / 2, y + h / 2 + (j - (ls.length - 1) / 2) * 3.6, l, { fs: 2.6 })); if (i < steps.length - 1) arrow(svg, x + w + 0.4, y + h / 2, x + w + gap - 0.6, y + h / 2, 'a10', { stroke: 'var(--muted)', w: 0.4 }); return { r, ts }; });
+  txt(svg, 75, 36, '新数据：齿顶圆直径、齿厚（或变位量）→ 机床重算中心距和轴向位置', { fs: 2.4, fill: 'var(--muted)' });
+  txt(svg, 75, 41, '记录每次重磨后的直径，就知道这把刀还能磨几次', { fs: 2.4, fill: 'var(--muted)' });
+  scenes.push(t => { const k = Math.floor(t / 1.1) % (steps.length + 1); boxes.forEach((b, i) => { const on = i === k; b.r.setAttribute('stroke', on ? 'var(--accent)' : i < k ? 'var(--blue)' : 'var(--line)'); b.r.setAttribute('fill', on ? 'var(--chip)' : 'var(--card)'); b.ts.forEach(e => e.setAttribute('font-weight', on ? 700 : 400)); }); });
+}
+
+// ---------- 目录 ----------
+document.getElementById('toc').innerHTML = [...document.querySelectorAll('section.card')].map(s => `<a href="#${s.id}">${s.querySelector('h2').textContent.replace(/^\d\d/, '')}</a>`).join('');
+let paused = false;
+window.__render = t => { paused = true; scenes.forEach(s => s(t)); };
+const t0 = performance.now();
+const loop = now => { if (!paused) { const t = Math.max(0, (now - t0) / 1000); scenes.forEach(s => s(t)); } requestAnimationFrame(loop); };
+requestAnimationFrame(loop);
+
+})();
+</script>
+</body>
+</html>
