@@ -80,6 +80,7 @@ header .sub{color:var(--muted);font-size:12.5px}
 .res .bad span:last-child{color:var(--warn)}
 .res .hl span:last-child{color:var(--accent);text-shadow:0 0 10px var(--glow)}
 .res .full{grid-column:1/-1}
+.res div.resnote{display:block;font-size:12px;color:var(--muted);line-height:1.6;border-bottom:none;padding-top:8px}
 .warn{background:var(--warn-bg);color:var(--warn);border-radius:4px;padding:7px 10px;font-size:12.5px;margin-top:8px}
 .warn:empty{display:none}
 .v3d{position:relative;background:var(--v3d);border:1px solid var(--line);box-shadow:0 0 40px -12px var(--glow);border-radius:6px;overflow:hidden;height:min(62vw,440px);min-height:280px}
@@ -1573,7 +1574,7 @@ if (typeof module !== 'undefined') module.exports = HX;
         const pick = v => Q.pick === 'min' ? v[0] : Q.pick === 'max' ? v[1] : (v[0] + v[1]) / 2;
         const stUse = P.type === 'internal' ? PI * m - pick([t.Emin, t.Emax]) : pick([t.Smin, t.Smax]);
         P.ds = sB - stUse;
-        Object.assign(qaInfo, { fromStd: c, sUse: stUse });
+        Object.assign(qaInfo, { fromStd: c, sUse: stUse, tolT: P.type === 'internal' ? t.Emax - t.Emin : t.Smax - t.Smin });
       }
       return;
     }
@@ -1671,7 +1672,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     'ext': '刀刃在齿顶圆以外再延长的长度，保证齿顶处切削完整并覆盖齿顶圆公差，一般 1–2 mm。',
     't_kind': '指型铣刀沿齿向进给，适用于外齿、内齿、斜齿。盘形铣刀的刀齿廓形与齿槽端面形状相同，槽底可以铣成圆弧，只适用于直齿外齿轮、外花键和矩形外花键。成形插刀（单齿）在插床或数控插削上一个槽一个槽地插，外齿、内齿都可以，只适用于直齿。成形插刀按圆柄单齿插刀考虑：刀具轴线平行于工件轴线，沿轴向往复插削，每插完一个槽工件分度一次。',
     't_tip': '盘形铣刀、成形插刀的刀齿顶就是槽底的形状。圆弧：按齿根圆做成圆弧（外齿刀齿顶略凹，内齿略凸），槽底处处在根圆上。直线 · 两角到位：直线过两侧圆角的位置，齿面和圆角不变；外齿槽底中心比根圆略深，内齿槽底中心比根圆略浅。直线 · 中心到根圆：槽底中心正好在根圆上，圆角按原半径重新与直线、齿面相切；外齿两角略浅、渐开线起点略升高，内齿两角略深。结果里给出槽底中心和两角的直径，供与图纸小径/大径公差对照。指型铣刀端面本身是平的，对应的是“槽底处理”的两个选项。',
-    't_D': '盘形铣刀外径，只影响 3D 显示，不影响刀齿廓形。',
+    't_D': '盘形铣刀外径，不影响刀齿廓形，只用于 3D 显示和刃数建议。',
     't_as': '侧刃另外磨出的侧后角：只在刃口后面向内收窄，刃口本身形状不变，所以不影响刀具廓形，一般 1°–3°。整体倾斜得到的侧刃后角只有 atan(tanα·sinψ)，侧壁越陡越小，矩形花键的平行侧壁几乎为 0，必须另磨侧后角。',
     't_Ds': '圆柄插刀的刀柄直径，只影响 3D 显示和刀杆干涉检查，不影响刀具廓形。0 = 自动：约为刀齿宽度的 3 倍取标准直径，内孔加工时不超过内孔的 0.6 倍。',
     't_Lh': '刀头（刃部）沿插削方向的长度，只影响 3D 显示。0 = 自动，约等于齿高。',
@@ -2018,7 +2019,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       rows.push(['小径 d', f3(ri * 2)], ['大径 D', f3(ro * 2)], [geo.kind === 'int' ? '键槽宽 B' : '键宽 B', f3(P.B)], ['槽底圆角 r', f3(P.rr)]);
       if (geo.kind === 'int') rows.push(['小径处齿宽', f3(geo.tipThick)]);
     }
-    const pr = cut.prof, tipR = pr[1][1], edge = pr[pr.length - 2];
+    const pr = cut.prof, tipR = pr[1][1], edge = pr[pr.length - 2]; let toolTolNote = '';
     const hl = cut.formTool
       ? [['刃部有效高度', f3(cut.hEdge)], cut.flat ? ['刀齿顶直线宽', f3(cut.flat.w)] : [cut.isExt ? '刀齿顶圆弧凹深' : '刀齿顶圆弧凸起', f3(cut.arcDepth)], [cut.isExt ? '齿顶处刀齿宽' : '内孔处刀齿宽', f3(edge[1] * 2)], ['刀齿全高(含外延)', f3(pr[pr.length - 1][0])]]
       : [['刃部有效高度', f3(cut.hEdge)], ['刀尖平台直径', tipR > 1e-3 ? f3(tipR * 2) : '尖点'],
@@ -2111,8 +2112,22 @@ if (typeof module !== 'undefined') module.exports = HX;
       }
       if (geo.Rend > 0) rows.push([isInt ? '有效齿顶(倒角后)' : '倒角后渐开线终止圆', f3(2 * geo.Rend)]);
       const fa = Q.fa > 0 ? Q.fa : (accRes && accRes.Fa ? accRes.Fa / 1000 : 0);
-      if (fa > 0) hl.push(['建议刀具廓形公差', '≤' + f3(fa / 3) + ' (±' + f3(fa / 6) + ')']);
+      // 刀具公差建议：轮廓度取齿廓总偏差 Fα 的 1/4；分度圆处刀径（刀齿宽）公差取齿厚公差的 1/4，做成单向公差
+      if (fa > 0) hl.push(['建议刀具轮廓度', '≤' + f3(fa / 4) + '（Fα/4，以刀具轴线为基准）']);
+      const tolT = qaInfo.fromThk ? qaInfo.sMax - qaInfo.sMin : (qaInfo.tolT || 0);
+      if (tolT > 1e-6 && isFinite(cut.RP)) {
+        const t = Math.max(0.001, Math.floor(tolT / 4 * 1000) / 1000);
+        // 按零件齿厚上限（齿槽下限）设计时，刀具只能偏大；其余情况刀具只能偏小
+        const thickMax = qaInfo.fromThk ? qaInfo.sUse >= qaInfo.sMax - 1e-6 && qaInfo.sMax - qaInfo.sMin > 1e-6 : (isInt ? Q.pick === 'min' : Q.pick === 'max');
+        const pk = thickMax ? 'max' : 'mid', dev = pk === 'max' ? '+' + f3(t) + ' / 0' : '0 / −' + f3(t);
+        hl.push([(cut.formTool ? '分度圆处刀齿宽' : '分度圆处刀径') + ' 公差', f3(cut.RP * 2) + ' ' + dev]);
+        rows.push([isInt ? '齿槽宽公差（法向）' : '齿厚公差（法向）', f3(tolT)]);
+        toolTolNote = `刀具公差按齿厚公差 ${f3(tolT)} 的 1/4 取 ${f3(t)}，` + (pk === 'max' ? '按齿厚上限设计时刀具只能偏大（齿槽变宽、齿变薄才回到公差内），所以做成正公差。' : '刀具做成负公差：刀具偏小时可以左右各偏一刀把齿槽修宽，偏大就无法补救。')
+          + (fa > 0 ? `轮廓度 ${f3(fa / 4)} 以刀具轴线为基准时也包含两侧齿面的位置，最坏会让齿厚再变 ${f3(fa / 4)}，两项合计约为齿厚公差的 ${Math.round((t + fa / 4) / tolT * 100)}%，其余留给装夹跳动、机床和测量。` : '');
+      }
     }
+    const fl = fluteSuggest(cut.slot ? 'slot' : cut.formTool ? 'disc' : 'finger', cut.formTool ? parseFloat($('t_D').value) || 0 : 2 * edge[1], pr[pr.length - 1][0], 2 * tipR);
+    if (fl) { hl.push(['建议刃数', fl.txt]); toolTolNote += (toolTolNote ? '<br>' : '') + fl.note; }
     const M = geo.M || {};
     if (M.q || M.pr) hl.push(['留磨量 / 挖根', f3(M.q) + ' / ' + f3(M.pr)]);
     if (M.tip !== 'none' && M.c > 0 && (M.tip === 'round' || M.cw > 0)) hl.push([M.tip === 'round' ? '齿顶倒圆 R' : '齿顶倒角', M.tip === 'round' ? f3(M.c) : f3(M.c) + '×' + f3(M.cw)]);
@@ -2124,9 +2139,25 @@ if (typeof module !== 'undefined') module.exports = HX;
     const nh = hl.filter(r => !wide_(r[0], r[1])), wh = hl.filter(r => wide_(r[0], r[1]));
     let h = narrow.concat(wide).map(r => cell('', r[0], r[1])).join('');
     h += nh.concat(wh).map(r => cell('hl', r[0], r[1])).join('');
-    $('res').innerHTML = h + h0;
+    $('res').innerHTML = h + h0 + (toolTolNote ? `<div class="full resnote">${toolTolNote}</div>` : '');
     const extraW = (qaWarn ? [qaWarn] : []).concat(stdWarn, accWarn);
     if (extraW.length) { const w = $('warn'); w.textContent = (w.textContent ? w.textContent + '；' : '') + extraW.join('；'); }
+  }
+
+  // ---------- 刃数建议（经验值） ----------
+  // 指型铣刀：按刀具最大直径（齿顶处）参照立铣刀常用刃数；刀尖细时 2 刃过中心。
+  // 盘形铣刀：按刀齿节距 πD/z 与刀齿全高 h 的比例：铲齿（高速钢，要留铲背和重磨空间）约 2.5～3h，尖齿 / 硬质合金约 1.6～2h。
+  function fluteSuggest(kind, D, h, dTip) {
+    if (kind === 'slot' || !(D > 0)) return null;
+    if (kind === 'finger') {
+      const T = [[6, 2, 2], [10, 2, 3], [16, 3, 4], [25, 4, 4], [32, 4, 6], [50, 6, 8], [80, 8, 10], [1e9, 10, 12]], r = T.find(t => D <= t[0]);
+      const tip = dTip < D / 3 ? '刀尖较细（' + (dTip > 1e-3 ? '平底 Ø' + f2(dTip) : '尖点') + '），一般只有 2 刃过中心，其余刃从刀尖以上开始；' : '';
+      return { txt: r[1] === r[2] ? r[1] + ' 刃' : r[1] + '～' + r[2] + ' 刃', note: `刃数建议（经验值）：按刀具最大直径 Ø${f2(D)} 参照立铣刀常用刃数，${tip}粗铣、韧性材料取少（容屑空间大），精铣、要求齿面光洁取多。直径 50 以上一般改用可转位刀片。` };
+    }
+    if (!(h > 0)) return null;
+    const z = k => Math.max(4, Math.round(PI * D / (k * h)));
+    const a1 = z(3), a2 = z(2.5), b1 = z(2), b2 = z(1.6);
+    return { txt: `铲齿 ${a1}～${a2} / 尖齿 ${b1}～${b2}`, note: `刃数建议（经验值）：按刀具外径 Ø${f2(D)}、刀齿全高 ${f2(h)}，刀齿节距 πD/z 取 2.5～3 倍齿高（铲齿成形铣刀，高速钢，需留铲背量和重磨空间）或 1.6～2 倍齿高（尖齿、硬质合金焊接或可转位）。外径改了刃数跟着变，请在“盘形铣刀外径”里填实际外径。` };
   }
 
   // ---------- 整圈轮廓 ----------
@@ -3081,7 +3112,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
 
   // ---------- 结果 ----------
   function hxResults() {
-    const R = hxR, rows = [], hl = [];
+    const R = hxR, rows = [], hl = []; let note = "";
     if (R.kind === 'worm') {
       const w = R.w, o = R.o;
       rows.push(['导程 pz', f3(w.pz)], ['分度圆导程角 γ1', (w.g1 * 180 / PI).toFixed(4) + '°'], ['齿顶圆 da1', f3(2 * w.ra)], ['齿根圆 df1', f3(2 * w.rf)],
@@ -3105,10 +3136,12 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
         const P = T.prof.filter(q => q[2]), xs = P.map(q => q[1]);
         hl.push(['刀轴安装角', (T.sig * 180 / PI).toFixed(4) + '°'], ['刀具中心距', f3(T.Ac)], ['刀具外径', f3(2 * T.Rmax)],
           ['刀齿高（有效）', f3(Math.max(...P.map(q => q[0])))], ['刀齿最大宽（有效）', f3(Math.max(...xs) - Math.min(...xs))], ['反算偏差', (T.chk.dev * 1000).toFixed(2) + ' µm'], ['全局过切', T.gg ? (T.gg.d * 1000).toFixed(2) + ' µm' : '—']);
+        const fl = fluteSuggest('disc', 2 * T.Rmax, Math.max(...T.prof.map(q => q[0]))); if (fl) { hl.push(['建议刃数', fl.txt]); note = fl.note; }
       } else if (R.tool === 'finger') {
         const P = T.prof.filter(q => q[2]);
         const flat = Math.max(...P.filter(q => q[0] < 1e-4).map(q => q[1]).concat([0]));
         hl.push(['刀具最大直径（有效）', f3(2 * Math.max(...P.map(q => q[1])))], ['刃部高度（有效）', f3(Math.max(...P.map(q => q[0])))], ['刀尖平底直径', f3(2 * flat)], ['反算偏差', (T.chk.dev * 1000).toFixed(2) + ' µm'], ['全局过切', T.gg ? (T.gg.d * 1000).toFixed(2) + ' µm' : '—']);
+        const fl = fluteSuggest('finger', 2 * Math.max(...P.map(q => q[1])), 0, 2 * flat); if (fl) { hl.push(['建议刃数', fl.txt]); note = fl.note; }
       } else {
         for (const sd of T.sides) {
           const P = sd.prof.filter(q => q[2]), xs = P.map(q => q[1]);
@@ -3124,7 +3157,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     }
     const wide_ = (k, v) => String(v).length > 9 || (k.length + String(v).length) > 16;
     const cell = (cls, k, v) => `<div class="${cls}${wide_(k, v) ? ' full' : ''}"><span>${k}</span><span>${v}</span></div>`;
-    $('res').innerHTML = rows.map(r => cell('', r[0], r[1])).join('') + hl.map(r => cell('hl', r[0], r[1])).join('');
+    $('res').innerHTML = rows.map(r => cell('', r[0], r[1])).join('') + hl.map(r => cell('hl', r[0], r[1])).join('') + (note ? `<div class="full resnote">${note}</div>` : '');
   }
 
   // ---------- 2D 图 ----------
