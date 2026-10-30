@@ -2019,7 +2019,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       rows.push(['小径 d', f3(ri * 2)], ['大径 D', f3(ro * 2)], [geo.kind === 'int' ? '键槽宽 B' : '键宽 B', f3(P.B)], ['槽底圆角 r', f3(P.rr)]);
       if (geo.kind === 'int') rows.push(['小径处齿宽', f3(geo.tipThick)]);
     }
-    const pr = cut.prof, tipR = pr[1][1], edge = pr[pr.length - 2]; let toolTolNote = '';
+    const pr = cut.prof, tipR = pr[1][1], edge = pr[pr.length - 2]; let toolTolNote = ''; toolTol = null;
     const hl = cut.formTool
       ? [['刃部有效高度', f3(cut.hEdge)], cut.flat ? ['刀齿顶直线宽', f3(cut.flat.w)] : [cut.isExt ? '刀齿顶圆弧凹深' : '刀齿顶圆弧凸起', f3(cut.arcDepth)], [cut.isExt ? '齿顶处刀齿宽' : '内孔处刀齿宽', f3(edge[1] * 2)], ['刀齿全高(含外延)', f3(pr[pr.length - 1][0])]]
       : [['刃部有效高度', f3(cut.hEdge)], ['刀尖平台直径', tipR > 1e-3 ? f3(tipR * 2) : '尖点'],
@@ -2113,17 +2113,18 @@ if (typeof module !== 'undefined') module.exports = HX;
       if (geo.Rend > 0) rows.push([isInt ? '有效齿顶(倒角后)' : '倒角后渐开线终止圆', f3(2 * geo.Rend)]);
       const fa = Q.fa > 0 ? Q.fa : (accRes && accRes.Fa ? accRes.Fa / 1000 : 0);
       // 刀具公差建议：轮廓度取齿廓总偏差 Fα 的 1/4；分度圆处刀径（刀齿宽）公差取齿厚公差的 1/4，做成单向公差
-      if (fa > 0) hl.push(['建议刀具轮廓度', '≤' + f3(fa / 4) + '（Fα/4，以刀具轴线为基准）']);
+      if (fa > 0) { hl.push(['建议刀具轮廓度', '≤' + f3(fa / 4) + '（Fα/4，以' + (cut.formTool ? '刀齿中心线' : '刀具轴线') + '为基准）']); toolTol = { prof: fa / 4 }; }
       const tolT = qaInfo.fromThk ? qaInfo.sMax - qaInfo.sMin : (qaInfo.tolT || 0);
       if (tolT > 1e-6 && isFinite(cut.RP)) {
         const t = Math.max(0.001, Math.floor(tolT / 4 * 1000) / 1000);
         // 按零件齿厚上限（齿槽下限）设计时，刀具只能偏大；其余情况刀具只能偏小
         const thickMax = qaInfo.fromThk ? qaInfo.sUse >= qaInfo.sMax - 1e-6 && qaInfo.sMax - qaInfo.sMin > 1e-6 : (isInt ? Q.pick === 'min' : Q.pick === 'max');
         const pk = thickMax ? 'max' : 'mid', dev = pk === 'max' ? '+' + f3(t) + ' / 0' : '0 / −' + f3(t);
+        toolTol = Object.assign(toolTol || {}, { up: pk === 'max' ? '+' + f3(t) : '0', lo: pk === 'max' ? '0' : '−' + f3(t) });
         hl.push([(cut.formTool ? '分度圆处刀齿宽' : '分度圆处刀径') + ' 公差', f3(cut.RP * 2) + ' ' + dev]);
         rows.push([isInt ? '齿槽宽公差（法向）' : '齿厚公差（法向）', f3(tolT)]);
         toolTolNote = `刀具公差按齿厚公差 ${f3(tolT)} 的 1/4 取 ${f3(t)}，` + (pk === 'max' ? '按齿厚上限设计时刀具只能偏大（齿槽变宽、齿变薄才回到公差内），所以做成正公差。' : '刀具做成负公差：刀具偏小时可以左右各偏一刀把齿槽修宽，偏大就无法补救。')
-          + (fa > 0 ? `轮廓度 ${f3(fa / 4)} 以刀具轴线为基准时也包含两侧齿面的位置，最坏会让齿厚再变 ${f3(fa / 4)}，两项合计约为齿厚公差的 ${Math.round((t + fa / 4) / tolT * 100)}%，其余留给装夹跳动、机床和测量。` : '');
+          + (fa > 0 ? `轮廓度 ${f3(fa / 4)} 以${cut.formTool ? '刀齿中心线' : '刀具轴线'}为基准时也包含两侧齿面的位置，最坏会让齿厚再变 ${f3(fa / 4)}，两项合计约为齿厚公差的 ${Math.round((t + fa / 4) / tolT * 100)}%，其余留给装夹跳动、机床和测量。` : '');
       }
     }
     const fl = fluteSuggest(cut.slot ? 'slot' : cut.formTool ? 'disc' : 'finger', cut.formTool ? parseFloat($('t_D').value) || 0 : 2 * edge[1], pr[pr.length - 1][0], 2 * tipR);
@@ -2238,16 +2239,21 @@ if (typeof module !== 'undefined') module.exports = HX;
   }
 
   // ---------- 2D：刀具图 ----------
+  let toolTol = null;   // 刀具公差建议（renderResults 里算，drawCutter 里标到图上）：{ up, lo, prof }
   function drawCutter() {
     const svg = $('svgC'), cp = cut.prof;
     const Hmax = cp[cp.length - 1][0], Rmax = Math.max(...cp.map(q => q[1]));
     const shank = Hmax * 0.18;
-    const mx = Rmax * 1.0 + Hmax * 0.12, top = Hmax + shank + Hmax * 0.06, bot = -Hmax * 0.16;
-    const W = Math.max(2 * mx, Hmax * 0.75) + Hmax * 0.5;
+    const mx = Rmax * 1.0 + Hmax * 0.12, top0 = Hmax + shank + Hmax * 0.06, bot = -Hmax * 0.16;
+    const TT = toolTol || {}, top = top0 + (TT.prof > 0 ? Hmax * 0.2 : 0);     // 轮廓度框放在刀柄上方
+    let W = Math.max(2 * mx, Hmax * 0.75) + Hmax * 0.5;
     const bot2 = -Hmax * 0.34;
+    let fs = Math.max(W, top - bot2) * 0.038;
+    // 轮廓度框约 7 个字宽，右对齐放在刀柄上方；画布太窄才加宽
+    if (TT.prof > 0) for (let k = 0; k < 3; k++) { const need = 2 * (fs * 7.6); if (need <= W) break; W = need; fs = Math.max(W, top - bot2) * 0.038; }
     const vb = [-W / 2, -top, W, top - bot2];
     svg.setAttribute('viewBox', vb.map(v => v.toFixed(3)).join(' '));
-    const fs = Math.max(vb[2], vb[3]) * 0.038, sw = 'vector-effect="non-scaling-stroke"';
+    const sw = 'vector-effect="non-scaling-stroke"';
     const R = cp.map(q => [q[1], q[0]]), L = R.slice().reverse().map(q => [-q[0], q[1]]);
     const topR = cp[cp.length - 1][1];
     const body = L.concat(R, [[topR, Hmax + shank], [-topR, Hmax + shank]]);
@@ -2266,17 +2272,41 @@ if (typeof module !== 'undefined') module.exports = HX;
     for (const [h, r, pos] of dims) {
       const y = pos === 'below' ? -Hmax * 0.07 : h;
       if (pos === 'below') s += `<line x1="${r}" y1="0" x2="${r}" y2="${-y}" stroke="var(--accent)" stroke-width="0.6" ${sw}/><line x1="${-r}" y1="0" x2="${-r}" y2="${-y}" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
-      s += arrow(-r, y, r, y) + txt(0, pos === 'below' ? y - fs * 1.05 : y + fs * 0.3, (cut.formTool ? '' : 'Ø') + (2 * r).toFixed(3));
+      const lab = (cut.formTool ? '' : 'Ø') + (2 * r).toFixed(3), ty = pos === 'below' ? y - fs * 1.05 : y + fs * 0.3;
+      const isP = isFinite(cut.hP) && h === cut.hP && TT.lo;
+      if (!isP) { s += arrow(-r, y, r, y) + txt(0, ty, lab); continue; }
+      // 分度圆处直径（刀齿宽）带上下偏差：上偏差在上、下偏差在下，紧跟在尺寸数字后面
+      const wMain = lab.length * fs * 0.6, wDev = Math.max(TT.up.length, TT.lo.length) * fs * 0.72 * 0.6, x0 = -(wMain + wDev) / 2;
+      s += arrow(-r, y, r, y) + txt(x0, ty + fs * 0.15, lab, 'start');
+      const sm = (yy, t) => `<text x="${x0 + wMain + fs * 0.15}" y="${-yy}" font-size="${fs * 0.72}" fill="var(--accent)" text-anchor="start" style="font-family:var(--f-num)">${t}</text>`;
+      s += sm(ty + fs * 0.62, TT.up) + sm(ty - fs * 0.12, TT.lo);
     }
     // 高度
     const xh = -mx * 0.98 - Hmax * 0.04;
     s += `<line x1="${xh - fs * 0.3}" y1="0" x2="${-cp[1][1]}" y2="0" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
     s += `<line x1="${xh - fs * 0.3}" y1="${-cut.hEdge}" x2="${-e[1]}" y2="${-cut.hEdge}" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
     s += arrow(xh, 0, xh, cut.hEdge) + txt(xh - fs * 0.35, cut.hEdge / 2, cut.hEdge.toFixed(3), 'middle', true);
-    if (isFinite(cut.hP)) s += `<line x1="${-mx}" y1="${-cut.hP}" x2="${mx}" y2="${-cut.hP}" stroke="var(--muted)" stroke-width="0.7" stroke-dasharray="6 3 1.5 3" ${sw}/>` + `<text x="${mx}" y="${-cut.hP - fs * 0.25}" font-size="${fs * 0.85}" fill="var(--muted)" text-anchor="end">分度圆 H=${cut.hP.toFixed(3)}</text>`;
+    if (isFinite(cut.hP)) s += `<line x1="${-mx}" y1="${-cut.hP}" x2="${mx}" y2="${-cut.hP}" stroke="var(--muted)" stroke-width="0.7" stroke-dasharray="6 3 1.5 3" ${sw}/>` + `<text x="${mx}" y="${-cut.hP + (TT.lo ? fs * 1.0 : -fs * 0.25)}" font-size="${fs * 0.85}" fill="var(--muted)" text-anchor="end">分度圆 H=${cut.hP.toFixed(3)}</text>`;
+    if (TT.prof > 0) {
+      // 引线：从右侧齿面（分度圆与刃区上限之间）引到右上方的轮廓度框 [⌒ | 公差 | A]
+      const hq = isFinite(cut.hP) ? (cut.hP + cut.hEdge) / 2 : cut.hEdge * 0.6, rq = G.xAtY(cp.map(q => [q[1], q[0]]), hq);
+      const bw = [fs * 1.5, fs * 4.1, fs * 1.4], bh = fs * 1.45, bx = W / 2 - fs * 0.4 - bw[0] - bw[1] - bw[2], by = Hmax + shank + bh + fs * 0.6;
+      const st = 'stroke="var(--accent)" stroke-width="1" fill="none" ' + sw;
+      if (isFinite(rq)) s += `<path d="M${rq} ${-hq} L${bx - fs * 0.6} ${-(by - bh / 2)} L${bx} ${-(by - bh / 2)}" ${st}/><circle cx="${rq}" cy="${-hq}" r="${fs * 0.12}" fill="var(--accent)"/>`;
+      let xc = bx; for (const w of bw) { s += `<rect x="${xc}" y="${-by}" width="${w}" height="${bh}" fill="var(--bg)" stroke="var(--accent)" stroke-width="1" ${sw}/>`; xc += w; }
+      const cx0 = bx + bw[0] / 2, cy0 = -(by - bh * 0.62), rr = fs * 0.48;
+      s += `<path d="M${cx0 - rr} ${cy0} A${rr} ${rr} 0 0 1 ${cx0 + rr} ${cy0}" ${st}/>`;
+      const ttx = (x, t) => `<text x="${x}" y="${-(by - bh * 0.72)}" font-size="${fs * 0.86}" fill="var(--accent)" text-anchor="middle" style="font-family:var(--f-num)">${t}</text>`;
+      s += ttx(bx + bw[0] + bw[1] / 2, TT.prof.toFixed(3)) + ttx(bx + bw[0] + bw[1] + bw[2] / 2, 'A');
+      // 基准 A：刀具轴线（标在刀柄上方的中心线上）
+      const ya = Hmax + shank + fs * 1.3, ax = -fs * 2.2;
+      s += `<path d="M0 ${-ya} L${ax + fs * 0.7} ${-ya}" ${st}/><path d="M0 ${-ya - fs * 0.3} L${-fs * 0.5} ${-ya} L0 ${-ya + fs * 0.3} Z" fill="var(--accent)"/>`;
+      s += `<rect x="${ax - fs * 0.7}" y="${-ya - fs * 0.7}" width="${fs * 1.4}" height="${fs * 1.4}" fill="var(--bg)" stroke="var(--accent)" stroke-width="1" ${sw}/>` + `<text x="${ax}" y="${-ya + fs * 0.32}" font-size="${fs * 0.86}" fill="var(--accent)" text-anchor="middle">A</text>`;
+    }
     svg.innerHTML = s;
     $('hC').firstChild.textContent = cut.slot ? '成形插刀刀齿廓形 ' : cut.disc ? '盘形铣刀刀齿廓形 ' : '刀具轴向廓形 ';
     $('capC').textContent = cut.slot ? '成形插刀刀齿端面形状（切削刃投影，等于齿槽形状），刀齿顶在下，标注值为刀齿宽度。坐标表可切换为前刀面或后刀面法向截面。' : cut.disc ? '盘形铣刀刀齿廓形，刀齿顶在下，横向是齿宽方向，标注值为刀齿宽度。点划线为分度圆位置，虚线以上为外延段。' : `刀尖在下。点划线为分度圆位置，虚线为${geo.kind === 'int' ? '内径' : '齿顶圆'}对应高度，以上为外延段。`;
+    if (TT.prof > 0 || TT.lo) $('capC').textContent += (TT.lo ? `分度圆处${cut.formTool ? '刀齿宽' : '刀径'}的上下偏差按齿厚公差的 1/4 给出；` : '') + (TT.prof > 0 ? `轮廓度 ${TT.prof.toFixed(3)} 为刃区廓形的线轮廓度，以${cut.formTool ? '刀齿对称中心线' : '刀具轴线'} A 为基准（按 Fα/4）。` : '');
   }
 
   // ---------- 坐标表 / 导出 ----------
