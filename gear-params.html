@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>齿轮参数图解</title>
+<style>
+:root{
+  --bg:#F4F1EA; --card:#FFFFFF; --ink:#1E2328; --muted:#66707A; --line:#D9D4CA;
+  --steel:#C9CED4; --steel2:#AEB5BD; --gear:#DDE3E9; --gear2:#F2D9B8;
+  --accent:#E06A1B; --blue:#2F6FB5; --green:#2E8B57; --red:#C8402E; --violet:#7A4FB0;
+  --chip:#F7EFE3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121417; --card:#1B1E22; --ink:#ECEDEE; --muted:#9AA3AD; --line:#2E333A;
+    --steel:#4A525B; --steel2:#5E6772; --gear:#3A434D; --gear2:#6A4B2C;
+    --accent:#FF8A3D; --blue:#6FA8E8; --green:#5CC28C; --red:#F07A68; --violet:#B591E6; --chip:#2A2520;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121417; --card:#1B1E22; --ink:#ECEDEE; --muted:#9AA3AD; --line:#2E333A;
+  --steel:#4A525B; --steel2:#5E6772; --gear:#3A434D; --gear2:#6A4B2C;
+  --accent:#FF8A3D; --blue:#6FA8E8; --green:#5CC28C; --red:#F07A68; --violet:#B591E6; --chip:#2A2520;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:28px 16px 60px}
+header h1{font-size:30px;margin:0 0 6px;letter-spacing:1px}
+header p{margin:0;color:var(--muted)}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 8px}
+.toc a{font-size:13px;color:var(--ink);text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 20px 16px;margin:18px 0}
+.no{display:inline-block;font-size:12px;font-weight:700;color:var(--accent);border:1.5px solid var(--accent);border-radius:6px;padding:0 6px;margin-right:8px;vertical-align:3px}
+h2{font-size:22px;margin:0 0 4px}
+.sym{font-family:"Times New Roman",serif;font-style:italic;color:var(--accent);font-weight:400}
+.meta{color:var(--muted);font-size:14px;margin-bottom:10px}
+.fig{width:100%;display:block;margin:6px 0 6px}
+.say{background:var(--chip);border-radius:10px;padding:10px 14px;margin:10px 0;font-size:15px}
+.say b{color:var(--accent)}
+ul{margin:6px 0 6px;padding-left:20px}
+li{margin:2px 0}
+.f{display:inline-block;font-family:"Times New Roman",serif;font-size:17px;background:var(--chip);border-radius:6px;padding:1px 8px;margin:2px 4px 2px 0}
+.vo{border-left:3px solid var(--blue);padding:2px 0 2px 12px;margin:10px 0 0;color:var(--muted);font-size:14px}
+.vo::before{content:"旁白：";color:var(--blue);font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+td .f{font-size:15px}
+.play{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.play{grid-template-columns:1.1fr 1fr}}
+.ctl label{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-top:8px}
+.ctl input[type=range]{width:100%}
+.ctl select{width:100%;font-size:15px;padding:4px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px}
+.out td:last-child{font-family:"Times New Roman",serif;font-size:16px;text-align:right}
+svg text{font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif}
+svg .math{font-family:"Times New Roman",serif;font-style:italic}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>齿轮参数图解</h1>
+  <p>齿数、模数、分度圆、压力角、变位系数……一张图一个参数，看动画就懂。</p>
+  <nav class="toc" id="toc"></nav>
+</header>
+
+<section class="card" id="s0">
+  <h2><span class="no">00</span>齿轮是怎么传动的</h2>
+  <div class="meta">先看一对齿轮：一个牙推一个牙</div>
+  <svg class="fig" id="f0" viewBox="-60 -42 160 84"></svg>
+  <div class="say">把齿轮想成<b>两个互相咬合的手</b>：左边的“主动轮”转一个牙，就推着右边的“从动轮”也转一个牙。两个轮子上有两个<b>假想的圆（虚线）</b>，它们像两个摩擦轮一样贴着纯滚动——后面要讲的分度圆，就是它。</div>
+  <div class="vo">齿轮看起来复杂，其实就是一个牙推着一个牙。我们把它拆开，一个参数一个参数地看。</div>
+</section>
+
+<section class="card" id="s1">
+  <h2><span class="no">01</span>齿数 <span class="sym">z</span></h2>
+  <div class="meta">一圈有几个牙</div>
+  <svg class="fig" id="f1" viewBox="-56 -38 112 76"></svg>
+  <div class="say">齿数就是<b>数牙齿</b>：转一圈，数一数有多少个牙。像钟表上的刻度，刻度越多，一格就越小。</div>
+  <ul>
+    <li>一对齿轮的转速和齿数成反比：小轮 15 齿、大轮 30 齿，小轮转 2 圈，大轮才转 1 圈。</li>
+    <li>齿数太少（标准齿轮少于 17 齿），加工时刀具会把齿根“啃掉”一块，叫<b>根切</b>，后面讲变位时会用到。</li>
+  </ul>
+  <div class="vo">齿数，就是一圈有多少个牙。它决定了这个齿轮转一圈，要推动对方多少个牙。</div>
+</section>
+
+<section class="card" id="s2">
+  <h2><span class="no">02</span>模数 <span class="sym">m</span></h2>
+  <div class="meta">牙齿的“尺码”</div>
+  <svg class="fig" id="f2" viewBox="-6 14 172 58"></svg>
+  <div class="say">模数就像<b>鞋码</b>：码数越大，牙越大越结实。同样是 12 个牙，模数 1、1.5、2 的齿轮一个比一个大。只有<b>模数相同（压力角也相同）</b>的两个齿轮才能啮合，就像只有同一种齿距的拉链才能拉上。</div>
+  <ul>
+    <li>相邻两个牙之间的距离（在分度圆上量）叫<b>齿距</b> <span class="f">p = π m</span>。模数其实就是“齿距除以 π”，这样分度圆直径就能用整数算。</li>
+    <li>模数按国家标准取系列值，例如 1、1.25、1.5、2、2.5、3、4、5、6、8、10……</li>
+  </ul>
+  <div class="vo">模数是牙齿的尺码。码数越大，牙越大越结实；两个齿轮要想咬得上，尺码必须一样。</div>
+</section>
+
+<section class="card" id="s3">
+  <h2><span class="no">03</span>分度圆 <span class="sym">d</span> 与齿距 <span class="sym">p</span></h2>
+  <div class="meta">设计时的“基准尺”</div>
+  <svg class="fig" id="f3" viewBox="-44 -40 88 96"></svg>
+  <div class="say">分度圆是一个<b>看不见的基准圆</b>。沿着它把 z 个齿距首尾接起来，正好绕一圈：<span class="f">π d = z · p = z · π m</span>，所以 <span class="f">d = m z</span>。一对齿轮啮合时，两个分度圆像两个摩擦轮一样纯滚动、不打滑。</div>
+  <ul>
+    <li>齿距 <span class="f">p</span> = 齿厚 <span class="f">s</span> + 齿槽宽 <span class="f">e</span>，标准齿轮在分度圆上 <span class="f">s = e = π m / 2</span>，牙和空一样宽。</li>
+  </ul>
+  <div class="vo">在齿轮上画一个看不见的圆，把一个个齿距首尾接起来，刚好绕一圈。这个圆就是分度圆，直径等于模数乘齿数。</div>
+</section>
+
+<section class="card" id="s4">
+  <h2><span class="no">04</span>齿顶圆、齿根圆和齿高</h2>
+  <div class="meta">牙齿有多高，牙根有多深</div>
+  <svg class="fig" id="f4" viewBox="-30 -63 60 27"></svg>
+  <div class="say">以分度圆为“地平线”：牙尖往外伸出的叫<b>齿顶高</b> <span class="f">h<sub>a</sub> = m</span>，牙根往里挖进去的叫<b>齿根高</b> <span class="f">h<sub>f</sub> = 1.25 m</span>，加起来就是<b>全齿高</b> <span class="f">h = 2.25 m</span>。</div>
+  <table>
+    <tr><th>名称</th><th>标准齿轮公式</th><th>说明</th></tr>
+    <tr><td>齿顶圆直径</td><td><span class="f">d<sub>a</sub> = d + 2m</span></td><td>齿轮的外径，毛坯就按它车</td></tr>
+    <tr><td>齿根圆直径</td><td><span class="f">d<sub>f</sub> = d − 2.5m</span></td><td>牙根的底，铣刀/滚刀切到这里</td></tr>
+    <tr><td>齿根圆角</td><td><span class="f">ρ<sub>f</sub> ≈ 0.38m</span></td><td>牙根的圆角，越大牙根越不容易断</td></tr>
+  </table>
+  <div class="vo">以分度圆为地平线，牙尖往外伸出一个模数，牙根往里挖一点二五个模数。</div>
+</section>
+
+<section class="card" id="s5">
+  <h2><span class="no">05</span>顶隙 <span class="sym">c</span> 与侧隙 <span class="sym">j</span></h2>
+  <div class="meta">留一点缝，才转得动</div>
+  <svg class="fig" id="f5" viewBox="-14 -12 28 24"></svg>
+  <div class="say">齿根高比齿顶高多出的那 0.25m，就是<b>顶隙</b> <span class="f">c = 0.25 m</span>：对方的牙尖伸进来，不会顶到牙底，还能存润滑油。两个牙的背面之间留的小缝叫<b>侧隙</b> <span class="f">j</span>：热胀冷缩、加工误差、润滑油膜都需要它。侧隙靠把齿<b>做薄一点</b>（齿厚减薄）得到，所以图纸上的公法线、跨棒距都带负的公差。</div>
+  <div class="vo">牙和牙之间要留缝：牙尖下面留顶隙，牙背后面留侧隙。缝太小会卡死发热，缝太大会撞击有噪声。</div>
+</section>
+
+<section class="card" id="s6">
+  <h2><span class="no">06</span>基圆与渐开线</h2>
+  <div class="meta">齿面为什么是这条曲线</div>
+  <svg class="fig" id="f6" viewBox="-24 -22 52 44"></svg>
+  <div class="say">把一根绳子缠在一个圆柱上，绳头绑一支笔，拉紧绳子一边退一边画，笔画出的曲线就是<b>渐开线</b>，那个圆柱就是<b>基圆</b> <span class="f">d<sub>b</sub> = d cos α</span>。绳子始终和基圆相切，所以渐开线上每一点的受力方向都沿着这根“绳子”。</div>
+  <ul>
+    <li>两个渐开线齿轮啮合时，传动比不随转角变化，转起来平稳。中心距稍有误差，传动比也不变——这是渐开线最大的好处。</li>
+    <li>基圆以内没有渐开线，所以齿根部分是过渡曲线。</li>
+  </ul>
+  <div class="vo">把绳子缠在圆柱上，拉紧了往外放，笔尖画出的就是渐开线。齿轮的齿面，就是这样一条曲线。</div>
+</section>
+
+<section class="card" id="s7">
+  <h2><span class="no">07</span>压力角 <span class="sym">α</span></h2>
+  <div class="meta">牙齿推对方时用力的方向</div>
+  <svg class="fig" id="f7" viewBox="-56 -44 132 88"></svg>
+  <svg class="fig" id="f7b" viewBox="0 -4 120 30"></svg>
+  <div class="say">两个牙接触的点始终在一条斜线上移动（橙色的点），这条线叫<b>啮合线</b>，也是推力的方向。它和分度圆切线之间的夹角就是<b>压力角</b>，标准是 <span class="f">α = 20°</span>。像推车：手越往下压（角度越大），推车越费劲，但手臂（牙根）越粗壮。</div>
+  <ul>
+    <li>压力角大：牙根粗、强度高，但径向力大，轴承受力大。压力角小：转动更平稳、噪声小，但牙根细。</li>
+    <li>常见 20°，老标准或英制有 14.5°，重载齿轮有 25°。花键常用 30°。</li>
+    <li>啮合线上有时同时有两个点（两对牙同时接触），平均同时接触的对数叫<b>重合度</b>，一般 1.2～1.9，越大越平稳。</li>
+  </ul>
+  <div class="vo">两个牙接触的点，始终沿着同一条斜线移动。这条线和分度圆切线的夹角，就是压力角，标准是二十度。</div>
+</section>
+
+<section class="card" id="s8">
+  <h2><span class="no">08</span>变位系数 <span class="sym">x</span></h2>
+  <div class="meta">刀具“退一点”或“进一点”，牙变胖或变瘦</div>
+  <svg class="fig" id="f8" viewBox="-34 -14 68 50"></svg>
+  <div class="say">加工齿轮的刀具像一把<b>梳子（齿条）</b>。标准加工时，梳子的中线正好贴着分度圆。把梳子<b>往外退</b> <span class="f">x·m</span>（正变位），切出来的牙根更粗、牙更胖、齿顶变尖；<b>往里进</b>（负变位）则牙变瘦、牙根变细。分度圆和基圆都不变，齿形还是同一条渐开线，只是用了它的不同段。</div>
+  <ul>
+    <li>用途：小齿数防止根切、凑中心距、让大小齿轮强度更均衡。</li>
+    <li>分度圆齿厚：<span class="f">s = m(π/2 + 2x tan α)</span>，齿顶圆、齿根圆都跟着移动 <span class="f">x·m</span>。</li>
+  </ul>
+  <div class="vo">刀具往外退一点，切出来的牙就胖一点；往里进一点，牙就瘦一点。这个退进的量，用模数的倍数表示，就是变位系数。</div>
+</section>
+
+<section class="card" id="s9">
+  <h2><span class="no">09</span>螺旋角 <span class="sym">β</span></h2>
+  <div class="meta">牙齿斜着走</div>
+  <svg class="fig" id="f9" viewBox="0 0 140 56"></svg>
+  <div class="say">把齿轮的外圆“剥”下来摊平：直齿轮的牙是竖直的，<b>斜齿轮</b>的牙斜着走，斜的角度就是<b>螺旋角</b> <span class="f">β</span>。斜齿是一点一点逐渐进入啮合的，所以更平稳、噪声更小，但会产生轴向力。</div>
+  <ul>
+    <li>斜齿轮有两套尺寸：垂直于牙的<b>法向</b>（刀具按它做，模数 <span class="f">m<sub>n</sub></span> 是标准值），和垂直于轴线的<b>端面</b>：<span class="f">m<sub>t</sub> = m<sub>n</sub> / cos β</span>，<span class="f">d = m<sub>n</sub> z / cos β</span>。</li>
+    <li>一对外啮合斜齿轮螺旋角相等、旋向相反（一个左旋一个右旋）。</li>
+  </ul>
+  <div class="vo">把牙齿斜过来，就是斜齿轮。斜的角度叫螺旋角，牙齿一点一点咬进去，转起来更安静。</div>
+</section>
+
+<section class="card" id="s10">
+  <h2><span class="no">10</span>中心距 <span class="sym">a</span> 与传动比 <span class="sym">i</span></h2>
+  <div class="meta">两个轴离多远，转速差几倍</div>
+  <svg class="fig" id="f10" viewBox="-24 -46 120 92"></svg>
+  <div class="say">标准安装时，两个分度圆正好相切：<span class="f">a = (d<sub>1</sub> + d<sub>2</sub>) / 2 = m(z<sub>1</sub> + z<sub>2</sub>) / 2</span>。传动比 <span class="f">i = z<sub>2</sub> / z<sub>1</sub></span>：15 齿带 30 齿，小轮转 2 圈大轮转 1 圈，转速减半、力矩加倍。</div>
+  <div class="vo">两个分度圆相切的距离，就是中心距。大齿轮的齿数是小齿轮的几倍，转速就慢几倍，力气就大几倍。</div>
+</section>
+
+<section class="card" id="s11">
+  <h2><span class="no">11</span>怎么量齿厚：公法线 <span class="sym">W</span></h2>
+  <div class="meta">牙的胖瘦用卡尺夹出来</div>
+  <svg class="fig" id="f11" viewBox="-40 -6 80 46"></svg>
+  <div class="say">分度圆上的齿厚是弧长，没法直接量。用公法线千分尺的两个盘形卡脚<b>跨 k 个牙</b>夹住两侧齿面，读数就是<b>公法线长度</b> <span class="f">W<sub>k</sub></span>。因为两卡脚之间的连线正好和基圆相切、同时垂直于两侧齿面，卡脚碰在齿面高一点低一点，读数都一样。</div>
+  <ul>
+    <li><span class="f">W<sub>k</sub> = m cos α [ (k − 0.5)π + z inv α ] + 2 x m sin α</span>，齿厚减薄 Δs，W 就减小 Δs·cos α。</li>
+    <li>内齿或者大齿轮常用<b>跨棒距 M</b>：在相对的两个齿槽里各放一根量棒，量两棒外侧的距离。</li>
+  </ul>
+  <div class="vo">牙的胖瘦用公法线千分尺量：跨几个牙夹住两侧齿面，读数就是公法线长度。</div>
+</section>
+
+<section class="card" id="s12">
+  <h2><span class="no">12</span>动手试一试</h2>
+  <div class="meta">拖动滑块，看齿轮和参数怎么变</div>
+  <div class="play">
+    <svg class="fig" id="f12" viewBox="-60 -60 120 120"></svg>
+    <div class="ctl">
+      <label>齿数 z <b id="vz"></b></label><input id="iz" type="range" min="8" max="60" step="1" value="20">
+      <label>模数 m <b id="vm"></b></label><input id="im" type="range" min="0" max="10" step="1" value="5">
+      <label>压力角 α</label><select id="ia"><option>14.5</option><option selected>20</option><option>25</option><option>30</option></select>
+      <label>变位系数 x <b id="vx"></b></label><input id="ix" type="range" min="-0.5" max="1" step="0.05" value="0">
+      <table class="out" id="tout"></table>
+    </div>
+  </div>
+  <div class="vo">齿数决定牙的多少，模数决定牙的大小，压力角决定牙的胖瘦斜度，变位决定用哪一段渐开线。</div>
+</section>
+
+<section class="card" id="s13">
+  <h2><span class="no">13</span>公式速查（标准直齿圆柱齿轮）</h2>
+  <table>
+    <tr><th>参数</th><th>符号</th><th>公式</th><th>一句话记忆</th></tr>
+    <tr><td>齿数</td><td><span class="f">z</span></td><td>—</td><td>一圈几个牙</td></tr>
+    <tr><td>模数</td><td><span class="f">m</span></td><td><span class="f">m = p / π</span></td><td>牙的尺码</td></tr>
+    <tr><td>压力角</td><td><span class="f">α</span></td><td>20°</td><td>推力方向的斜度</td></tr>
+    <tr><td>分度圆直径</td><td><span class="f">d</span></td><td><span class="f">d = m z</span></td><td>纯滚动的基准圆</td></tr>
+    <tr><td>齿距</td><td><span class="f">p</span></td><td><span class="f">p = π m</span></td><td>相邻两牙的距离</td></tr>
+    <tr><td>齿厚 / 齿槽宽</td><td><span class="f">s, e</span></td><td><span class="f">s = e = π m / 2</span></td><td>牙和空一样宽</td></tr>
+    <tr><td>齿顶高 / 齿根高</td><td><span class="f">h<sub>a</sub>, h<sub>f</sub></span></td><td><span class="f">m</span>，<span class="f">1.25 m</span></td><td>伸出一个模数，挖进 1.25 个</td></tr>
+    <tr><td>齿顶圆 / 齿根圆</td><td><span class="f">d<sub>a</sub>, d<sub>f</sub></span></td><td><span class="f">d + 2m</span>，<span class="f">d − 2.5m</span></td><td>外径和牙底</td></tr>
+    <tr><td>基圆直径</td><td><span class="f">d<sub>b</sub></span></td><td><span class="f">d cos α</span></td><td>绕绳子的那个圆</td></tr>
+    <tr><td>顶隙</td><td><span class="f">c</span></td><td><span class="f">0.25 m</span></td><td>牙尖下面留的缝</td></tr>
+    <tr><td>中心距</td><td><span class="f">a</span></td><td><span class="f">m(z<sub>1</sub>+z<sub>2</sub>)/2</span></td><td>两分度圆相切</td></tr>
+    <tr><td>传动比</td><td><span class="f">i</span></td><td><span class="f">z<sub>2</sub> / z<sub>1</sub></span></td><td>齿数比 = 转速反比</td></tr>
+    <tr><td>斜齿端面模数</td><td><span class="f">m<sub>t</sub></span></td><td><span class="f">m<sub>n</sub> / cos β</span></td><td>斜着量和横着量</td></tr>
+    <tr><td>变位后齿厚</td><td><span class="f">s</span></td><td><span class="f">m(π/2 + 2x tan α)</span></td><td>刀退一点牙胖一点</td></tr>
+  </table>
+</section>
+<footer>图中齿形均按渐开线公式实时计算绘制。</footer>
+</div>
+
+<script>
+(() => {
+const PI = Math.PI, D2R = PI / 180, inv = a => Math.tan(a) - a;
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const txt = (parent, x, y, s, o = {}) => { const t = el('text', Object.assign({ x, y, 'font-size': o.fs || 3, fill: o.fill || 'var(--ink)', 'text-anchor': o.anchor || 'middle', 'dominant-baseline': 'middle', stroke: 'var(--card)', 'stroke-width': (o.fs || 3) * 0.2, 'stroke-linejoin': 'round', 'paint-order': 'stroke' }, o.attr || {}), parent); if (o.math) t.setAttribute('class', 'math'); t.textContent = s; return t; };
+const f = v => v.toFixed(2);
+
+// ---------- 渐开线外齿轮轮廓（屏幕坐标，y 向下；齿 0 的中心在 +x 方向） ----------
+function gearPts(m, z, alDeg, x = 0, o = {}) {
+  const al = alDeg * D2R, r = m * z / 2, rb = r * Math.cos(al), ha = o.ha ?? 1, c = o.c ?? 0.25, ds = o.ds || 0;
+  const ra = r + (ha + x) * m, rf = r - (ha + c - x) * m;
+  const s = m * (PI / 2 + 2 * x * Math.tan(al)) - ds, psiP = s / (2 * r);
+  const half = R => psiP + inv(al) - inv(Math.acos(Math.min(1, rb / R)));
+  const r0 = Math.max(rb, rf), N = o.n || 14, pts = [];
+  let raE = ra; if (half(ra) < 0) { let lo = r0, hi = ra; for (let i = 0; i < 40; i++) { const mm = (lo + hi) / 2; if (half(mm) > 0) lo = mm; else hi = mm; } raE = lo; }
+  const P = (R, t) => [R * Math.cos(t), -R * Math.sin(t)];
+  // 基圆以内用一段圆滑的过渡曲线接到齿根圆（示意的齿根圆角，牙根比基圆处更宽）
+  const gam = rf < rb ? Math.max(0, 0.45 * (PI / z - half(rb))) : 0, NF = 6;
+  for (let k = 0; k < z; k++) {
+    const tc = 2 * PI * k / z;
+    if (rf < rb) for (let i = 0; i < NF; i++) { const u = i / NF; pts.push(P(rf + (rb - rf) * (1 - (1 - u) * (1 - u)), tc - half(rb) - gam * (1 - u) * (1 - u) * (1 - u))); }
+    for (let i = 0; i <= N; i++) { const R = r0 + (raE - r0) * i / N; pts.push(P(R, tc - half(R))); }
+    for (let i = N; i >= 0; i--) { const R = r0 + (raE - r0) * i / N; pts.push(P(R, tc + half(R))); }
+    if (rf < rb) for (let i = NF - 1; i >= 0; i--) { const u = i / NF; pts.push(P(rf + (rb - rf) * (1 - (1 - u) * (1 - u)), tc + half(rb) + gam * (1 - u) * (1 - u) * (1 - u))); }
+    const a1 = tc + half(r0) + gam, a2 = tc + 2 * PI / z - half(r0) - gam;
+    for (let i = 1; i < 6; i++) pts.push(P(rf, a1 + (a2 - a1) * i / 6));
+  }
+  return { pts, r, rb, ra, rf, s, half, raE };
+}
+const pathOf = pts => 'M' + pts.map(p => p[0].toFixed(3) + ' ' + p[1].toFixed(3)).join('L') + 'Z';
+const circle = (g, cx, cy, r, o = {}) => el('circle', Object.assign({ cx, cy, r, fill: 'none', stroke: o.stroke || 'var(--muted)', 'stroke-width': o.w || 0.3, 'stroke-dasharray': o.dash || '' }, o.attr || {}), g);
+const line = (g, x1, y1, x2, y2, o = {}) => el('line', Object.assign({ x1, y1, x2, y2, stroke: o.stroke || 'var(--ink)', 'stroke-width': o.w || 0.3, 'stroke-dasharray': o.dash || '' }, o.attr || {}), g);
+function defsArrow(svg, id, color) {
+  const d = svg.querySelector('defs') || el('defs', {}, svg);
+  const mk = el('marker', { id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' }, d);
+  el('path', { d: 'M0 1 L10 5 L0 9 Z', fill: color }, mk);
+}
+const arrow = (g, x1, y1, x2, y2, id, o = {}) => el('line', { x1, y1, x2, y2, stroke: o.stroke || 'var(--accent)', 'stroke-width': o.w || 0.35, 'marker-end': `url(#${id})`, 'marker-start': o.both ? `url(#${id})` : '' }, g);
+const rot = (e, deg, cx = 0, cy = 0) => e.setAttribute('transform', `rotate(${deg} ${cx} ${cy})`);   // 屏幕坐标里正角度为顺时针
+
+const scenes = [];
+// ================= 00 一对齿轮 =================
+{
+  const svg = document.getElementById('f0'), m = 2.2, z1 = 17, z2 = 29, r1 = m * z1 / 2, r2 = m * z2 / 2, a = r1 + r2;
+  const g1 = gearPts(m, z1, 20), g2 = gearPts(m, z2, 20);
+  const p1 = el('path', { d: pathOf(g1.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.35 }, svg);
+  const p2 = el('path', { d: pathOf(g2.pts), fill: 'var(--gear2)', stroke: 'var(--ink)', 'stroke-width': 0.35 }, svg);
+  const c1 = circle(svg, 0, 0, r1, { dash: '1.5 1', stroke: 'var(--accent)', w: 0.35 }), c2 = circle(svg, a, 0, r2, { dash: '1.5 1', stroke: 'var(--accent)', w: 0.35 });
+  const mk1 = el('circle', { r: 1.1, fill: 'var(--blue)' }, svg), mk2 = el('circle', { r: 1.1, fill: 'var(--red)' }, svg);
+  circle(svg, 0, 0, 2.2, { stroke: 'var(--ink)', w: 0.5 }); circle(svg, a, 0, 2.2, { stroke: 'var(--ink)', w: 0.5 });
+  txt(svg, 0, -r1 - 6, '主动轮 z₁ = 17', { fs: 3.2 }); txt(svg, a, -r2 - 4, '从动轮 z₂ = 29', { fs: 3.2 });
+  txt(svg, r1 + 1, r2 + 7, '虚线：分度圆（两圆相切、纯滚动）', { fs: 2.6, fill: 'var(--accent)' });
+  scenes.push(t => {
+    const th1 = t * 30, th2 = -th1 * z1 / z2;
+    rot(p1, -th1); p2.setAttribute('transform', `translate(${a} 0) rotate(${-(th2 + 180 + 180 / z2)})`);
+    const q1 = -th1 * D2R + PI / 2, q2 = (-(th2 + 180 + 180 / z2)) * D2R;
+    mk1.setAttribute('cx', (r1 - 3.5) * Math.cos(q1)); mk1.setAttribute('cy', (r1 - 3.5) * Math.sin(q1));
+    mk2.setAttribute('cx', a + (r2 - 3.5) * Math.cos(q2 + PI / 2)); mk2.setAttribute('cy', (r2 - 3.5) * Math.sin(q2 + PI / 2));
+  });
+}
+// ================= 01 齿数 =================
+{
+  const svg = document.getElementById('f1'), m = 3, z = 20, G = gearPts(m, z, 20);
+  const g = el('g', {}, svg);
+  el('path', { d: pathOf(G.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.35 }, g);
+  const marks = [];
+  for (let k = 0; k < z; k++) { const t = 2 * PI * k / z, R = G.r + 0.3; const c = el('circle', { cx: R * Math.cos(t), cy: -R * Math.sin(t), r: 1.4, fill: 'var(--accent)', opacity: 0 }, g); marks.push(c); }
+  const nt = txt(svg, 0, -1, '', { fs: 9, fill: 'var(--accent)', attr: { 'font-weight': 700 } });
+  const lab = txt(svg, 0, 8, '', { fs: 3, fill: 'var(--muted)' });
+  scenes.push(t => {
+    const per = 0.35, cyc = z * per + 2, tt = t % cyc, n = Math.min(z, Math.floor(tt / per) + 1);
+    rot(g, -t * 6);
+    marks.forEach((c, i) => c.setAttribute('opacity', i < n ? 1 : 0));
+    nt.textContent = n; lab.textContent = n >= z ? '齿数 z = 20' : '数一数…';
+  });
+}
+// ================= 02 模数：三个齿轮在各自的齿条上滚 =================
+{
+  const svg = document.getElementById('f2'); defsArrow(svg, 'a2', 'var(--accent)');
+  const z = 12, ms = [1.6, 2.4, 3.2], xs = [18, 62, 124], base = 58, rackEls = [];
+  ms.forEach((m, k) => {
+    const r = m * z / 2, G = gearPts(m, z, 20), cx = xs[k], cy = base - r;
+    const gp = el('path', { d: pathOf(G.pts), fill: k === 1 ? 'var(--gear2)' : 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+    circle(svg, cx, cy, 1.2, { stroke: 'var(--ink)', w: 0.4 });
+    circle(svg, cx, cy, r, { dash: '1 0.8', stroke: 'var(--accent)', w: 0.25 });
+    // 齿条：节线在 y = base，齿向上
+    const p = PI * m, al = 20 * D2R, ha = m, hf = 1.25 * m, w0 = p / 2;
+    const cpId = 'rk' + k, cpe = el('clipPath', { id: cpId }, svg); el('rect', { x: cx - 3 * p, y: base - ha - 1, width: 6 * p, height: ha + hf + 6 }, cpe);
+    const rk = el('path', { fill: 'var(--steel)', stroke: 'var(--ink)', 'stroke-width': 0.3, 'clip-path': `url(#${cpId})` }); svg.insertBefore(rk, gp);
+    rackEls.push({ gp, rk, m, r, cx, cy, p, al, ha, hf, w0, k });
+    txt(svg, cx, 69, ['m = 1', 'm = 1.5', 'm = 2'][k], { fs: 3.2, attr: { 'font-weight': 700 } });
+    txt(svg, cx, cy - r - 5, 'z = 12', { fs: 2.6, fill: 'var(--muted)' });
+  });
+  const pk = rackEls[2], pl = line(svg, 0, 0, 0, 0, { stroke: 'var(--accent)', w: 0.35, attr: { 'marker-end': 'url(#a2)', 'marker-start': 'url(#a2)' } });
+  const pt = txt(svg, 0, 0, 'p = πm', { fs: 2.8, fill: 'var(--accent)', math: true });
+  scenes.push(t => {
+    const v = 4;   // 齿条速度
+    for (const R of rackEls) {
+      const sh = (v * t) % R.p, x0 = R.cx - 4 * R.p + sh, pts = [];
+      const yB = base + R.hf + 2.5, tw = R.w0 / 2, tt = Math.tan(R.al);
+      pts.push([x0 - R.p, yB]);
+      for (let i = -1; i < 9; i++) {
+        const xc = x0 + i * R.p + R.p / 2;  // 齿条齿中心；t=0 时 x = cx 处是齿槽
+        pts.push([xc - tw - R.hf * tt, base + R.hf], [xc - tw + R.ha * tt, base - R.ha], [xc + tw - R.ha * tt, base - R.ha], [xc + tw + R.hf * tt, base + R.hf]);
+      }
+      pts.push([x0 + 9 * R.p, yB]);
+      R.rk.setAttribute('d', 'M' + pts.map(q => q.map(v => v.toFixed(2)).join(' ')).join('L') + 'Z');
+      // 齿轮在齿条上方：齿条右移，齿轮逆时针滚动，角速度 v/r；t=0 时齿 0 朝下插在齿槽里
+      const ang = (v * t / R.r) / D2R;
+      R.gp.setAttribute('transform', `translate(${R.cx} ${R.cy}) rotate(${90 - ang})`);
+      if (R.k === 2) {
+        const xa = x0 + 4 * R.p + R.p / 2 - R.p * Math.floor(((x0 + 4 * R.p + R.p / 2) - (R.cx - 2.2 * R.p)) / R.p), xb = xa + R.p;
+        pl.setAttribute('x1', xa); pl.setAttribute('x2', xb); pl.setAttribute('y1', base - R.ha - 1.4); pl.setAttribute('y2', base - R.ha - 1.4);
+        pt.setAttribute('x', xb + 1); pt.setAttribute('y', base - R.ha - 1.4); pt.setAttribute('text-anchor', 'start');
+        const vis = xa > R.cx - 3 * R.p && xb < R.cx + 3 * R.p; pl.setAttribute('opacity', vis ? 1 : 0); pt.setAttribute('opacity', vis ? 1 : 0);
+      }
+    }
+  });
+}
+// ================= 03 分度圆与齿距 =================
+{
+  const svg = document.getElementById('f3'); defsArrow(svg, 'a3', 'var(--accent)');
+  const m = 3, z = 16, G = gearPts(m, z, 20), r = G.r;
+  const g = el('g', {}, svg);
+  el('path', { d: pathOf(G.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g);
+  circle(g, 0, 0, r, { stroke: 'var(--accent)', w: 0.5, dash: '1.5 1' });
+  // 一个齿距弧：齿 0 的右齿面到齿 1 的右齿面（分度圆上）
+  const pa = el('path', { fill: 'none', stroke: 'var(--accent)', 'stroke-width': 1.1 }, svg);
+  const sArc = el('path', { fill: 'none', stroke: 'var(--blue)', 'stroke-width': 1.1 }, svg);
+  txt(svg, 0, 0, 'd = m z', { fs: 3.4, fill: 'var(--accent)', math: true });
+  // 下方的“展开尺”：z 段齿距首尾相接
+  const L = PI * 2 * r, sc = 76 / L, y0 = 32, x0 = -38;
+  const bar = el('g', {}, svg), segs = [];
+  for (let k = 0; k < z; k++) { const s = el('rect', { x: x0 + k * PI * m * sc, y: y0, width: PI * m * sc - 0.3, height: 3, fill: 'var(--accent)', opacity: 0.15 }, bar); segs.push(s); }
+  line(svg, x0, y0 + 5, x0 + 76, y0 + 5, { stroke: 'var(--ink)', w: 0.3, attr: { 'marker-end': 'url(#a3)', 'marker-start': 'url(#a3)' } });
+  txt(svg, 0, y0 + 8, 'z 个齿距首尾相接 = 分度圆周长 πd', { fs: 2.7 });
+  txt(svg, 0, y0 + 12, '一个齿距 p = πm，齿厚 s（蓝）= 齿槽宽 e = πm/2', { fs: 2.5, fill: 'var(--muted)' });
+  const cnt = txt(svg, 30, -36, '', { fs: 3, fill: 'var(--accent)' });
+  scenes.push(t => {
+    const per = 0.45, cyc = z * per + 2.5, tt = t % cyc, n = Math.min(z, Math.floor(tt / per) + 1);
+    const fr = Math.min(1, ((tt / per) % 1) / 0.5), e = n >= z ? 0 : fr * fr * (3 - 2 * fr);
+    rot(g, -90 + (n - 1 + (n >= z ? 0 : e) - 0) * 0 + (n - 1) * 360 / z);     // 每拍转一个齿距（顺时针）
+    const arc = (R, t1, t2) => { const p = (u) => [R * Math.cos(u), -R * Math.sin(u)]; const A = p(t1), B = p(t2); return `M${A[0]} ${A[1]} A${R} ${R} 0 0 0 ${B[0]} ${B[1]}`; };
+    const h = G.half(r);
+    pa.setAttribute('d', arc(r + 1.6, PI / 2 + h, PI / 2 + h + 2 * PI / z));
+    sArc.setAttribute('d', arc(r, PI / 2 - h, PI / 2 + h));
+    segs.forEach((s, i) => s.setAttribute('opacity', i < n ? 0.85 : 0.15));
+    cnt.textContent = n + ' × p';
+  });
+
+}
+// ================= 04 齿顶 / 齿根 / 齿高 =================
+{
+  const svg = document.getElementById('f4'); defsArrow(svg, 'a4', 'var(--accent)'); defsArrow(svg, 'a4b', 'var(--blue)');
+  const m = 6, z = 18, G = gearPts(m, z, 20, 0, { n: 30 }), r = G.r;
+  // 齿 0 朝上（-y）
+  const g = el('g', { transform: 'rotate(-90)' }, svg);
+  el('path', { d: pathOf(G.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g);
+  const cs = [[G.ra, 'var(--green)', '齿顶圆 da'], [r, 'var(--accent)', '分度圆 d'], [G.rb, 'var(--violet)', '基圆 db'], [G.rf, 'var(--blue)', '齿根圆 df']];
+  const items = [];
+  cs.forEach(([R, c, nm], i) => {
+    const cc = circle(svg, 0, 0, R, { stroke: c, w: 0.3, dash: i === 1 ? '1.2 0.8' : '0.6 0.6' });
+    const tl = txt(svg, -27, -Math.sqrt(R * R - 27 * 27) - 1.0, nm, { fs: 2.2, fill: c, anchor: 'start' });
+    items.push([cc, tl]);
+  });
+  // 尺寸：ha、hf 在齿 0 右侧的齿槽中心线（角度 90°+180/z）
+  const tq = PI / 2 - PI / z, X = R => R * Math.cos(tq), Y = R => -R * Math.sin(tq);   // 尺寸标在顶齿右侧的齿槽里
+  const dh = [];
+  dh.push([arrow(svg, X(r), Y(r), X(G.ra), Y(G.ra), 'a4', { both: true, stroke: 'var(--green)' }), txt(svg, X(r + m * 0.5) + 1.2, Y(r + m * 0.5), 'ha = m', { fs: 2.1, fill: 'var(--green)', math: true, anchor: 'start' })]);
+  dh.push([arrow(svg, X(G.rf), Y(G.rf), X(r), Y(r), 'a4', { both: true, stroke: 'var(--blue)' }), txt(svg, X(r - 0.6 * m) + 1.2, Y(r - 0.6 * m), 'hf = 1.25m', { fs: 2.1, fill: 'var(--blue)', math: true, anchor: 'start' })]);
+  // 齿厚 s、齿槽宽 e（分度圆弧）
+  const arc = (R, t1, t2) => { const p = (u) => [R * Math.cos(u), -R * Math.sin(u)]; const A = p(t1), B = p(t2); return `M${A[0]} ${A[1]} A${R} ${R} 0 0 0 ${B[0]} ${B[1]}`; };
+  const h = G.half(r);
+  const sA = el('path', { d: arc(r, PI / 2 - h, PI / 2 + h), fill: 'none', stroke: 'var(--red)', 'stroke-width': 0.9 }, svg);
+  const eA = el('path', { d: arc(r, PI / 2 + h, PI / 2 + 2 * PI / z - h), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.9, 'stroke-dasharray': '0.8 0.5' }, svg);
+  const sT = txt(svg, 0, -r + 2.6, 's 齿厚', { fs: 2.1, fill: 'var(--red)' }), eT = txt(svg, -r * Math.cos(PI / 2 - PI / z), -r * Math.sin(PI / 2 - PI / z) + 2.6, 'e 齿槽宽', { fs: 2.1, fill: 'var(--accent)' });
+  const seq = items.concat(dh, [[sA, sT], [eA, eT]]);
+  scenes.push(t => { const n = Math.floor((t % 9) / 0.7); seq.forEach((pair, i) => pair.forEach(e => e.setAttribute('opacity', i <= n ? 1 : 0.08))); });
+}
+// ================= 05 顶隙、侧隙（啮合区放大） =================
+{
+  const svg = document.getElementById('f5'); defsArrow(svg, 'a5', 'var(--accent)');
+  const m = 4, z1 = 20, z2 = 24, r1 = m * z1 / 2, r2 = m * z2 / 2, a = r1 + r2, ds = 0.45;
+  const g1 = gearPts(m, z1, 20, 0, { ds, n: 30 }), g2 = gearPts(m, z2, 20, 0, { ds, n: 30 });
+  // 啮合点在原点：齿轮 1 中心在 (-r1, 0)，齿轮 2 中心在 (r2, 0)
+  const p1 = el('path', { d: pathOf(g1.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.12 }, svg);
+  const p2 = el('path', { d: pathOf(g2.pts), fill: 'var(--gear2)', stroke: 'var(--ink)', 'stroke-width': 0.12 }, svg);
+  const c = 0.25 * m;
+  const cl = arrow(svg, 0, 0, 0, 0, 'a5', { both: true, w: 0.15 }), ct = txt(svg, 0, 0, '顶隙 c = 0.25m', { fs: 1.3, fill: 'var(--accent)', anchor: 'start' });
+  const jt = txt(svg, 0, -10, '侧隙 j：牙背后面的小缝', { fs: 1.3, fill: 'var(--blue)' });
+  const jd = el('circle', { r: 0.9, fill: 'none', stroke: 'var(--blue)', 'stroke-width': 0.15 }, svg);
+  scenes.push(t => {
+    // 主动轮逆时针慢转，让一个齿在中心线位置附近来回
+    const th1 = 0.6 * Math.sin(t * 1.6), th2 = 0;     // 在侧隙范围内来回晃
+    p1.setAttribute('transform', `translate(${-r1} 0) rotate(${-th1})`);
+    p2.setAttribute('transform', `translate(${r2} 0) rotate(${-(th2 + 180 + 180 / z2)})`);
+    // 齿轮 1 的齿 0 齿尖（在 +x 方向）对着齿轮 2 的齿根：顶隙标在中心线上
+    const tipX = -r1 + g1.ra * Math.cos(th1 * D2R), tipY = -g1.ra * Math.sin(th1 * D2R) * 0;
+    cl.setAttribute('x1', tipX); cl.setAttribute('y1', 0); cl.setAttribute('x2', r2 - g2.rf); cl.setAttribute('y2', 0);
+    ct.setAttribute('x', tipX - 0.4); ct.setAttribute('y', 1.6); ct.setAttribute('text-anchor', 'end');
+    // 侧隙：齿轮 1 齿 0 的上侧齿面与齿轮 2 之间（近似位置）
+    jd.setAttribute('cx', 0); jd.setAttribute('cy', -(PI * m / 2) / 2);
+  });
+  svg.setAttribute('viewBox', '-13 -10 26 17');
+  jt.setAttribute('y', -8.6); jt.setAttribute('x', -3); jt.setAttribute('font-size', 1.3); line(svg, -2.2, -7.8, -0.6, -(PI * m / 4) - 0.8, { stroke: 'var(--blue)', w: 0.12 });
+  ct.setAttribute('font-size', 1.3);
+  txt(svg, -11, 6, '主动轮', { fs: 1.4, anchor: 'start' }); txt(svg, 11, 6, '从动轮', { fs: 1.4, anchor: 'end' });
+}
+// ================= 06 基圆与渐开线 =================
+{
+  const svg = document.getElementById('f6');
+  const R0 = 12, g = el('g', {}, svg);
+  el('circle', { cx: 0, cy: 0, r: R0, fill: 'var(--steel)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g);
+  txt(svg, 0, 0, '基圆', { fs: 3, fill: 'var(--ink)' });
+  const trace = el('path', { fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.7 }, g);
+  const wrap = el('path', { fill: 'none', stroke: 'var(--blue)', 'stroke-width': 0.9 }, g);
+  const rope = line(g, 0, 0, 0, 0, { stroke: 'var(--blue)', w: 0.6 });
+  const tang = el('circle', { r: 0.7, fill: 'var(--blue)' }, g);
+  const pen = el('circle', { r: 1, fill: 'var(--accent)' }, g);
+  const ra = el('path', { fill: 'none', stroke: 'var(--muted)', 'stroke-width': 0.25, 'stroke-dasharray': '0.6 0.5' }, g);
+  txt(svg, 2, -19.5, '笔尖画出的曲线 = 渐开线', { fs: 2.2, fill: 'var(--accent)' });
+  txt(svg, 2, 19.5, '蓝线：拉紧的绳子，始终与基圆相切', { fs: 2.2, fill: 'var(--blue)' });
+  const P = ph => [R0 * (Math.cos(ph) + ph * Math.sin(ph)), -R0 * (Math.sin(ph) - ph * Math.cos(ph))];
+  scenes.push(t => {
+    const cyc = 6, u = (t % cyc) / (cyc - 1), ph = Math.min(1, u) * 1.45;
+    const pts = []; for (let i = 0; i <= 60; i++) pts.push(P(ph * i / 60));
+    trace.setAttribute('d', 'M' + pts.map(p => p.map(v => v.toFixed(2)).join(' ')).join('L'));
+    const T = [R0 * Math.cos(ph), -R0 * Math.sin(ph)], E = P(ph);
+    rope.setAttribute('x1', T[0]); rope.setAttribute('y1', T[1]); rope.setAttribute('x2', E[0]); rope.setAttribute('y2', E[1]);
+    tang.setAttribute('cx', T[0]); tang.setAttribute('cy', T[1]); pen.setAttribute('cx', E[0]); pen.setAttribute('cy', E[1]);
+    // 还缠在圆柱上的那段绳子
+    const a0 = ph, a1 = 2 * PI * 0.85; const w = []; for (let i = 0; i <= 40; i++) { const a = a0 + (a1 - a0) * i / 40; w.push([R0 * Math.cos(a), -R0 * Math.sin(a)]); }
+    wrap.setAttribute('d', 'M' + w.map(p => p.map(v => v.toFixed(2)).join(' ')).join('L'));
+  });
+}
+// ================= 07 压力角：啮合线与接触点 =================
+{
+  const svg = document.getElementById('f7'); defsArrow(svg, 'a7', 'var(--accent)');
+  const m = 3.2, z1 = 16, z2 = 22, al = 20, r1 = m * z1 / 2, r2 = m * z2 / 2, a = r1 + r2, A = al * D2R;
+  const G1 = gearPts(m, z1, al, 0, { n: 24 }), G2 = gearPts(m, z2, al, 0, { n: 24 });
+  const ox = -r1;   // 节点在原点
+  const p1 = el('path', { d: pathOf(G1.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.25 }, svg);
+  const p2 = el('path', { d: pathOf(G2.pts), fill: 'var(--gear2)', stroke: 'var(--ink)', 'stroke-width': 0.25 }, svg);
+  circle(svg, ox, 0, G1.rb, { stroke: 'var(--violet)', w: 0.25, dash: '0.6 0.6' }); circle(svg, ox + a, 0, G2.rb, { stroke: 'var(--violet)', w: 0.25, dash: '0.6 0.6' });
+  circle(svg, ox, 0, r1, { stroke: 'var(--accent)', w: 0.25, dash: '1.2 0.8' }); circle(svg, ox + a, 0, r2, { stroke: 'var(--accent)', w: 0.25, dash: '1.2 0.8' });
+  // 啮合线：过节点 (0,0)，方向（屏幕坐标）u = (sinα, -cosα) → 向右上
+  const u = [Math.sin(A), -Math.cos(A)];
+  const t1 = -r1 * Math.sin(A), t2 = r2 * Math.sin(A);  // 两个切点在啮合线上的位置（以节点为原点）
+  const PtL = s => [s * u[0], s * u[1]];
+  // 实际啮合段：啮合线与两个齿顶圆的交点
+  const cut = (cx, R) => { const b = u[0] * (0 - cx), c = cx * cx - R * R; const d = Math.sqrt(b * b - c); return [-b - d, -b + d]; };
+  const s2 = cut(ox + a, G2.ra)[0], s1 = cut(ox, G1.ra)[1];
+  const L1 = PtL(t1 - 6), L2 = PtL(t2 + 6);
+  line(svg, L1[0], L1[1], L2[0], L2[1], { stroke: 'var(--muted)', w: 0.25 });
+  const A1 = PtL(s2), A2 = PtL(s1);
+  line(svg, A1[0], A1[1], A2[0], A2[1], { stroke: 'var(--accent)', w: 0.8 });
+  line(svg, 0, -38, 0, 38, { stroke: 'var(--muted)', w: 0.25, dash: '1 0.8' });
+  // 角度弧
+  const R = 9; el('path', { d: `M0 ${-R} A${R} ${R} 0 0 1 ${R * Math.sin(A)} ${-R * Math.cos(A)}`, fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.35 }, svg);
+  txt(svg, 2.0, -R - 1.8, 'α', { fs: 3.6, fill: 'var(--accent)', math: true });
+  txt(svg, 74, -41, '橙色线段：啮合线（推力方向）', { fs: 2.8, fill: 'var(--accent)', anchor: 'end' });
+  txt(svg, 74, 42, '紫色虚线：基圆，啮合线同时切于两个基圆', { fs: 2.6, fill: 'var(--violet)', anchor: 'end' });
+  const dots = [el('circle', { r: 1.1, fill: 'var(--accent)' }, svg), el('circle', { r: 1.1, fill: 'var(--accent)' }, svg)];
+  const fa = arrow(svg, 0, 0, 0, 0, 'a7', { w: 0.5 });
+  const epsT = txt(svg, -54, -41, '', { fs: 2.8, fill: 'var(--ink)', anchor: 'start' });
+  // 齿轮 1 的齿面（两族），用于逐帧求接触点：与啮合线相交、且齿面法线沿啮合线方向
+  const fam = [-1, 1].map(sg => { const out = []; for (let k = 0; k < z1; k++) { const L = []; for (let i = 0; i <= 40; i++) { const Rr = Math.max(G1.rb, G1.rf) + (G1.ra - Math.max(G1.rb, G1.rf)) * i / 40, th = 2 * PI * k / z1 + sg * G1.half(Rr); L.push([Rr * Math.cos(th), -Rr * Math.sin(th)]); } out.push(L); } return out; });
+  scenes.push(t => {
+    const th1 = t * 18, th2 = -th1 * z1 / z2;
+    p1.setAttribute('transform', `translate(${ox} 0) rotate(${-th1})`);
+    p2.setAttribute('transform', `translate(${ox + a} 0) rotate(${-(th2 + 180 + 180 / z2)})`);
+    const c = Math.cos(th1 * D2R), sn = Math.sin(th1 * D2R), R = q => [ox + q[0] * c + q[1] * sn, -q[0] * sn + q[1] * c];   // 屏幕坐标里逆时针转 th1
+    const list = [];
+    for (const F of fam) for (const L of F) {
+      let prev = null;
+      for (const q0 of L) {
+        const q = R(q0), d = q[0] * u[1] - q[1] * u[0];
+        if (prev && (prev.d > 0) !== (d > 0)) {
+          const w = prev.d / (prev.d - d), X = [prev.q[0] + (q[0] - prev.q[0]) * w, prev.q[1] + (q[1] - prev.q[1]) * w];
+          const tg = [q[0] - prev.q[0], q[1] - prev.q[1]], tl = Math.hypot(...tg), cs = Math.abs((tg[0] * u[0] + tg[1] * u[1]) / tl);
+          const sv = X[0] * u[0] + X[1] * u[1];
+          if (cs < 0.08 && sv >= s2 - 0.05 && sv <= s1 + 0.05) list.push(sv);
+        }
+        prev = { q, d };
+      }
+    }
+    list.sort((p, q) => p - q);
+    dots.forEach((d, i) => { if (i < list.length) { const q = PtL(list[i]); d.setAttribute('cx', q[0]); d.setAttribute('cy', q[1]); d.setAttribute('opacity', 1); } else d.setAttribute('opacity', 0); });
+    if (list.length) { const q = PtL(list[list.length - 1]); fa.setAttribute('x1', q[0]); fa.setAttribute('y1', q[1]); fa.setAttribute('x2', q[0] + 7 * u[0]); fa.setAttribute('y2', q[1] + 7 * u[1]); fa.setAttribute('opacity', 1); } else fa.setAttribute('opacity', 0);
+    epsT.textContent = list.length >= 2 ? '此刻两对牙同时接触' : '此刻一对牙接触';
+  });
+}
+// 压力角对比：三个齿条齿形
+{
+  const svg = document.getElementById('f7b');
+  [[14.5, 20], [20, 60], [25, 100]].forEach(([al, cx]) => {
+    const m = 5, A = al * D2R, w = PI * m / 2, ha = m, hf = 1.25 * m, y0 = 12, tt = Math.tan(A);
+    const pts = [[cx - w / 2 - hf * tt - 2, y0 + hf], [cx - w / 2 - hf * tt, y0 + hf], [cx - w / 2 + ha * tt, y0 - ha], [cx + w / 2 - ha * tt, y0 - ha], [cx + w / 2 + hf * tt, y0 + hf], [cx + w / 2 + hf * tt + 2, y0 + hf], [cx + w / 2 + hf * tt + 2, y0 + hf + 3], [cx - w / 2 - hf * tt - 2, y0 + hf + 3]];
+    el('path', { d: 'M' + pts.map(p => p.join(' ')).join('L') + 'Z', fill: al === 20 ? 'var(--gear2)' : 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+    line(svg, cx + w / 2, y0 - ha - 2, cx + w / 2, y0 + hf + 0.5, { stroke: 'var(--muted)', w: 0.2, dash: '0.6 0.5' });
+    const R = 5.5, x0 = cx + w / 2, yR = y0;
+    el('path', { d: `M${x0} ${yR - R} A${R} ${R} 0 0 1 ${x0 + R * Math.sin(A)} ${yR - R * Math.cos(A)}`, fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.3 }, svg);
+    line(svg, cx - 14, y0, cx + 14, y0, { stroke: 'var(--accent)', w: 0.2, dash: '1 0.6' });
+    txt(svg, cx, 24.5, al + '°' + (al === 14.5 ? ' 牙瘦、平稳' : al === 20 ? ' 标准' : ' 牙壮、径向力大'), { fs: 2.6, fill: al === 20 ? 'var(--accent)' : 'var(--ink)' });
+  });
+  txt(svg, 60, -1.5, '齿条齿形：压力角就是齿面相对竖直线的倾斜角', { fs: 2.6, fill: 'var(--muted)' });
+}
+// ================= 08 变位系数 =================
+{
+  const svg = document.getElementById('f8'); defsArrow(svg, 'a8', 'var(--accent)');
+  const m = 3, z = 24, r = m * z / 2, al = 20, A = al * D2R;
+  // 齿轮中心在 (0, -r)：分度圆最低点在 y = 0；刀具（齿条）在下方，齿向上
+  const gp = el('path', { fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.25 }, svg);
+  const rk = el('path', { fill: 'var(--steel)', stroke: 'var(--ink)', 'stroke-width': 0.25, opacity: 0.92 }, svg);
+  circle(svg, 0, -r, r, { stroke: 'var(--accent)', w: 0.3, dash: '1.2 0.8' });
+  const ref = line(svg, -34, 0, 34, 0, { stroke: 'var(--blue)', w: 0.35, dash: '1.5 0.8' });
+  const sh = arrow(svg, 22, 0, 22, 0, 'a8', { both: true, w: 0.3 });
+  const bgx = el('rect', { x: 20.5, y: -1.4, width: 13, height: 2.6, rx: 0.5, fill: 'var(--card)', opacity: 0.85 }, svg);
+  const xt = txt(svg, 23.5, 3, '', { fs: 1.6, fill: 'var(--accent)', anchor: 'start', attr: { 'font-weight': 700 } });
+  const bst = el('rect', { x: -33.5, y: -19, width: 40, height: 3, rx: 0.5, fill: 'var(--card)', opacity: 0.85 }, svg);
+  const st = txt(svg, -33, -17.5, '', { fs: 1.9, fill: 'var(--ink)', anchor: 'start' });
+  txt(svg, -33, 14.5, '蓝虚线：刀具中线　　橙虚线：齿轮分度圆（不变）', { fs: 1.7, fill: 'var(--muted)', anchor: 'start' });
+  svg.setAttribute('viewBox', '-34 -20 68 36');
+  scenes.push(t => {
+    const x = 0.1 + 0.5 * Math.sin(t * 0.7);       // −0.4 ~ 0.6
+    const G = gearPts(m, z, al, x, { n: 20 });
+    const ang = (t * 2.0) % (360 / z * 4);           // 展成：齿轮慢转、齿条跟着平移
+    const vx = ang * D2R * r;
+    gp.setAttribute('d', pathOf(G.pts)); gp.setAttribute('transform', `translate(0 ${-r}) rotate(${90 - ang})`);
+    // 刀具：中线在 y = +x·m（往下退为正变位），齿顶（切到齿根）高出中线 1.25m，齿根低于中线 1m
+    const yref = x * m, p = PI * m, w = p / 2, tt = Math.tan(A), ha = 1.25 * m, hf = 1.0 * m, pts = [[-34, yref + hf + 6]];
+    for (let i = -8; i <= 8; i++) {
+      const xc = i * p + p / 2 + (vx % p);     // 刀齿中心；t=0 时 x=0 处是刀具齿槽（对着齿轮的齿）
+      pts.push([xc - w / 2 - hf * tt, yref + hf], [xc - w / 2 + ha * tt, yref - ha], [xc + w / 2 - ha * tt, yref - ha], [xc + w / 2 + hf * tt, yref + hf]);
+    }
+    pts.push([34, yref + hf + 6]);
+    const P = pts.map(q => [Math.max(-34, Math.min(34, q[0])), q[1]]);
+    rk.setAttribute('d', 'M' + P.map(q => q.map(v => v.toFixed(2)).join(' ')).join('L') + 'Z');
+    ref.setAttribute('y1', yref); ref.setAttribute('y2', yref);
+    sh.setAttribute('y1', 0); sh.setAttribute('y2', yref); sh.setAttribute('opacity', Math.abs(x) > 0.05 ? 1 : 0);
+    xt.setAttribute('x', 22); xt.setAttribute('y', yref + 2.2); bgx.setAttribute('x', 21.5); bgx.setAttribute('y', yref + 0.9);
+    xt.textContent = 'x = ' + (x >= 0 ? '+' : '') + x.toFixed(2) + (x > 0.05 ? ' 正变位' : x < -0.05 ? ' 负变位' : ' 标准');
+    st.textContent = '分度圆齿厚 s = ' + G.s.toFixed(2) + '（标准 ' + (PI * m / 2).toFixed(2) + '）';
+  });
+}
+// ================= 09 螺旋角 =================
+{
+  const svg = document.getElementById('f9');
+  const W = 56, H = 40, y0 = 8, p = 8, beta = 20 * D2R;
+  const mk = (x0, title, slant) => {
+    const g = el('g', {}, svg), cp = 'c' + x0;
+    const cl = el('clipPath', { id: cp }, svg); el('rect', { x: x0, y: y0, width: W, height: H }, cl);
+    el('rect', { x: x0, y: y0, width: W, height: H, fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g);
+    const lines = el('g', { 'clip-path': `url(#${cp})` }, g);
+    const L = []; for (let i = -4; i < 12; i++) L.push(el('path', { stroke: 'var(--accent)', 'stroke-width': 2.2, fill: 'none', 'stroke-linecap': 'round' }, lines));
+    txt(svg, x0 + W / 2, y0 + H + 5, title, { fs: 3, attr: { 'font-weight': 700 } });
+    return { x0, L, slant };
+  };
+  const a = mk(6, '直齿：牙平行于轴线', 0), b = mk(78, '斜齿：牙斜着走，角度 β', Math.tan(beta) * H);
+  txt(svg, 70, 4, '把外圆“剥”下来摊平看（竖直方向 = 轴线方向）', { fs: 2.6, fill: 'var(--muted)' });
+  // β 角标注
+  const bx = 78 + 30, by = y0 + H;
+  scenes.push(t => {
+    for (const s of [a, b]) {
+      const off = (t * 6) % p;
+      s.L.forEach((l, i) => { const x = s.x0 + i * p + off; l.setAttribute('d', `M${x} ${y0 + H} L${x + s.slant} ${y0}`); });
+    }
+  });
+  const ax = 78 + 10, ay = y0 + H;
+  line(svg, ax, ay, ax, y0 + 6, { stroke: 'var(--ink)', w: 0.3, dash: '1 0.6' });
+  line(svg, ax, ay, ax + Math.tan(beta) * (H - 6), y0 + 6, { stroke: 'var(--ink)', w: 0.3 });
+  const R = 12; el('path', { d: `M${ax} ${ay - R} A${R} ${R} 0 0 1 ${ax + R * Math.sin(beta)} ${ay - R * Math.cos(beta)}`, fill: 'none', stroke: 'var(--ink)', 'stroke-width': 0.4 }, svg);
+  txt(svg, ax + 2.6, ay - R - 2, 'β', { fs: 4, math: true });
+}
+// ================= 10 中心距与传动比 =================
+{
+  const svg = document.getElementById('f10'); defsArrow(svg, 'a10', 'var(--accent)');
+  const m = 2.4, z1 = 15, z2 = 30, r1 = m * z1 / 2, r2 = m * z2 / 2, a = r1 + r2;
+  const g1 = gearPts(m, z1, 20), g2 = gearPts(m, z2, 20);
+  const p1 = el('path', { d: pathOf(g1.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  const p2 = el('path', { d: pathOf(g2.pts), fill: 'var(--gear2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  circle(svg, 0, 0, r1, { stroke: 'var(--accent)', w: 0.3, dash: '1.2 0.8' }); circle(svg, a, 0, r2, { stroke: 'var(--accent)', w: 0.3, dash: '1.2 0.8' });
+  const hand1 = line(svg, 0, 0, 0, 0, { stroke: 'var(--blue)', w: 1 }), hand2 = line(svg, a, 0, a, 0, { stroke: 'var(--red)', w: 1 });
+  circle(svg, 0, 0, 1.6, { stroke: 'var(--ink)', w: 0.5 }); circle(svg, a, 0, 1.6, { stroke: 'var(--ink)', w: 0.5 });
+  line(svg, 0, 41, a, 41, { stroke: 'var(--accent)', w: 0.35, attr: { 'marker-end': 'url(#a10)', 'marker-start': 'url(#a10)' } });
+  line(svg, 0, 2, 0, 42.5, { stroke: 'var(--muted)', w: 0.2, dash: '0.6 0.5' }); line(svg, a, 2, a, 42.5, { stroke: 'var(--muted)', w: 0.2, dash: '0.6 0.5' });
+  txt(svg, a / 2, 44, '中心距 a = m(z₁ + z₂)/2', { fs: 2.8, fill: 'var(--accent)' });
+  const n1 = txt(svg, 0, -r1 - 8, '', { fs: 2.8, fill: 'var(--blue)' }), n2 = txt(svg, a, -r2 - 5, '', { fs: 2.8, fill: 'var(--red)' });
+  scenes.push(t => {
+    const th1 = t * 60, th2 = -th1 * z1 / z2;
+    p1.setAttribute('transform', `rotate(${-th1})`); p2.setAttribute('transform', `translate(${a} 0) rotate(${-(th2 + 180 + 180 / z2)})`);
+    const q1 = th1 * D2R, q2 = th2 * D2R;
+    hand1.setAttribute('x2', (r1 - 4) * Math.cos(q1 + PI / 2)); hand1.setAttribute('y2', -(r1 - 4) * Math.sin(q1 + PI / 2));
+    hand2.setAttribute('x2', a + (r2 - 5) * Math.cos(q2 + PI / 2)); hand2.setAttribute('y2', -(r2 - 5) * Math.sin(q2 + PI / 2));
+    n1.textContent = '小轮 z₁=15：' + (th1 / 360).toFixed(1) + ' 圈'; n2.textContent = '大轮 z₂=30：' + (Math.abs(th2) / 360).toFixed(1) + ' 圈';
+  });
+}
+// ================= 11 公法线 =================
+{
+  const svg = document.getElementById('f11'); defsArrow(svg, 'a11', 'var(--accent)');
+  const m = 3.2, z = 24, al = 20, A = al * D2R, G = gearPts(m, z, al, 0, { n: 24 }), k = 3;
+  const W = m * Math.cos(A) * ((k - 0.5) * PI + z * inv(A));
+  const cy = G.rb;   // 齿轮中心在 (0, cy)，基圆切线 y = 0
+  const g = el('path', { d: pathOf(G.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.25, transform: `translate(0 ${cy}) rotate(-90)` }, svg);
+  circle(svg, 0, cy, G.rb, { stroke: 'var(--violet)', w: 0.25, dash: '0.6 0.6' });
+  line(svg, -W / 2, 0, W / 2, 0, { stroke: 'var(--green)', w: 0.4 });
+  const jl = el('rect', { y: -6, width: 2.2, height: 12, fill: 'var(--accent)', opacity: 0.85 }, svg), jr = el('rect', { y: -6, width: 2.2, height: 12, fill: 'var(--accent)', opacity: 0.85 }, svg);
+  const dim = line(svg, -W / 2, -4.6, W / 2, -4.6, { stroke: 'var(--accent)', w: 0.35, attr: { 'marker-end': 'url(#a11)', 'marker-start': 'url(#a11)' } });
+  const wt = txt(svg, 0, -7.6, '', { fs: 2.2, fill: 'var(--accent)' });
+  const gb = el('rect', { x: -21, y: 1.0, width: 42, height: 3, rx: 0.6, fill: 'var(--card)', opacity: 0.85 }, svg);
+  txt(svg, 0, 2.5, '绿线：与基圆相切，同时垂直于两侧齿面', { fs: 1.8, fill: 'var(--green)' });
+  scenes.push(t => {
+    const u = Math.min(1, (t % 5) / 2.2), gap = 10 * (1 - u * u * (3 - 2 * u));
+    jl.setAttribute('x', -W / 2 - 2.2 - gap); jr.setAttribute('x', W / 2 + gap);
+    const on = u >= 1; dim.setAttribute('opacity', on ? 1 : 0); wt.setAttribute('opacity', on ? 1 : 0);
+    wt.textContent = '跨 k = 3 个齿：W₃ = ' + W.toFixed(3) + '（m=' + m + '，z=' + z + '）';
+  });
+  svg.setAttribute('viewBox', '-40 -10 80 40');
+}
+// ================= 12 动手试一试 =================
+{
+  const svg = document.getElementById('f12');
+  const gp = el('path', { fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.4 }, svg);
+  const cs = { a: circle(svg, 0, 0, 1, { stroke: 'var(--green)', w: 0.35, dash: '0.8 0.6' }), d: circle(svg, 0, 0, 1, { stroke: 'var(--accent)', w: 0.45, dash: '1.5 1' }), b: circle(svg, 0, 0, 1, { stroke: 'var(--violet)', w: 0.35, dash: '0.8 0.6' }), f: circle(svg, 0, 0, 1, { stroke: 'var(--blue)', w: 0.35, dash: '0.8 0.6' }) };
+  const MS = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+  const $ = id => document.getElementById(id);
+  let G = null;
+  const upd = () => {
+    const z = +$('iz').value, m = MS[+$('im').value], al = +$('ia').value, x = +$('ix').value;
+    $('vz').textContent = z; $('vm').textContent = m; $('vx').textContent = (x >= 0 ? '+' : '') + x.toFixed(2);
+    G = gearPts(m, z, al, x, { n: 16 }); gp.setAttribute('d', pathOf(G.pts));
+    const sc = 56 / G.ra; gp.setAttribute('transform', `scale(${sc})`);
+    for (const [k, R] of [['a', G.ra], ['d', G.r], ['b', G.rb], ['f', G.rf]]) { cs[k].setAttribute('r', R * sc); }
+    const A = al * D2R, zmin = 2 / Math.pow(Math.sin(A), 2), xmin = (zmin - z) / zmin;
+    const rows = [['分度圆 d = m z', 2 * G.r], ['齿顶圆 da', 2 * G.ra], ['齿根圆 df', 2 * G.rf], ['基圆 db = d cos α', 2 * G.rb], ['齿距 p = π m', PI * m], ['分度圆齿厚 s', G.s], ['全齿高 h', G.ra - G.rf]];
+    $('tout').innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1].toFixed(3)}</td></tr>`).join('')
+      + `<tr><td colspan="2" style="color:${x < xmin - 1e-9 ? 'var(--red)' : 'var(--green)'}">${x < xmin - 1e-9 ? '会根切：至少需要 x ≥ ' + xmin.toFixed(2) : '不根切（最小变位 ' + xmin.toFixed(2) + '）'}${G.raE < G.ra - 1e-6 ? '；齿顶变尖了' : ''}</td></tr>`;
+  };
+  ['iz', 'im', 'ia', 'ix'].forEach(id => $(id).addEventListener('input', upd)); upd();
+  scenes.push(t => gp.setAttribute('transform', gp.getAttribute('transform').replace(/ rotate\([^)]*\)/, '') + ` rotate(${-t * 8})`));
+}
+
+// ---------- 目录 ----------
+document.getElementById('toc').innerHTML = [...document.querySelectorAll('section.card')].map(s => `<a href="#${s.id}">${s.querySelector('h2').textContent.replace(/^\d\d/, '')}</a>`).join('');
+// ---------- 动画循环（可被外部按时间渲染，用于截图/录屏） ----------
+let paused = false;
+window.__render = t => { paused = true; scenes.forEach(s => s(t)); };
+const t0 = performance.now();
+const loop = now => { if (!paused) { const t = (now - t0) / 1000; scenes.forEach(s => s(t)); } requestAnimationFrame(loop); };
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
