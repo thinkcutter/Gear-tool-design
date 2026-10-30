@@ -104,6 +104,7 @@ td:first-child,th:first-child{text-align:left;color:var(--muted)}
 .tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
 .tools .f{flex-direction:row;align-items:center;gap:6px}
 .tools .f input{width:84px}
+.tools .f label{white-space:nowrap;overflow:visible;flex:none}
 textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;margin-top:8px}
 .note{font-size:12.5px;color:var(--muted);line-height:1.65}
 .note p{margin:0 0 6px;max-width:68ch}
@@ -218,13 +219,17 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
   <section class="card">
     <h2>刀具廓形坐标 <span>H 自刀尖起算</span></h2>
     <div class="tools">
-      <div class="f"><label for="step">点距 mm</label><input id="step" type="number" step="0.1" min="0.02" value="0.5"></div>
+      <div class="f"><label for="omode">输出方式</label><select id="omode"><option value="pts">等点距坐标点</option><option value="fit">圆弧 + 直线拟合</option></select></div>
+      <div class="f" id="f_step"><label for="step">点距 mm</label><input id="step" type="number" step="0.1" min="0.02" value="0.5"></div>
+      <div class="f" id="f_ftol" hidden><label for="ftol">拟合误差 mm</label><input id="ftol" type="number" step="0.001" min="0.0001" value="0.001"></div>
+      <div class="f" id="f_fg1" hidden><label for="fg1">段间相切</label><select id="fg1"><option value="1">相切连续</option><option value="0">允许微小折角</option></select></div>
       <button class="btn" id="cpCsv">复制 CSV</button>
       <button class="btn" id="cpDxf">复制 DXF</button>
       <span class="cap" id="cpMsg"></span>
     </div>
     <textarea id="outTxt" readonly hidden></textarea>
-    <div class="tblwrap" style="margin-top:8px"><table><thead><tr><th>#</th><th>H 高度</th><th id="th_R">R 半径</th><th id="th_D">D 直径</th></tr></thead><tbody id="tb"></tbody></table></div>
+    <div class="cap" id="fitMsg" hidden></div>
+    <div class="tblwrap" style="margin-top:8px"><table><thead id="thd"><tr><th>#</th><th>H 高度</th><th id="th_R">R 半径</th><th id="th_D">D 直径</th></tr></thead><tbody id="tb"></tbody></table></div>
   </section>
 
   <section class="card note">
@@ -267,6 +272,7 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
     <p><b>螺旋面的成形铣刀</b>：零件螺旋面 S(r, z, θ) = (−r sinθ, r cosθ, z + pθ)，p = 导程/2π。盘铣刀安装角默认取分度圆导程角，刀具中心距自动迭代使刀具外径等于给定值；指型铣刀刀轴沿径向。接触条件 (S − C)·(n × a) = 0，从槽底开始按 θ 连续跟踪接触点，避免跳到假解。算出刀具后做两项校核：<b>反算偏差</b>——用刀具包络回零件，与目标型线比较，查加工不到的地方；<b>全局过切</b>——把整把刀具沿螺旋运动换算到端面，看是否切进齿槽另一侧或相邻齿。两项都在 2 µm 以内才说明这把刀可用。</p>
     <p><b>蜗杆成形车刀</b>：刃口 = 前刀面与螺旋面的交线。轴向安装（ZA 刃口为直线）、法向安装（ZN，前刀面在分度圆处的齿槽法平面内）、偏置安装（ZI，前刀面偏离轴线 rb，左右齿面各用一把车刀，刃口均为直线）。有前角时前刀面绕刃口方向转 γ；“后刀面法向截面”给出磨刀用的廓形（深度 × cos(α+γ)/cosγ）。侧后角：进给一侧要加上齿根导程角，另一侧要减去齿顶导程角。</p>
     <p><b>回转体成形车刀</b>：输入零件轮廓（轴向位置 z，直径或半径），刀尖对准零件最小半径。C = √(r² − (r₁ sinγ)²) − r₁ cosγ 为前刀面内的廓形深度；<b>棱体刀</b>廓形深度 P = C·cos(α + γ)（垂直于后刀面量）；<b>圆体刀</b>各点半径 Rx = √(R0² + C² − 2R0·C·cos(α + γ))，刀具中心高于工件中心 R0·sinα。</p>
+    <p><b>刀具坐标输出</b>：① <b>等点距坐标点</b>：沿廓形每隔“点距”取一点，相邻点连成直线。曲线段的误差很小，但廓形上的尖角（如齿面与倒角的交点）可能落在两点之间被削掉，最大约为点距的 1/10，所以要求 1 µm 时点距要取到 0.01 左右。② <b>圆弧 + 直线拟合</b>：按“拟合误差”自动分段，用最少的圆弧和直线逼近程序算出的理论廓形；刀尖平底、倒角等直线段保持为直线，尖角和曲率突变点（直线接圆角、圆角接渐开线）作为段的端点保留。选“相切连续”时用双圆弧逐段拟合，每段终点的切向与廓形一致，连接处没有折角（廓形本身的尖角除外）；选“允许微小折角”时每段用过三点的圆弧，段数更少，连接处折角一般只有百分之几度。表中给出每段的起点、终点、圆心、半径和实测偏差，DXF 中为真正的 ARC / LINE 图元，可直接用于磨床或线切割编程。</p>
     <p><b>直齿</b>：刀轴沿齿槽对称线，刀具轴向廓形 = 端面齿槽廓形。<b>斜齿</b>：刀轴垂直并相交于齿轮轴线，沿螺旋线进给；对每个齿面点求“齿面法线与刀轴相交”的接触点，得到精确的刀具回转廓形。图中虚线为分度圆处的法向截面，供对比。</p>
     <p><b>齿形修正</b>：修缘量从修缘高度起点按直线或抛物线增加，到齿顶达到 Ca；倒角按“高度 × 宽度”给出：高度从齿顶圆沿径向往下量，宽度沿齿顶圆从原齿顶角往齿中间量，两腿相等即 C 型倒角；倒圆为与齿面、齿顶圆同时相切的圆弧。<b>留磨量</b>沿齿面法向把刀具每侧收窄 q，只影响刀具，图中黑线仍是成品齿形；<b>挖根量</b>让刀具在齿根过渡区比成品多铣 pr，磨齿时砂轮不碰齿根、不留台阶，过渡区内两者平滑衔接。斜齿时以上修正都按端面截面计算。</p>
     <p><b>图纸核对</b>：程序把图纸上的齿顶圆、齿根圆和按标准公式（齿轮 ha*、c*、变位；花键按 GB/T 3478.1 或 DIN 5480 齿形）算出的值对比，在结果里列出差值。外齿齿顶圆偏大、齿根偏浅（内齿反过来）这类有干涉风险的偏差会提示向客户确认；齿根更深、齿顶缩短这类常见设计只列出不报警。程序计算一律以图纸数据为准，核对结果只作提醒。</p>
@@ -344,6 +350,160 @@ var G = (function () {
     }
     return out;
   }
+  // ---------- 按误差拟合成最少的直线 + 圆弧段 ----------
+  // P：理论廓形上的点 [[x, y], ...]。点本身在真实曲线上；点距明显大于两侧的一段当作真正的直线（如刀尖平底、倒角）。
+  // tol：允许的最大偏差（mm，按各点到拟合段的距离核对）；g1：相切连续（用双圆弧，段终点切向与廓形一致），尖角处除外。
+  // 返回 { segs: [{ t: 'L'|'A', a, b, c, R, ccw, err }], maxErr, nArc, nLine }
+  function arcFit(P0, tol, g1) {
+    const P = [];
+    for (const q of P0) if (!P.length || hyp(q[0] - P[P.length - 1][0], q[1] - P[P.length - 1][1]) > 1e-7) P.push(q);
+    const n = P.length;
+    if (n < 2) return { segs: [], maxErr: 0, nArc: 0, nLine: 0 };
+    const sub = (a, b) => [a[0] - b[0], a[1] - b[1]], add = (a, b) => [a[0] + b[0], a[1] + b[1]], mul = (a, k) => [a[0] * k, a[1] * k];
+    const dot = (a, b) => a[0] * b[0] + a[1] * b[1], crs = (a, b) => a[0] * b[1] - a[1] * b[0];
+    const unit = v => { const l = hyp(v[0], v[1]) || 1; return [v[0] / l, v[1] / l]; };
+    const len = []; for (let k = 0; k < n - 1; k++) len.push(hyp(...sub(P[k + 1], P[k])));
+    const straight = len.map((L, k) => n === 2 || (L > 10 * tol && L > 3 * Math.max(len[k - 1] || 0, len[k + 1] || 0)));
+    const turn = new Array(n).fill(0);
+    for (let k = 1; k < n - 1; k++) { const u = sub(P[k], P[k - 1]), v = sub(P[k + 1], P[k]); turn[k] = Math.abs(Math.atan2(crs(u, v), dot(u, v))); }
+    // 分段点：两端、尖角、真直线段的两端
+    const isBrk = new Array(n).fill(false); isBrk[0] = isBrk[n - 1] = true;
+    for (let k = 1; k < n - 1; k++) {
+      const nb = Math.max(turn[k - 1], turn[k + 1]);
+      if (turn[k] > 25 * D2R || (turn[k] > 1.5 * D2R && turn[k] > 5 * nb)) isBrk[k] = true;
+    }
+    straight.forEach((st, k) => { if (st) { isBrk[k] = true; isBrk[k + 1] = true; } });
+    // 曲率突变点（如直线接圆角、圆角接渐开线）：两侧相切但曲率不同，也作为分段点，这样每段各自是一条光滑曲线
+    const kap = new Array(n).fill(0);
+    for (let k = 1; k < n - 1; k++) { const a = P[k - 1], m = P[k], b = P[k + 1], la = hyp(...sub(m, a)), lb = hyp(...sub(b, m)), lc = hyp(...sub(b, a)); kap[k] = lc > 0 ? 2 * crs(sub(m, a), sub(b, m)) / (la * lb * lc) : 0; }
+    for (let k = 2; k < n - 2; k++) {
+      const kl = kap[k - 1], kr = kap[k + 1], d = Math.abs(kr - kl), m = Math.max(Math.abs(kl), Math.abs(kr));
+      if (m > 1e-3 && d > 0.5 * m && Math.abs(kap[k - 2] - kl) < 0.2 * d && Math.abs(kap[k + 2] - kr) < 0.2 * d) isBrk[k] = true;
+    }
+    const brk = []; isBrk.forEach((b, k) => { if (b) brk.push(k); });
+    // 切向：三点圆在中间点的切线；挨着真直线段的点用直线方向；分段点两侧分别取单侧切线
+    const circTan = (a, m, b, at) => {     // 过 a、m、b 的圆在点 at（a/m/b 之一）处、沿 a→b 方向的切线
+      const ax = a[0] - m[0], ay = a[1] - m[1], bx = b[0] - m[0], by = b[1] - m[1], den = 2 * (ax * by - ay * bx), ch = unit(sub(b, a));
+      if (Math.abs(den) < 1e-14) return ch;
+      const s1 = ax * ax + ay * ay, s2 = bx * bx + by * by, o = [m[0] + (by * s1 - ay * s2) / den, m[1] + (ax * s2 - bx * s1) / den];
+      const r = sub(at, o); let t = unit([-r[1], r[0]]); const ccw = den > 0 ? -1 : 1;   // den = (a−m)×(b−m) > 0：a→m→b 顺时针
+      t = mul(t, ccw); return t;
+    };
+    const tanR = k => {   // k 点处朝后（k→k+1 方向）的切线
+      if (k >= n - 1) return tanL(k);
+      if (straight[k]) return unit(sub(P[k + 1], P[k]));
+      if (k > 0 && !isBrk[k]) return circTan(P[k - 1], P[k], P[k + 1], P[k]);
+      if (k + 2 < n && !straight[k + 1]) return circTan(P[k], P[k + 1], P[k + 2], P[k]);
+      return unit(sub(P[k + 1], P[k]));
+    };
+    function tanL(k) {    // k 点处来向（k−1→k 方向）的切线
+      if (k <= 0) return tanR(0);
+      if (straight[k - 1]) return unit(sub(P[k], P[k - 1]));
+      if (k < n - 1 && !isBrk[k]) return circTan(P[k - 1], P[k], P[k + 1], P[k]);
+      if (k - 2 >= 0 && !straight[k - 2]) return circTan(P[k - 2], P[k - 1], P[k], P[k]);
+      return unit(sub(P[k], P[k - 1]));
+    }
+    // 基本图元
+    const mkLine = (a, b) => ({ t: 'L', a, b });
+    const mkArcT = (a, t, b) => {             // 过 a、在 a 处切向 t、过 b；接近直线时返回直线
+      const nrm = [-t[1], t[0]], d = sub(b, a), den = 2 * dot(d, nrm), dd = dot(d, d);
+      if (Math.abs(den) < 1e-12 * Math.max(1, dd) || Math.abs(dd / den) > 1e6) return mkLine(a, b);
+      const k = dd / den, o = add(a, mul(nrm, k));
+      return { t: 'A', a, b, c: o, R: Math.abs(k), ccw: k > 0 };
+    };
+    const mkArc3 = (a, m, b) => {
+      const ax = m[0] - a[0], ay = m[1] - a[1], bx = b[0] - a[0], by = b[1] - a[1], den = 2 * (ax * by - ay * bx);
+      if (Math.abs(den) < 1e-14) return mkLine(a, b);
+      const s1 = ax * ax + ay * ay, s2 = bx * bx + by * by, o = [a[0] + (by * s1 - ay * s2) / den, a[1] + (ax * s2 - bx * s1) / den], R = hyp(...sub(a, o));
+      if (R > 1e6) return mkLine(a, b);
+      return { t: 'A', a, b, c: o, R, ccw: den > 0 };
+    };
+    const sweep = g => { let a0 = Math.atan2(g.a[1] - g.c[1], g.a[0] - g.c[0]), a1 = Math.atan2(g.b[1] - g.c[1], g.b[0] - g.c[0]), s = g.ccw ? a1 - a0 : a0 - a1; while (s < 0) s += 2 * PI; return { a0, s }; };
+    const endTan = g => { if (g.t === 'L') return unit(sub(g.b, g.a)); const v = sub(g.b, g.c); return unit(g.ccw ? [-v[1], v[0]] : [v[1], -v[0]]); };
+    const distTo = (q, g) => {
+      if (g.t === 'L') { const d = sub(g.b, g.a), L2 = dot(d, d) || 1e-24; let t = dot(sub(q, g.a), d) / L2; t = Math.max(0, Math.min(1, t)); return hyp(...sub(q, add(g.a, mul(d, t)))); }
+      const sw = g._sw || (g._sw = sweep(g)); let a = Math.atan2(q[1] - g.c[1], q[0] - g.c[0]), r = g.ccw ? a - sw.a0 : sw.a0 - a; while (r < 0) r += 2 * PI;
+      if (r <= sw.s + 1e-12) return Math.abs(hyp(...sub(q, g.c)) - g.R);
+      return Math.min(hyp(...sub(q, g.a)), hyp(...sub(q, g.b)));
+    };
+    const spanErr = (i, j, gs) => { let m = 0; for (let k = i; k <= j; k++) { let d = Infinity; for (const g of gs) d = Math.min(d, distTo(P[k], g)); if (d > m) m = d; if (m > tol) return m; } return m; };
+    const biarc = (p0, t0, p1, t1) => {
+      const v = sub(p1, p0), c = 2 * (1 - dot(t0, t1)), b = dot(v, add(t0, t1)), vv = dot(v, v);
+      let d;
+      if (c < 1e-12) { if (Math.abs(crs(t0, v)) < 1e-12 * Math.sqrt(vv)) return [mkLine(p0, p1)]; if (b <= 0) return null; d = vv / (2 * b); }
+      else d = (-b + Math.sqrt(b * b + c * vv)) / c;
+      if (!(d > 0)) return null;
+      const q0 = add(p0, mul(t0, d)), q1 = sub(p1, mul(t1, d)), pm = mul(add(q0, q1), 0.5), tm = unit(sub(q1, q0));
+      return [mkArcT(p0, t0, pm), mkArcT(pm, tm, p1)];
+    };
+    // 在 (i, e] 里找最远的 j 使 make(j) 合格（倍增 + 二分）
+    const longest = (i, e, make, j0) => {
+      const base = (j0 || i + 1) - 1; if (base + 1 > e) return null;
+      let good = null, lo = base, step = 1;
+      while (true) {
+        const j = Math.min(base + step, e), r = make(j);
+        if (r) { good = { j, r }; lo = j; if (j === e) return good; step *= 2; }
+        else { let hi = j; while (hi - lo > 1) { const mid = (lo + hi) >> 1, rm = make(mid); if (rm) { good = { j: mid, r: rm }; lo = mid; } else hi = mid; } return good; }
+      }
+    };
+    const angTol = 2e-4;
+    const carry = k => k > 0 && k < n - 1 && turn[k] < 3.5e-4;    // 分段点处转角 < 0.02°：两侧视为相切，沿用切向
+    const segs = [];
+    let tPrev = null;
+    for (let p = 0; p < brk.length - 1; p++) {
+      const s = brk[p], e = brk[p + 1];
+      if (e === s + 1 && (straight[s] || !g1)) { const g = mkLine(P[s], P[e]); g.err = 0; segs.push(g); tPrev = endTan(g); continue; }
+      // 相切连续：分段点处廓形本身是光滑的，就沿用上一段的终点切向；否则（哪怕是很小的折角）按廓形自身的切向重新开始
+      let t = g1 ? (tPrev && s > 0 && carry(s) ? tPrev : tanR(s)) : null, i = s;
+      while (i < e) {
+        let best = null;
+        const L = longest(i, e, j => {
+          const g = mkLine(P[i], P[j]); if (g1) { const dd = unit(sub(P[j], P[i])); if (Math.abs(crs(t, dd)) > angTol || Math.abs(crs(dd, j === e ? tanL(j) : tanR(j))) > angTol) return null; }
+          const er = spanErr(i, j, [g]); return er <= tol ? { gs: [g], er } : null;
+        });
+        const A = longest(i, e, j => {
+          let gs;
+          if (g1) {
+            // 走到本段终点、且终点是真正的折角时，终点切向不用对齐，一段圆弧就够
+            if (j === e && !carry(e)) { const g = mkArcT(P[i], t, P[j]), er = spanErr(i, j, [g]); if (er <= tol) return { gs: [g], er }; }
+            gs = biarc(P[i], t, P[j], j === e ? tanL(j) : tanR(j)); if (!gs) return null;
+          }
+          else { if (j - i < 2) return null; gs = [mkArc3(P[i], P[(i + j) >> 1], P[j])]; }
+          const er = spanErr(i, j, gs); return er <= tol ? { gs, er } : null;
+        }, g1 ? i + 1 : i + 2);
+        if (L && (!A || L.j >= A.j)) best = L; else best = A;
+        if (!best) { const g = g1 ? mkArcT(P[i], t, P[i + 1]) : mkLine(P[i], P[i + 1]); best = { j: i + 1, r: { gs: [g], er: spanErr(i, i + 1, [g]) } }; }
+        for (const g of best.r.gs) { g.err = best.r.er; segs.push(g); }
+        t = endTan(best.r.gs[best.r.gs.length - 1]); i = best.j;
+      }
+      tPrev = t;
+    }
+    // 合并：共线直线；同圆心、同半径、同方向的相邻圆弧
+    const out = [];
+    for (const g of segs) {
+      const q = out[out.length - 1];
+      if (q && q.t === 'L' && g.t === 'L') { const d1 = unit(sub(q.b, q.a)), d2 = unit(sub(g.b, g.a)); if (Math.abs(crs(d1, d2)) < 1e-9 && dot(d1, d2) > 0) { q.b = g.b; q.err = Math.max(q.err, g.err); continue; } }
+      if (q && q.t === 'A' && g.t === 'A' && q.ccw === g.ccw && hyp(...sub(q.c, g.c)) < tol * 0.1 && Math.abs(q.R - g.R) < tol * 0.1) { q.b = g.b; q.err = Math.max(q.err, g.err); delete q._sw; continue; }
+      out.push(Object.assign({}, g));
+    }
+    // 很短的过渡小段（如刀尖平底和圆角之间的一小段根圆）：并到相邻段里，只要偏差仍在允许范围内
+    const segLen = g => g.t === 'L' ? hyp(...sub(g.b, g.a)) : g.R * sweep(g).s;
+    const onArc = (q, g) => Math.abs(hyp(...sub(q, g.c)) - g.R);
+    const onLine = (q, g) => { const d = sub(g.b, g.a), L = hyp(d[0], d[1]) || 1e-12; return Math.abs(crs(d, sub(q, g.a))) / L; };
+    for (let k = 0; k < out.length; k++) {
+      const g = out[k]; if (out.length < 2 || segLen(g) > Math.max(0.05, 50 * tol)) continue;
+      const mid = g.t === 'L' ? mul(add(g.a, g.b), 0.5) : (() => { const sw = sweep(g), a = sw.a0 + (g.ccw ? 1 : -1) * sw.s / 2; return [g.c[0] + g.R * Math.cos(a), g.c[1] + g.R * Math.sin(a)]; })();
+      const nx = out[k + 1], pv = out[k - 1];
+      if (nx && nx.t === 'A' && Math.max(onArc(g.a, nx), onArc(mid, nx)) <= tol) { nx.a = g.a; nx.err = Math.max(nx.err, onArc(g.a, nx), onArc(mid, nx)); delete nx._sw; out.splice(k, 1); k--; continue; }
+      if (pv && pv.t === 'A' && Math.max(onArc(g.b, pv), onArc(mid, pv)) <= tol) { pv.b = g.b; pv.err = Math.max(pv.err, onArc(g.b, pv), onArc(mid, pv)); delete pv._sw; out.splice(k, 1); k--; continue; }
+      if (pv && pv.t === 'L' && Math.max(onLine(g.b, pv), onLine(mid, pv)) <= tol) { pv.b = g.b; pv.err = Math.max(pv.err, onLine(g.b, pv), onLine(mid, pv)); out.splice(k, 1); k--; continue; }
+      if (nx && nx.t === 'L' && Math.max(onLine(g.a, nx), onLine(mid, nx)) <= tol) { nx.a = g.a; nx.err = Math.max(nx.err, onLine(g.a, nx), onLine(mid, nx)); out.splice(k, 1); k--; continue; }
+    }
+    let maxErr = 0, nArc = 0, nLine = 0;
+    for (const g of out) { delete g._sw; maxErr = Math.max(maxErr, g.err); if (g.t === 'A') nArc++; else nLine++; }
+    return { segs: out, maxErr, nArc, nLine };
+  }
+
   // 在 x(y) 或任意折线上：给定 y 求 x（第一段）
   function xAtY(pts, y) {
     for (let i = 1; i < pts.length; i++) {
@@ -423,15 +583,16 @@ var G = (function () {
     const Tr = [C[0] / Cr * rootR, C[1] / Cr * rootR];
     const th = Math.atan2(Tr[0], Tr[1]);
     const out = [];
-    const nR = 30;
+    // 点数随尺寸增加（大模数时圆角、根圆、齿面也保持约 0.02～0.05 mm 的点距，坐标输出和圆弧拟合都更准）
+    const nR = Math.min(2000, Math.max(30, Math.ceil(Math.abs(th) * rootR / 0.05)));
     for (let i = 0; i <= nR; i++) { const a = th * i / nR; out.push([rootR * Math.sin(a), rootR * Math.cos(a)]); }
     if (rho > 0) {
       let a1 = Math.atan2(Tr[1] - C[1], Tr[0] - C[0]), a2 = Math.atan2(F[1] - C[1], F[0] - C[0]);
       let da = a2 - a1; while (da > PI) da -= 2 * PI; while (da < -PI) da += 2 * PI;
-      const nA = 40;
+      const nA = Math.min(2000, Math.max(40, Math.ceil(Math.abs(da) * rho / 0.02)));
       for (let i = 1; i <= nA; i++) { const a = a1 + da * i / nA; out.push([C[0] + rho * Math.cos(a), C[1] + rho * Math.sin(a)]); }
     }
-    const nF = 300;
+    const Ff = flank(1), nF = Math.min(4000, Math.max(300, Math.ceil(hyp(Ff[0] - F[0], Ff[1] - F[1]) / 0.05)));
     for (let i = 1; i <= nF; i++) { const t = ts + (1 - ts) * i / nF; out.push(flank(t)); }
     out.Rinv = hyp(F[0], F[1]);
     return out;
@@ -807,7 +968,7 @@ var G = (function () {
     return { prof, hEdge: b[0], yTip, sag, residual, mono, contact: pts, hP, RP, isExt };
   }
 
-  return { build, modify, makeCutter, thicknessFromM, MFromThickness, WFromThickness, thicknessFromW, spanK, normalSection, cutterContact, resample, xAtY, rot, inv, hyp, D2R };
+  return { arcFit, build, modify, makeCutter, thicknessFromM, MFromThickness, WFromThickness, thicknessFromW, spanK, normalSection, cutterContact, resample, xAtY, rot, inv, hyp, D2R };
 })();
 if (typeof module !== 'undefined') module.exports = G;
 
@@ -1516,6 +1677,10 @@ if (typeof module !== 'undefined') module.exports = HX;
     't_Lh': '刀头（刃部）沿插削方向的长度，只影响 3D 显示。0 = 自动，约等于齿高。',
     'a_std': 'GB/T 10095 与 ISO 1328-1 等级相同。AGMA 2015 用 A 级（A8 ≈ ISO 8 级）；AGMA 2000 用 Q 级，数字越大越精密，约为 ISO 17 − Q 级。图纸只写“8/AGMA”时，请向客户确认是哪个版本。',
     'a_q': '图纸上的精度等级数字，例如 7/ISO 1328 填 7。精度等级不参与刀具廓形计算，只用来算零件公差和刀具廓形公差建议。',
+    'omode': '等点距坐标点：按“点距”均匀取点，连起来都是直线段；廓形里的尖角（如齿面与倒角的交点）可能落在两点之间被削掉，最大可差约点距的 1/10。圆弧 + 直线拟合：按“拟合误差”自动分段，用最少的圆弧和直线逼近理论廓形，尖角保留为段的端点，DXF 里是真正的 ARC / LINE 图元，适合磨床、线切割编程。',
+    'step': '等点距输出时相邻两点的距离。点距越小越准，点数越多。要求 1 µm 以内时一般要 0.01 左右（尖角处最不利）；需要高精度时建议改用“圆弧 + 直线拟合”。',
+    'ftol': '拟合后每一段与理论廓形之间允许的最大偏差（法向）。一般取刀具轮廓度公差的 1/10～1/20，例如轮廓度 0.02 取 0.001～0.002。',
+    'fg1': '相切连续：相邻两段在连接点切线方向一致（只在廓形本身的尖角处有折角），磨出来没有棱线，大多数磨床要求这样。允许微小折角：每段可以更长、段数更少，连接处折角一般只有百分之几度。',
     'mode': '指型铣刀沿齿向进给，槽底只能铣成平底。角部到位：圆角处完全成形，槽底中心比根圆略深。中心到根圆：槽底中心正好在根圆，圆角处留下少量残留。',
   };
   function hintKey(el) {
@@ -2084,8 +2249,61 @@ if (typeof module !== 'undefined') module.exports = HX;
   }
 
   // ---------- 坐标表 / 导出 ----------
-  let tableRows = [];
+  let tableRows = [], fitRes = null;
+  const PT_HEAD = '<tr><th>#</th><th>H 高度</th><th id="th_R">R 半径</th><th id="th_D">D 直径</th></tr>';
+  const fitOn = () => $('omode').value === 'fit';
+  // 拟合用的曲线：[{ nm, pts: [[X 宽度/半径, H 高度], ...], sym }]（sym：只给了半边，导出时镜像）
+  function fitCurves() {
+    if (hxOn) return hxR ? hxToolCurves().map(c => ({ nm: c.nm, pts: c.pts, sym: !!c.sym })) : [];
+    return cut ? [{ nm: '', pts: profOut().map(q => [q[1], q[0]]), sym: true }] : [];
+  }
+  function fitFill() {
+    const tol = Math.max(1e-4, parseFloat($('ftol').value) || 0.001), g1 = $('fg1').value === '1';
+    fitRes = fitCurves().map(c => Object.assign({}, c, { f: G.arcFit(c.pts, tol, g1) }));
+    const multi = fitRes.length > 1, f4 = v => v.toFixed(4);
+    $('thd').innerHTML = '<tr><th>#</th>' + (multi ? '<th>刀具</th>' : '') + '<th>类型</th><th>起点 H / X</th><th>终点 H / X</th><th>圆心 H / X</th><th>半径</th><th>偏差 µm</th></tr>';
+    let k = 0, rows = '';
+    for (const c of fitRes) for (const s of c.f.segs) {
+      rows += `<tr><td>${k++}</td>${multi ? `<td>${c.nm}</td>` : ''}<td>${s.t === 'A' ? (s.ccw ? '圆弧 逆' : '圆弧 顺') : '直线'}</td><td>${f4(s.a[1])} / ${f4(s.a[0])}</td><td>${f4(s.b[1])} / ${f4(s.b[0])}</td>`
+        + `<td>${s.t === 'A' ? f4(s.c[1]) + ' / ' + f4(s.c[0]) : '—'}</td><td>${s.t === 'A' ? f4(s.R) : '—'}</td><td>${(s.err * 1000).toFixed(2)}</td></tr>`;
+    }
+    $('tb').innerHTML = rows;
+    $('fitMsg').hidden = false;
+    $('fitMsg').textContent = fitRes.map(c => (multi ? c.nm + '：' : (c.sym ? '单侧' : '')) + `${c.f.segs.length} 段（圆弧 ${c.f.nArc}、直线 ${c.f.nLine}），最大偏差 ${(c.f.maxErr * 1000).toFixed(2)} µm`).join('；')
+      + `。拟合基准为程序算出的理论廓形；${g1 ? '各段相切连续，只在廓形本身的尖角处有折角' : '段与段之间允许极小折角'}。圆弧方向“逆/顺”指在 X 向右、H 向上的坐标里。`;
+  }
+  function fitCsv() {
+    const multi = fitRes.length > 1, f6 = v => v.toFixed(6); let k = 0;
+    return 'No,' + (multi ? 'Tool,' : '') + 'Type,H_start,X_start,H_end,X_end,H_center,X_center,Radius,Dir,Err_um\n' + fitRes.flatMap(c => c.f.segs.map(s =>
+      [k++].concat(multi ? [c.nm] : [], [s.t === 'A' ? 'ARC' : 'LINE', f6(s.a[1]), f6(s.a[0]), f6(s.b[1]), f6(s.b[0]), s.t === 'A' ? f6(s.c[1]) : '', s.t === 'A' ? f6(s.c[0]) : '', s.t === 'A' ? f6(s.R) : '', s.t === 'A' ? (s.ccw ? 'CCW' : 'CW') : '', (s.err * 1000).toFixed(3)]).join(','))).join('\n');
+  }
+  // 拟合段写成 DXF 的 LINE / ARC（mir：关于 X=0 镜像；off：整体右移）
+  function dxfSegs(out, segs, layer, mir, off) {
+    const X = p => (mir ? -p[0] : p[0]) + off, f = v => v.toFixed(6);
+    for (const s of segs) {
+      if (s.t === 'L') { out.push('0', 'LINE', '8', layer, '10', f(X(s.a)), '20', f(s.a[1]), '30', '0', '11', f(X(s.b)), '21', f(s.b[1]), '31', '0'); continue; }
+      const cx = X(s.c), cy = s.c[1], ang = p => Math.atan2(p[1] - cy, X(p) - cx) * 180 / Math.PI;
+      let a0 = ang(s.a), a1 = ang(s.b); const ccw = mir ? !s.ccw : s.ccw; if (!ccw) [a0, a1] = [a1, a0];
+      const n360 = v => ((v % 360) + 360) % 360;
+      out.push('0', 'ARC', '8', layer, '10', f(cx), '20', f(cy), '30', '0', '40', f(s.R), '50', n360(a0).toFixed(8), '51', n360(a1).toFixed(8));
+    }
+  }
+  function fitDxf(out, layer) {
+    let off = 0;
+    for (const c of fitRes) {
+      const segs = c.f.segs; if (!segs.length) continue;
+      dxfSegs(out, segs, layer, false, off);
+      if (c.sym) {
+        dxfSegs(out, segs, layer, true, off);
+        const p = segs[0].a; if (Math.abs(p[0]) > 1e-9) out.push('0', 'LINE', '8', layer, '10', (off - p[0]).toFixed(6), '20', p[1].toFixed(6), '30', '0', '11', (off + p[0]).toFixed(6), '21', p[1].toFixed(6), '31', '0');
+      }
+      const xs = c.pts.map(q => q[0]); off += (c.sym ? 2 * Math.max(...xs.map(Math.abs)) : Math.max(...xs) - Math.min(...xs)) * 1.5 + 5;
+    }
+  }
+  function syncOut() { const fit = fitOn(); $('f_step').hidden = fit; $('f_ftol').hidden = !fit; $('f_fg1').hidden = !fit; if (!fit) { $('fitMsg').hidden = true; fitRes = null; } }
   function fillTable() {
+    if (fitOn()) return fitFill();
+    $('thd').innerHTML = PT_HEAD;
     if (hxOn) return hxFillTable();
     const step = Math.max(0.02, parseFloat($('step').value) || 0.5);
     const po = profOut(), cp = cut.formTool ? po : po.slice(1);
@@ -2094,7 +2312,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     $('th_R').textContent = cut.formTool ? 'X 半宽' : 'R 半径'; $('th_D').textContent = cut.formTool ? '2X 全宽' : 'D 直径';
     $('tb').innerHTML = tableRows.map((q, i) => `<tr><td>${i}</td><td>${q[0].toFixed(4)}</td><td>${q[1].toFixed(4)}</td><td>${(2 * q[1]).toFixed(4)}</td></tr>`).join('');
   }
-  function csvText() { if (hxOn) return hxCsv(); return (cut.formTool ? 'No,H(mm),X(mm),2X(mm)\n' : 'No,H(mm),R(mm),D(mm)\n') + tableRows.map((q, i) => `${i},${q[0].toFixed(4)},${q[1].toFixed(4)},${(2 * q[1]).toFixed(4)}`).join('\n'); }
+  function csvText() { if (fitOn() && fitRes) return fitCsv(); if (hxOn) return hxCsv(); return (cut.formTool ? 'No,H(mm),X(mm),2X(mm)\n' : 'No,H(mm),R(mm),D(mm)\n') + tableRows.map((q, i) => `${i},${q[0].toFixed(4)},${q[1].toFixed(4)},${(2 * q[1]).toFixed(4)}`).join('\n'); }
   function dxfText() {
     if (hxOn) return hxDxfOut();
     const out = ['0', 'SECTION', '2', 'ENTITIES'];
@@ -2104,7 +2322,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       out.push('0', 'SEQEND', '8', layer);
     };
     const R = profOut().map(q => [q[1], q[0]]), L = R.slice(1).reverse().map(q => [-q[0], q[1]]);
-    poly(L.concat(R), 'CUTTER', false);
+    if (fitOn() && fitRes) fitDxf(out, 'CUTTER'); else poly(L.concat(R), 'CUTTER', false);
     out.push('0', 'LINE', '8', 'CENTER', '10', '0', '20', '-1', '30', '0', '11', '0', '21', (cut.prof[cut.prof.length - 1][0] + 2).toFixed(4), '31', '0');
     const sp = spaceOutline(halfRes(200));
     poly(sp, 'SPACE_TRANSVERSE', false);
@@ -2120,7 +2338,9 @@ if (typeof module !== 'undefined') module.exports = HX;
   }
   $('cpCsv').addEventListener('click', () => copy(csvText(), 'CSV'));
   $('cpDxf').addEventListener('click', () => copy(dxfText(), 'DXF'));
-  $('step').addEventListener('input', () => { if (cut) fillTable(); });
+  $('step').addEventListener('input', () => { if (cut || hxOn) fillTable(); });
+  $('omode').addEventListener('change', () => { syncOut(); if (cut || hxOn) fillTable(); });
+  for (const id of ['ftol', 'fg1']) $(id).addEventListener(id === 'fg1' ? 'change' : 'input', () => { if (cut || hxOn) fillTable(); });
   $('ext').addEventListener('input', schedule);
   $('mode').addEventListener('change', schedule);
 
@@ -2681,7 +2901,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       }
     } catch (err) { warnEl.textContent = err.message; $('res').innerHTML = ''; return; }
     warnEl.textContent = W.join('；');
-    hxResults(); hxDrawPart(); hxDrawTool(); hxFillTable(); hxBuild3D();
+    hxResults(); hxDrawPart(); hxDrawTool(); fillTable(); hxBuild3D();
   }
   function hxWorm(W) {
     const o = { type: hv('h_wt'), mx: hn('h_mx'), z1: Math.max(1, Math.round(hn('h_z1'))), d1: hn('h_d1'), al: hn('h_al'), hand: hv('h_hand'),
@@ -3011,7 +3231,8 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   function hxDxfOut() {
     const out = ['0', 'SECTION', '2', 'ENTITIES'];
     let off = 0;
-    for (const c of hxToolCurves()) {
+    if (fitOn() && fitRes) fitDxf(out, 'TOOL');
+    else for (const c of hxToolCurves()) {
       let pts = c.pts; if (c.sym) pts = pts.slice().reverse().map(q => [-q[0], q[1]]).concat(pts);
       out.push('0', 'POLYLINE', '8', 'TOOL', '66', '1', '70', '0', '10', '0', '20', '0', '30', '0');
       for (const q of pts) out.push('0', 'VERTEX', '8', 'TOOL', '10', (q[0] + off).toFixed(5), '20', q[1].toFixed(5), '30', '0');
