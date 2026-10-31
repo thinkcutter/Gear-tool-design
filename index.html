@@ -279,7 +279,7 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
     <p><b>图纸核对</b>：程序把图纸上的齿顶圆、齿根圆和按标准公式（齿轮 ha*、c*、变位；花键按 GB/T 3478.1 或 DIN 5480 齿形）算出的值对比，在结果里列出差值。外齿齿顶圆偏大、齿根偏浅（内齿反过来）这类有干涉风险的偏差会提示向客户确认；齿根更深、齿顶缩短这类常见设计只列出不报警。程序计算一律以图纸数据为准，核对结果只作提醒。</p>
     <p><b>花键没有检测数据时</b>：在“精度等级换算”里填公差等级（如 6），程序按 GB/T 3478.1 的实际齿厚（外花键 h）或实际齿槽宽（内花键 H）公差中值设计刀具，不再用理论齿厚。“取值位置”可改为下限或上限。</p>
     <p><b>图纸检测数据</b>：选择齿厚依据（跨棒距、公法线或直接给齿厚）并填写上下限后，程序反算实际齿厚，并自动代替“齿厚减薄”。斜齿奇数齿用量球测量时，跨棒距按常用近似公式计算。一般按公差中值设计新刀；刀具磨损后槽变窄、跨棒距变大，所以也可以取下限，给磨损留出空间。填了渐开线起始圆后，程序会检查渐开线是否从这个圆（外齿）以下开始，齿根圆角越大起始圆越高。齿顶圆、齿根圆可直接按图纸填写，用来代替系数。</p>
-    <p>指型铣刀轴向进给，槽底只能铣成平底：选“角部到位”时槽底中心比根圆略深（见“槽底中心多铣”），选“中心到根圆”时圆角处会留下少量残留。DXF 可粘贴到文本文件另存为 .dxf，图层 CUTTER 为刀具廓形。</p>
+    <p>指型铣刀轴向进给，刀尖端面是平的，槽底只能铣成直线。外齿：选“角部到位”时槽底中心比根圆略深（见“槽底中心多铣”），选“中心到根圆”时圆角处会留下少量残留。内齿的槽底根圆弧向刀尖凸出：默认“中心到根圆”，直线过槽底中心、圆角重新相切，两角比根圆略深（见“两角多铣”）；选“两角到位”时圆角不变、槽底中心略浅。DXF 可粘贴到文本文件另存为 .dxf，图层 CUTTER 为刀具廓形。</p>
   </section>
 </div>
 </div>
@@ -953,6 +953,25 @@ var G = (function () {
       sag = isExt ? yCenter - yLow : 0;
       for (let i = idx; i < pts.length; i++) prof.push([isExt ? pts[i][1] - yTip : yTip - pts[i][1], pts[i][0]]);
     }
+    // 内齿：槽底（大径）是一段向刀尖凸出的根圆弧，指型铣刀端面是平的 → 刀尖做成直线
+    //   mode 'corner'（默认，与外齿“角部到位”同样不留残留）：直线过槽底中心（中心正好在根圆），圆角按原半径与直线、齿面重新相切，两角略深
+    //   mode 'center'：直线过两侧圆角切点（两角在根圆），圆角、齿面不变，槽底中心略浅（残留）
+    let flat = null, flatFail = false, slotPts = null;
+    if (!isExt && prof.length > 3) {
+      const rOf = q => hyp(q[1], yTip - q[0]), tolR = 1e-6 + 1e-8 * geo.rf;   // 根圆上的点是精确取的，容差要小，否则会把圆角起头几点也算进去
+      let kp = 1; while (kp < prof.length - 1 && Math.abs(rOf(prof[kp + 1]) - geo.rf) < tolR) kp++;
+      let i0 = kp + 1; const Ri = geo.Rinv;
+      if (Ri > 0) while (i0 < prof.length - 2 && rOf(prof[i0]) > Ri + 1e-9) i0++;
+      const h0 = mode === 'center' ? prof[kp][0] : 0;
+      const ft = i0 < prof.length - 2 ? flatTip(prof.slice(i0), h0, geo.rho || 0) : null;
+      if (ft) {
+        prof = ft.prof.map(q => [Math.max(0, q[0] - h0), q[1]]); yTip = yTip - h0;
+        const fy = yTip - (ft.foot[0] - h0);
+        flat = { w: 2 * ft.Xc, h0, dC: 2 * Math.abs(yTip), dK: 2 * hyp(ft.Xc, yTip), Rinv: hyp(ft.foot[1], fy) };
+        residual = h0; sag = Math.max(0, hyp(ft.Xc, yTip) - geo.rf);
+        slotPts = prof.map(q => [q[1], yTip - q[0]]);
+      } else flatFail = true;
+    }
     let mono = true;
     for (let i = 1; i < prof.length; i++) if (prof[i][0] < prof[i - 1][0] - 1e-9) { mono = false; prof[i][0] = prof[i - 1][0]; }
     const L = prof.length, a = prof[Math.max(0, L - 6)], b = prof[L - 1];
@@ -966,7 +985,7 @@ var G = (function () {
       const r1 = hyp(src[i - 1][0], src[i - 1][1]), r2 = hyp(src[i][0], src[i][1]);
       if ((r1 - geo.r) * (r2 - geo.r) <= 0 && r1 !== r2) { const u = (geo.r - r1) / (r2 - r1); const y = pts[i - 1][1] + (pts[i][1] - pts[i - 1][1]) * u; hP = isExt ? y - yTip : yTip - y; RP = pts[i - 1][0] + (pts[i][0] - pts[i - 1][0]) * u; break; }
     }
-    return { prof, hEdge: b[0], yTip, sag, residual, mono, contact: pts, hP, RP, isExt };
+    return { prof, hEdge: b[0], yTip, sag, residual, mono, contact: pts, hP, RP, isExt, flat, flatFail, slotPts };
   }
 
   return { arcFit, build, modify, makeCutter, thicknessFromM, MFromThickness, WFromThickness, thicknessFromW, spanK, normalSection, cutterContact, resample, xAtY, rot, inv, hyp, D2R };
@@ -1682,7 +1701,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     'step': '等点距输出时相邻两点的距离。点距越小越准，点数越多。要求 1 µm 以内时一般要 0.01 左右（尖角处最不利）；需要高精度时建议改用“圆弧 + 直线拟合”。',
     'ftol': '拟合后每一段与理论廓形之间允许的最大偏差（法向）。一般取刀具轮廓度公差的 1/10～1/20，例如轮廓度 0.02 取 0.001～0.002。',
     'fg1': '相切连续：相邻两段在连接点切线方向一致（只在廓形本身的尖角处有折角），磨出来没有棱线，大多数磨床要求这样。允许微小折角：每段可以更长、段数更少，连接处折角一般只有百分之几度。',
-    'mode': '指型铣刀沿齿向进给，槽底只能铣成平底。角部到位：圆角处完全成形，槽底中心比根圆略深。中心到根圆：槽底中心正好在根圆，圆角处留下少量残留。',
+    'mode': '指型铣刀沿齿向进给，刀尖端面是平的，槽底铣成直线。外齿（槽底根圆弧内凹）：角部到位——圆角处完全成形，槽底中心比根圆略深；中心到根圆——槽底中心正好在根圆，圆角处留下少量残留。内齿（槽底根圆弧向刀尖凸出）：中心到根圆——直线过槽底中心，圆角按原半径与直线、齿面重新相切，两角比根圆略深、不留残留（默认，与外齿“角部到位”对应）；两角到位——直线过两侧圆角，圆角和齿面不变，槽底中心比根圆略浅。结果里给出槽底中心和两角的直径。',
   };
   function hintKey(el) {
     if (el.dataset.k) return type === 'internal' && HINT['internal.' + el.dataset.k] ? 'internal.' + el.dataset.k : (type === 'internal' ? 'gear' : type) + '.' + el.dataset.k;
@@ -1973,6 +1992,8 @@ if (typeof module !== 'undefined') module.exports = HX;
       geo = G.build(P);
       mod = G.modify(geo, M);
       geo.pts = mod.pts; geo.cutPts = mod.cutPts; geo.Rend = mod.Rend;
+      { const o = $('mode').options, isI = geo.kind === 'int';   // 槽底处理：内齿、外齿各用自己的说法（值的含义：corner = 不留残留，center = 有残留）
+        o[0].text = isI ? '中心到根圆（两角略深）' : '角部到位（中心略深）'; o[1].text = isI ? '两角到位（中心略浅）' : '中心到根圆（角部残留）'; }
       cut = G.makeCutter(geo, parseFloat($('ext').value) || 0, $('mode').value, $('t_kind').value, $('t_tip').value);
       // 刀齿顶做成直线：零件齿槽按刀具实际加工出的形状更新（端面图、3D、渐开线起始圆都随之改变）
       if (cut.flat && cut.slotPts && !geo.k) { if (geo.cutPts && geo.cutPts !== geo.pts) geo.cutPts = cut.slotPts; else { geo.pts = cut.slotPts; geo.Rinv = cut.flat.Rinv; } }
@@ -2019,7 +2040,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       rows.push(['小径 d', f3(ri * 2)], ['大径 D', f3(ro * 2)], [geo.kind === 'int' ? '键槽宽 B' : '键宽 B', f3(P.B)], ['槽底圆角 r', f3(P.rr)]);
       if (geo.kind === 'int') rows.push(['小径处齿宽', f3(geo.tipThick)]);
     }
-    const pr = cut.prof, tipR = pr[1][1], edge = pr[pr.length - 2]; let toolTolNote = ''; toolTol = null;
+    const pr = cut.prof, tipR = cut.flat && !cut.formTool ? cut.flat.w / 2 : pr[1][1], edge = pr[pr.length - 2]; let toolTolNote = ''; toolTol = null;
     const hl = cut.formTool
       ? [['刃部有效高度', f3(cut.hEdge)], cut.flat ? ['刀齿顶直线宽', f3(cut.flat.w)] : [cut.isExt ? '刀齿顶圆弧凹深' : '刀齿顶圆弧凸起', f3(cut.arcDepth)], [cut.isExt ? '齿顶处刀齿宽' : '内孔处刀齿宽', f3(edge[1] * 2)], ['刀齿全高(含外延)', f3(pr[pr.length - 1][0])]]
       : [['刃部有效高度', f3(cut.hEdge)], ['刀尖平台直径', tipR > 1e-3 ? f3(tipR * 2) : '尖点'],
@@ -2042,6 +2063,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       hl.push(cut.isExt ? ['刀柄与外圆间隙', f2(stool.clr)] : ['孔内间隙 切削 / 回程', f2(stool.clr) + ' / ' + f2(stool.clrRet)]);
     }
     if (cut.isExt && !cut.formTool) hl.push(cut.residual > 0 ? ['圆角处残留高度', f3(cut.residual)] : ['槽底中心多铣', f3(cut.sag)]);
+    else if (!cut.formTool && cut.flat) hl.push(cut.residual > 0 ? ['槽底中心残留高度', f3(cut.residual)] : ['两角多铣（径向）', f3(cut.sag)]);
     if (geo.k && !cut.formTool) {
       const ns = G.normalSection(geo.cutPts || geo.pts, geo.k, geo.r); let md = 0;
       const lowI = a => a.reduce((m, p, i) => (cut.isExt ? p[1] < a[m][1] : p[1] > a[m][1]) ? i : m, 0);
@@ -2265,8 +2287,8 @@ if (typeof module !== 'undefined') module.exports = HX;
     const txt = (x, y, t, anc, rot) => `<text x="${x}" y="${-y}" font-size="${fs}" fill="var(--accent)" text-anchor="${anc || 'middle'}" ${rot ? `transform="rotate(-90 ${x} ${-y})"` : ''} style="font-family:var(--f-num)">${t}</text>`;
     s = `<defs><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 2 L10 5 L0 8 Z" fill="var(--accent)"/></marker></defs>` + s;
     // 直径标注
-    const dims = [];
-    if (!cut.formTool && cp[1][1] > 1e-3) dims.push([0, cp[1][1], 'below']);
+    const dims = [], tipRd = cut.flat && !cut.formTool ? cut.flat.w / 2 : cp[1][1];
+    if (!cut.formTool && tipRd > 1e-3) dims.push([0, tipRd, 'below']);
     if (isFinite(cut.hP)) dims.push([cut.hP, cut.RP, 'side']);
     const e = cp[cp.length - 2]; dims.push([e[0], e[1], 'side']);
     for (const [h, r, pos] of dims) {
@@ -2283,7 +2305,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     }
     // 高度
     const xh = -mx * 0.98 - Hmax * 0.04;
-    s += `<line x1="${xh - fs * 0.3}" y1="0" x2="${-cp[1][1]}" y2="0" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
+    s += `<line x1="${xh - fs * 0.3}" y1="0" x2="${-tipRd}" y2="0" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
     s += `<line x1="${xh - fs * 0.3}" y1="${-cut.hEdge}" x2="${-e[1]}" y2="${-cut.hEdge}" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
     s += arrow(xh, 0, xh, cut.hEdge) + txt(xh - fs * 0.35, cut.hEdge / 2, cut.hEdge.toFixed(3), 'middle', true);
     if (isFinite(cut.hP)) s += `<line x1="${-mx}" y1="${-cut.hP}" x2="${mx}" y2="${-cut.hP}" stroke="var(--muted)" stroke-width="0.7" stroke-dasharray="6 3 1.5 3" ${sw}/>` + `<text x="${mx}" y="${-cut.hP + (TT.lo ? fs * 1.0 : -fs * 0.25)}" font-size="${fs * 0.85}" fill="var(--muted)" text-anchor="end">分度圆 H=${cut.hP.toFixed(3)}</text>`;
@@ -2758,7 +2780,6 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     document.querySelectorAll('#types button').forEach(b => b.setAttribute('aria-pressed', b === btn ? 'true' : 'false'));
     if (HXT.includes(type)) { hxActivate(true); hxRenderForm(); compute(); return; }
     if (hxOn) { hxActivate(false); scene.hx = false; }
-    $('mode').closest('.f').hidden = type === 'internal';
     renderForm(); syncModUI(); scene.view = 'tool'; compute();
   }));
   // ===================== 螺旋面零件（蜗杆 / 螺杆转子）与回转体成形车刀 =====================
