@@ -1,0 +1,22 @@
+{
+ "name": "滚插刀检测图解",
+ "short_name": "滚插刀检测",
+ "start_url": "./power-skiving-inspection.html",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#0F1012",
+ "theme_color": "#0F1012",
+ "icons": [
+  {
+   "src": "icons/power-skiving-inspection-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/power-skiving-inspection-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}

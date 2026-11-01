@@ -1,0 +1,22 @@
+{
+ "name": "齿轮啮合接触区",
+ "short_name": "啮合接触",
+ "start_url": "./gear-contact.html",
+ "scope": "./",
+ "display": "standalone",
+ "background_color": "#0F1012",
+ "theme_color": "#0F1012",
+ "icons": [
+  {
+   "src": "icons/gear-contact-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icons/gear-contact-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
