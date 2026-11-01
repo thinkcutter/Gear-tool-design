@@ -1,19 +1,19 @@
 {
  "name": "滚插刀参数图解",
  "short_name": "滚插刀参数",
- "start_url": "./power-skiving.html",
- "scope": "./",
+ "start_url": "../power-skiving.html",
+ "scope": "../",
  "display": "standalone",
  "background_color": "#0F1012",
  "theme_color": "#0F1012",
  "icons": [
   {
-   "src": "icons/power-skiving-192.png",
+   "src": "power-skiving-192.png",
    "sizes": "192x192",
    "type": "image/png"
   },
   {
-   "src": "icons/power-skiving-512.png",
+   "src": "power-skiving-512.png",
    "sizes": "512x512",
    "type": "image/png",
    "purpose": "any maskable"
