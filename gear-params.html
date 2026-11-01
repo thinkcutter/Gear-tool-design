@@ -665,6 +665,8 @@ const scenes = [];
   const svg = document.getElementById('f12');
   const gp = el('path', { fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.4 }, svg);
   const cs = { a: circle(svg, 0, 0, 1, { stroke: 'var(--green)', w: 0.35, dash: '0.8 0.6' }), d: circle(svg, 0, 0, 1, { stroke: 'var(--accent)', w: 0.45, dash: '1.5 1' }), b: circle(svg, 0, 0, 1, { stroke: 'var(--violet)', w: 0.35, dash: '0.8 0.6' }), f: circle(svg, 0, 0, 1, { stroke: 'var(--blue)', w: 0.35, dash: '0.8 0.6' }) };
+  const sbar = el('path', { fill: 'none', stroke: 'var(--ink)', 'stroke-width': 0.5 }, svg);
+  const stx = el('text', { x: -56, y: 52.5, 'font-size': 4, fill: 'var(--ink)' }, svg);
   const MS = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
   const $ = id => document.getElementById(id);
   let G = null;
@@ -672,8 +674,12 @@ const scenes = [];
     const z = +$('iz').value, m = MS[+$('im').value], al = +$('ia').value, x = +$('ix').value;
     $('vz').textContent = z; $('vm').textContent = m; $('vx').textContent = (x >= 0 ? '+' : '') + x.toFixed(2);
     G = gearPts(m, z, al, x, { n: 16 }); gp.setAttribute('d', pathOf(G.pts));
-    const sc = 56 / G.ra; gp.setAttribute('transform', `scale(${sc})`);
-    for (const [k, R] of [['a', G.ra], ['d', G.r], ['b', G.rb], ['f', G.rf]]) { cs[k].setAttribute('r', R * sc); }
+    // 比例只随模数缓慢变化、与齿数无关：模数不变时加齿数，牙的大小不变，圆变大；大齿轮放不下时只看上半段
+    const sc = 2.08 / Math.sqrt(m), cy = Math.max(0, G.ra * sc - 54);
+    gp.setAttribute('transform', `translate(0 ${cy}) scale(${sc})`); gp.setAttribute('stroke-width', 0.4 / sc);
+    for (const [k, R] of [['a', G.ra], ['d', G.r], ['b', G.rb], ['f', G.rf]]) { cs[k].setAttribute('r', R * sc); cs[k].setAttribute('cy', cy); }
+    const bl = [5, 10, 20, 50, 100].find(v => v * sc >= 14) || 100;
+    sbar.setAttribute('d', `M-56 56 h${bl * sc} M-56 54.5 v3 M${-56 + bl * sc} 54.5 v3`); stx.textContent = bl + ' mm';
     const A = al * D2R, zmin = 2 / Math.pow(Math.sin(A), 2), xmin = (zmin - z) / zmin;
     const rows = [['分度圆 d = m z', 2 * G.r], ['齿顶圆 da', 2 * G.ra], ['齿根圆 df', 2 * G.rf], ['基圆 db = d cos α', 2 * G.rb], ['齿距 p = π m', PI * m], ['分度圆齿厚 s', G.s], ['全齿高 h', G.ra - G.rf]];
     $('tout').innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1].toFixed(3)}</td></tr>`).join('')
