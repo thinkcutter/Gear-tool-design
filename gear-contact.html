@@ -38,7 +38,7 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{border-bottom:1px
     <svg id="close"></svg>
     <div class="txt">
       <p class="hd">下面是小齿轮那个齿，放大、固定住看</p>
-      <p>接触点从齿根附近（<b>dNf</b>，有效起始圆）往上爬，一直走到齿顶倒角前（<b>dFa</b>）就离开了。</p>
+      <p>接触点从齿根附近（<b>d<sub>Nf</sub></b>，有效齿根圆）往上爬，一直走到齿顶倒角前（<b>dFa</b>）就离开了。</p>
       <div id="fin" class="fin">
         <p class="r">● 红色这段：接触、传力 → <b>精度必须保证</b>（齿形、齿向、齿距、齿厚）</p>
         <p class="b">● 齿顶倒角、齿根圆角、齿根：一次都没碰到 → 精度要求低（只控制直径、圆滑过渡）</p>
@@ -51,11 +51,11 @@ table{border-collapse:collapse;width:100%;font-size:14px}th,td{border-bottom:1px
   <table>
     <tr><th>区段</th><th>接触吗</th><th>精度要求</th></tr>
     <tr><td><span class="k" style="background:#66707A"></span>齿顶、齿顶倒角</td><td>不接触</td><td>低：只控制齿顶圆直径、倒角大小</td></tr>
-    <tr><td><span class="k" style="background:#C8402E"></span><b>工作齿面</b>（dNf → dFa）</td><td><b>接触、传力</b></td><td><b>必须保证</b>：齿形 Fα、齿向 Fβ、齿距 fp/Fp、齿厚；齿形检测的评定范围 L<sub>α</sub> 就取在这一段（齿顶一端去掉一小段）</td></tr>
+    <tr><td><span class="k" style="background:#C8402E"></span><b>工作齿面</b>（d<sub>Nf</sub> → d<sub>Na</sub>，本例 d<sub>Na</sub> = d<sub>Fa</sub>）</td><td><b>接触、传力</b></td><td><b>必须保证</b>：齿形 Fα、齿向 Fβ、齿距 fp/Fp、齿厚；齿形检测的评定范围 L<sub>α</sub> 就取在这一段（齿顶一端去掉一小段）</td></tr>
     <tr><td><span class="k" style="background:#E06A1B"></span>渐开线余量段（dFf → dNf）</td><td>不接触</td><td>中：必须是渐开线、不能凸起，给中心距和装配误差留余量；不评定齿形</td></tr>
     <tr><td><span class="k" style="background:#2F6FB5"></span>齿根圆角、齿根</td><td>不接触</td><td>不要求齿形精度；要圆滑（影响弯曲强度），不能高过 dFf</td></tr>
   </table>
-  <p class="note">接触从哪里开始（dNf）由<b>对方齿轮的齿顶</b>决定：对方齿顶越高，接触越往齿根走。反转时另一侧齿面接触，所以两侧通常同样要求。花键同理：外花键的接触起点由内花键的小径决定。</p>
+  <p class="note">接触从哪里开始（d<sub>Nf</sub>）由<b>对方齿轮的齿顶</b>和<b>实际中心距</b>决定：对方齿顶越高、中心距越小，接触越往齿根走。反转时另一侧齿面接触，所以两侧通常同样要求。花键同理：外花键的接触起点由内花键的小径决定。</p>
   <p class="note">示例：小齿轮 z20 主动、大齿轮 z31，m4，α20°，标准中心距，按真实渐开线计算。</p>
 </section>
 </div>

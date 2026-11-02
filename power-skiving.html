@@ -68,7 +68,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 <div class="wrap">
 <header>
   <h1>Power Skiving 滚插刀参数图解</h1>
-  <p>滚插刀，也叫强力刮齿刀、车齿刀（德语 Wälzschälen）。下面用一个内齿例子，把它的每个参数用图和动画讲清楚。</p>
+  <p>滚插刀，也叫强力刮齿刀、车齿刀（工艺德语叫 Wälzschälen，刀具叫 Schälrad）。下面用一个内齿例子，把它的每个参数用图和动画讲清楚。</p>
   <p class="meta">示例：工件内齿 m2 z60 α20° 直齿；滚插刀 z₀ = 31，交错角 Σ = 20°。图中刃口、前角都按实际运动算出来，不是示意画。</p>
   <nav class="toc" id="toc"></nav>
 </header>
@@ -89,7 +89,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <h2><span class="no">01</span>交错角 <span class="sym">Σ</span>：切削速度从哪里来</h2>
   <div class="meta">轴斜得越多，刮得越快</div>
   <svg class="fig" id="f1" viewBox="0 0 150 70"></svg>
-  <div class="say">在接触点上，刀具表面的速度 <span class="f">v₀</span> 沿着刀具的切向，它和工件的切向之间就是交错角 Σ。把 v₀ 分解：横向分量正好等于工件表面的速度，两者同步、不打滑；<b>竖向分量（沿齿向）就是切削速度</b>：<span class="f">v<sub>c</sub> = v₀ · sin Σ = π d₀ n₀ sin Σ</span>。</div>
+  <div class="say">在接触点上，刀具表面的速度 <span class="f">v₀</span> 沿着刀具的切向，它和工件的切向之间就是交错角 Σ。把 v₀ 分解：横向分量正好等于工件表面的速度，两者同步、不打滑；<b>竖向分量（沿齿向）就是切削速度</b>：<span class="f">v<sub>c</sub> = v₀ · sin Σ = π d₀ n₀ sin Σ</span>（直齿工件；斜齿工件约为 v₀ sin Σ / cos β<sub>工件</sub>）。</div>
   <ul>
     <li>Σ = 0 就变成两个普通齿轮啮合，没有切削。Σ 一般取 10°～30°，常用 15°～25°。</li>
     <li>Σ 越大：切削速度越高、效率越高；但两侧刃的前角、后角差别越大，刀具也更容易碰到台阶。</li>
@@ -147,9 +147,9 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="meta">台阶式两边一样锋利，平前刀面一边锋利一边钝</div>
   <svg class="fig" id="f6a" viewBox="0 0 150 40"></svg>
   <svg class="fig" id="f6" viewBox="0 0 150 62"></svg>
-  <div class="say"><b>台阶式</b>：每个刀齿的前刀面单独磨，垂直于刀齿螺旋线，两侧刃前角相同，接近 0°。<b>平前刀面</b>：整个端面磨成一个平面，重磨方便，但刀齿是斜的，两侧前角一正一负，差不多 ±Σ（示例约 +19° / −19°），一侧锋利、另一侧在“挤”。</div>
+  <div class="say"><b>台阶式</b>：每个刀齿的前刀面单独磨，垂直于刀齿螺旋线，两侧刃前角相同，接近 0°。<b>平前刀面</b>：整个端面磨成一个平面，重磨方便，但刀齿是斜的，两侧前角一正一负，大小约等于刀具螺旋角 ±β₀（直齿工件时 β₀ = Σ，示例约 +19° / −19°），一侧锋利、另一侧在“挤”。</div>
   <ul>
-    <li>刀具图上标的前角（构造前角）一般 0°～10°，5° 左右很常见；平前刀面的刀常把前刀面做成锥面或另加前角来平衡两侧。</li>
+    <li>刀具图上标的前角（构造前角）经验值一般 0°～10°，5° 左右很常见。前刀面做成锥面，增加的是顶刃前角，两侧刃一样多，消除不了 ±β₀ 的差别；要两侧对称，得用台阶式或螺旋前刀面。</li>
   </ul>
   <div class="vo">前刀面可以一个齿一个齿地磨成台阶，也可以整个端面磨平。台阶式两边一样锋利，平面式一边锋利一边钝。</div>
 </section>
@@ -170,7 +170,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <h2><span class="no">08</span>后角与重磨：锥形刀具</h2>
   <div class="meta">刀越磨越小，安装位置要跟着调</div>
   <svg class="fig" id="f8" viewBox="0 0 150 64"></svg>
-  <div class="say">刀齿后面要比刃口“缩进去”一点，才不会蹭到工件，这就是后角。常见做法是把刀具做成<b>锥形</b>：越往后直径越小，顶刃后角 <span class="f">α<sub>k</sub></span> 一般 4°～6°，侧刃后角要小得多。刀用钝了磨掉前面一层，刀具直径变小、变位系数变小，所以每次重磨后都要<b>重新计算中心距和轴向位置</b>，齿形才不变。</div>
+  <div class="say">刀齿后面要比刃口“缩进去”一点，才不会蹭到工件，这就是后角。常见做法是把刀具做成<b>锥形</b>：越往后直径越小，顶刃后角 <span class="f">α<sub>k</sub></span> 经验值一般 4°～6°，侧刃后角要小得多。刀用钝了磨掉前面一层，刀具直径变小、变位系数变小，所以每次重磨后都要<b>重新计算中心距和轴向位置</b>，齿形才不变。</div>
   <ul>
     <li>每重磨 Δ，齿顶圆直径约减小 <span class="f">2Δ tan α<sub>k</sub></span>。</li>
     <li>另一种做法：刀具做成圆柱形（重磨后尺寸不变），靠安装时<b>倾斜</b>刀轴或<b>偏置</b>切削点得到后角，代价是机床要有这个功能、侧刃后角更小。</li>
@@ -196,8 +196,8 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <svg class="fig" id="f10" viewBox="0 0 150 64"></svg>
   <div class="say">刀轴斜了 Σ，刀具的一侧会朝台阶方向伸出去，大约 <span class="f">r<sub>a0</sub> · sin Σ</span>（示例 35.5 × sin20° ≈ 12 mm）。所以工件齿部到台阶要留足退刀距离，或者选小直径刀具、小交错角。刀具结构有带孔的盘形、带柄的整体式，以及可转位刀片式。</div>
   <ul>
-    <li>盘形：直径大、齿数多，适合外齿和大内齿。带柄：刚性好，能进小内孔、靠近台阶。可转位：大模数粗加工，磨损只换刀片。</li>
-    <li>材料：粉末高速钢重磨次数多、抗冲击；整体硬质合金寿命长、速度高。</li>
+    <li>盘形：直径大、齿数多，适合外齿和大内齿。碗形（杯形）：前端让出空间，适合靠近台阶的外齿。带柄：直径小，能进小内孔、靠近台阶，但悬伸长，刚性比盘形差。可转位：大模数粗加工，磨损只换刀片。</li>
+    <li>材料：粉末高速钢韧性好、抗冲击；整体硬质合金耐磨、寿命长、速度高。能重磨几次，主要看刀齿留出的可重磨长度。</li>
   </ul>
   <div class="vo">刀是斜着装的，一侧会朝台阶伸出去。离台阶太近，就要换小刀或者减小交错角。</div>
 </section>
@@ -215,8 +215,8 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
     <tr><td>刃口廓形</td><td>—</td><td>按交错轴运动反算，仿真校核</td><td>真正干活的那条线</td></tr>
     <tr><td>前刀面形式</td><td>—</td><td>台阶式 / 平面 / 锥面</td><td>两边一样锋利，还是重磨方便</td></tr>
     <tr><td>构造前角</td><td><span class="f">γ</span></td><td>0°～10°，常见 5° 左右</td><td>工作前角切入正、切出负</td></tr>
-    <tr><td>后角</td><td><span class="f">α<sub>k</sub></span></td><td>锥形刀顶刃 4°～6°，或靠倾斜、偏置</td><td>后面缩进去才不蹭</td></tr>
-    <tr><td>切削速度</td><td><span class="f">v<sub>c</sub></span></td><td><span class="f">π d₀ n₀ sin Σ</span></td><td>同步转动剩下的滑动</td></tr>
+    <tr><td>后角</td><td><span class="f">α<sub>k</sub></span></td><td>锥形刀顶刃经验值 4°～6°，或靠倾斜、偏置</td><td>后面缩进去才不蹭</td></tr>
+    <tr><td>切削速度</td><td><span class="f">v<sub>c</sub></span></td><td><span class="f">π d₀ n₀ sin Σ</span>（直齿工件）</td><td>同步转动剩下的滑动</td></tr>
     <tr><td>速比</td><td><span class="f">n<sub>w</sub> / n₀</span></td><td><span class="f">z₀ / z<sub>w</sub></span>（斜齿再加差动）</td><td>像一对齿轮一样转</td></tr>
     <tr><td>退刀距离</td><td>—</td><td>约 <span class="f">r<sub>a0</sub> sin Σ</span> 起</td><td>斜着装，一侧伸出去</td></tr>
   </table>
@@ -514,8 +514,8 @@ const workMat = (rOut) => { const w = D.work, t1 = Math.atan2(w[0][0], w[0][1]),
       line(g, TL[0], TL[1], TR[0], TR[1], { stroke: 'var(--accent)', w: 0.8 });
       if (k === 1) {
         if (!P.step) {
-          txt(g, TR[0] + 1.5, TR[1] - 2.4, '锐角侧：正前角 ≈ +Σ', { fs: 2.3, anchor: 'start', fill: 'var(--green)' });
-          txt(g, TL[0] - 1.5, TL[1] - 2.4, '钝角侧：负前角 ≈ −Σ', { fs: 2.3, anchor: 'end', fill: 'var(--red)' });
+          txt(g, TR[0] + 1.5, TR[1] - 2.4, '锐角侧：正前角 ≈ +β₀', { fs: 2.3, anchor: 'start', fill: 'var(--green)' });
+          txt(g, TL[0] - 1.5, TL[1] - 2.4, '钝角侧：负前角 ≈ −β₀', { fs: 2.3, anchor: 'end', fill: 'var(--red)' });
         } else txt(g, (TL[0] + TR[0]) / 2 + 9, TL[1] - 3.5, '两侧前角相同 ≈ 0°', { fs: 2.3, fill: 'var(--green)' });
       }
     }
@@ -609,7 +609,7 @@ const workMat = (rOut) => { const w = D.work, t1 = Math.atan2(w[0][0], w[0][1]),
     dR.setAttribute('x1', xf + 3); dR.setAttribute('x2', xf + 3); dR.setAttribute('y1', yAx); dR.setAttribute('y2', tip(xf));
     tR.setAttribute('x', xf + 4); tR.setAttribute('y', (yAx + root(xf)) / 2 + 2); setT(tR, '齿顶圆半径');
     const dd = 2 * dl * Math.tan(ak * D2R), da = 2 * ra0 - dd;
-    r1.textContent = `重磨 Δ = ${dl.toFixed(1)} mm`; r2.textContent = `齿顶圆 Ø70.98 → Ø${da.toFixed(2)}`; r3.textContent = `中心距 a 27.01 → ${(27.01 + dd / 2).toFixed(2)}`;
+    r1.textContent = `重磨 Δ = ${dl.toFixed(2)} mm`; r2.textContent = `齿顶圆 Ø70.98 → Ø${da.toFixed(2)}`; r3.textContent = `中心距 a 27.01 → ${(27.01 + dd / 2).toFixed(2)}`;
   });
 }
 

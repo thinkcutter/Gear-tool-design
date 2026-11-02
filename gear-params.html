@@ -131,7 +131,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <h2><span class="no">05</span>顶隙 <span class="sym">c</span> 与侧隙 <span class="sym">j</span></h2>
   <div class="meta">留一点缝，才转得动</div>
   <svg class="fig" id="f5" viewBox="-14 -12 28 24"></svg>
-  <div class="say">齿根高比齿顶高多出的那 0.25m，就是<b>顶隙</b> <span class="f">c = 0.25 m</span>：对方的牙尖伸进来，不会顶到牙底，还能存润滑油。两个牙的背面之间留的小缝叫<b>侧隙</b> <span class="f">j</span>：热胀冷缩、加工误差、润滑油膜都需要它。侧隙靠把齿<b>做薄一点</b>（齿厚减薄）得到，所以图纸上的公法线、跨棒距都带负的公差。</div>
+  <div class="say">齿根高比齿顶高多出的那 0.25m，就是<b>顶隙</b> <span class="f">c = 0.25 m</span>：对方的牙尖伸进来，不会顶到牙底，还能存润滑油。两个牙的背面之间留的小缝叫<b>侧隙</b> <span class="f">j</span>：热胀冷缩、加工误差、润滑油膜都需要它。侧隙靠把齿<b>做薄一点</b>（齿厚减薄）得到，所以外齿轮图纸上的公法线、跨棒距都带负的公差（内齿轮的棒间距则带正公差）。</div>
   <div class="vo">牙和牙之间要留缝：牙尖下面留顶隙，牙背后面留侧隙。缝太小会卡死发热，缝太大会撞击有噪声。</div>
 </section>
 
@@ -142,7 +142,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="say">把一根绳子缠在一个圆柱上，绳头绑一支笔，拉紧绳子一边退一边画，笔画出的曲线就是<b>渐开线</b>，那个圆柱就是<b>基圆</b> <span class="f">d<sub>b</sub> = d cos α</span>。绳子始终和基圆相切，所以渐开线上每一点的受力方向都沿着这根“绳子”。</div>
   <ul>
     <li>两个渐开线齿轮啮合时，传动比不随转角变化，转起来平稳。中心距稍有误差，传动比也不变——这是渐开线最大的好处。</li>
-    <li>基圆以内没有渐开线，所以齿根部分是过渡曲线。</li>
+    <li>渐开线只在基圆以外才有。齿根的过渡曲线是刀具齿顶圆角包络出来的：齿数少时它伸到基圆以内，齿数多（标准齿轮 z ≥ 42）时齿根圆已在基圆以外，过渡曲线也全在基圆外。</li>
   </ul>
   <div class="vo">把绳子缠在圆柱上，拉紧了往外放，笔尖画出的就是渐开线。齿轮的齿面，就是这样一条曲线。</div>
 </section>
@@ -152,13 +152,13 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="meta">牙齿推对方时用力的方向</div>
   <svg class="fig" id="f7" viewBox="-56 -44 132 88"></svg>
   <svg class="fig" id="f7b" viewBox="0 -4 120 30"></svg>
-  <div class="say">两个牙接触的点始终在一条斜线上移动（橙色的点），这条线叫<b>啮合线</b>，也是推力的方向。它和分度圆切线之间的夹角就是<b>压力角</b>，标准是 <span class="f">α = 20°</span>。像推车：手越往下压（角度越大），推车越费劲，但手臂（牙根）越粗壮。</div>
+  <div class="say">两个牙接触的点始终在一条斜线上移动（橙色的点），这条线叫<b>啮合线</b>，也是推力的方向。它和节圆切线之间的夹角就是<b>压力角</b>（标准安装时节圆就是分度圆），标准是 <span class="f">α = 20°</span>。压力角越大，推力里指向对方圆心的分量越大，但牙根越粗壮。</div>
   <ul>
     <li>压力角大：牙根粗、强度高，但径向力大，轴承受力大。压力角小：转动更平稳、噪声小，但牙根细。</li>
     <li>常见 20°，老标准或英制有 14.5°，重载齿轮有 25°。花键常用 30°。</li>
     <li>啮合线上有时同时有两个点（两对牙同时接触），平均同时接触的对数叫<b>重合度</b>，一般 1.2～1.9，越大越平稳。</li>
   </ul>
-  <div class="vo">两个牙接触的点，始终沿着同一条斜线移动。这条线和分度圆切线的夹角，就是压力角，标准是二十度。</div>
+  <div class="vo">两个牙接触的点，始终沿着同一条斜线移动。这条线和节圆切线的夹角（标准安装时就是分度圆），就是压力角，标准是二十度。</div>
 </section>
 
 <section class="card" id="s8">
@@ -168,7 +168,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="say">加工齿轮的刀具像一把<b>梳子（齿条）</b>。标准加工时，梳子的中线正好贴着分度圆。把梳子<b>往外退</b> <span class="f">x·m</span>（正变位），切出来的牙根更粗、牙更胖、齿顶变尖；<b>往里进</b>（负变位）则牙变瘦、牙根变细。分度圆和基圆都不变，齿形还是同一条渐开线，只是用了它的不同段。</div>
   <ul>
     <li>用途：小齿数防止根切、凑中心距、让大小齿轮强度更均衡。</li>
-    <li>分度圆齿厚：<span class="f">s = m(π/2 + 2x tan α)</span>，齿顶圆、齿根圆都跟着移动 <span class="f">x·m</span>。</li>
+    <li>分度圆齿厚：<span class="f">s = m(π/2 + 2x tan α)</span>，齿顶圆、齿根圆的半径都跟着移动 <span class="f">x·m</span>（直径变化 2x·m）。</li>
   </ul>
   <div class="vo">刀具往外退一点，切出来的牙就胖一点；往里进一点，牙就瘦一点。这个退进的量，用模数的倍数表示，就是变位系数。</div>
 </section>
@@ -200,7 +200,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="say">分度圆上的齿厚是弧长，没法直接量。用公法线千分尺的两个盘形卡脚<b>跨 k 个牙</b>夹住两侧齿面，读数就是<b>公法线长度</b> <span class="f">W<sub>k</sub></span>。因为两卡脚之间的连线正好和基圆相切、同时垂直于两侧齿面，卡脚碰在齿面高一点低一点，读数都一样。</div>
   <ul>
     <li><span class="f">W<sub>k</sub> = m cos α [ (k − 0.5)π + z inv α ] + 2 x m sin α</span>，齿厚减薄 Δs，W 就减小 Δs·cos α。</li>
-    <li>大齿轮常用<b>跨棒距 M</b>：在相对的两个齿槽里各放一根量棒，量两棒外侧的距离；<b>内齿</b>没法用公法线，改量<b>棒间距</b>（两棒内侧的距离）。</li>
+    <li>另一种方法是<b>跨棒距 M</b>：在相对的两个齿槽里各放一根量棒，量两棒外侧的距离，多用于中小齿轮和小模数齿轮（大齿轮一般量公法线）；<b>内齿</b>一般不量公法线，改量<b>棒间距</b>（两棒内侧的距离）。</li>
   </ul>
   <div class="vo">牙的胖瘦用公法线千分尺量：跨几个牙夹住两侧齿面，读数就是公法线长度。</div>
 </section>

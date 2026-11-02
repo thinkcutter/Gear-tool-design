@@ -64,6 +64,7 @@ ol.steps{margin:8px 0;padding-left:22px}
 ol.steps li{margin:4px 0}
 .ex{background:var(--chip);border-left:3px solid var(--accent);border-radius:8px;padding:8px 12px;margin:10px 0;font-size:14px;line-height:1.8}
 .ex::before{content:"算例 ";color:var(--accent);font-weight:700}
+.cap{font-size:13px;color:var(--muted);margin:2px 0 6px}
 .ctl input[type=number],.ctl input[type=text]{width:100%;font-size:16px;padding:6px 8px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px}
 .out .fx{font-size:12px;color:var(--muted);font-family:"Times New Roman",serif}
 </style>
@@ -112,7 +113,7 @@ ol.steps li{margin:4px 0}
     <li>标准齿条：齿顶高 <span class="f">h<sub>a</sub>* m</span>，齿根高 <span class="f">(h<sub>a</sub>* + c*) m</span>，多出来的 <span class="f">c* m</span> 是顶隙</li>
     <li>变位 x：刀具往外退 <span class="f">x m</span>，齿顶高、齿根高一起变：<span class="f">h<sub>a</sub> = (h<sub>a</sub>* + x) m</span>，<span class="f">h<sub>f</sub> = (h<sub>a</sub>* + c* − x) m</span></li>
     <li>外齿轮：<span class="f">d<sub>a</sub> = d + 2h<sub>a</sub></span>，<span class="f">d<sub>f</sub> = d − 2h<sub>f</sub></span></li>
-    <li>内齿轮方向相反：<span class="f">d<sub>a</sub> = d − 2h<sub>a</sub></span>，<span class="f">d<sub>f</sub> = d + 2h<sub>f</sub></span>。内齿轮的变位系数有两种符号规定，计算前要先确认图纸用的是哪一种：<br>· <b>国内和日本的习惯</b>：正变位使内齿轮直径变大、齿槽变宽，<span class="f">h<sub>a</sub> = (h<sub>a</sub>* − x) m</span>，<span class="f">h<sub>f</sub> = (h<sub>a</sub>* + c* + x) m</span>，齿槽宽 <span class="f">e = m(π/2 + 2x tan α)</span><br>· <b>DIN 3960 / ISO 21771</b>：内齿轮齿数、直径取负值，正变位使直径的绝对值变小、齿变厚，和上面正好差一个负号</li>
+    <li>内齿轮方向相反：<span class="f">d<sub>a</sub> = d − 2h<sub>a</sub></span>，<span class="f">d<sub>f</sub> = d + 2h<sub>f</sub></span>。内齿轮的变位系数有两种符号规定，计算前要先确认图纸用的是哪一种：<br>· <b>国内教材、手册和日本 KHK 常用的写法</b>：正变位使内齿轮直径变大、齿槽变宽，<span class="f">h<sub>a</sub> = (h<sub>a</sub>* − x) m</span>，<span class="f">h<sub>f</sub> = (h<sub>a</sub>* + c* + x) m</span>，齿槽宽 <span class="f">e = m(π/2 + 2x tan α)</span><br>· <b>DIN 3960 / ISO 21771-1（原 ISO 21771）</b>：内齿轮齿数、直径取负值，正变位使直径的绝对值变小、齿变厚，和上面正好差一个负号</li>
     <li>全齿高 <span class="f">h = h<sub>a</sub> + h<sub>f</sub> = (2h<sub>a</sub>* + c*) m</span>，和变位无关</li>
   </ol>
   <div class="ex">例题：<span id="x2"></span></div>
@@ -126,7 +127,7 @@ ol.steps li{margin:4px 0}
   <svg class="fig" id="f3" viewBox="-46 -44 92 88"></svg>
   <ol class="steps">
     <li>渐开线齿轮的受力方向（啮合线）始终和基圆相切，切点 N</li>
-    <li>啮合线穿过分度圆上的节点 P，和 P 点切线的夹角就是压力角 α</li>
+    <li>啮合线穿过节点 P（标准安装时 P 就在分度圆上），和 P 点切线的夹角就是压力角 α</li>
     <li>直角三角形 O–N–P：斜边 OP = r，直角边 ON = r<sub>b</sub>，夹角 ∠NOP = α</li>
     <li>所以 <span class="f">r<sub>b</sub> = r cos α</span>，<span class="f">d<sub>b</sub> = d cos α</span></li>
     <li>基圆上的齿距叫基节：<span class="f">p<sub>b</sub> = p cos α = π m cos α</span></li>
@@ -168,6 +169,7 @@ ol.steps li{margin:4px 0}
   <h2><span class="no">06</span>任意圆上的齿厚</h2>
   <div class="meta">已知分度圆齿厚，求任意直径 d<sub>y</sub> 上的齿厚</div>
   <svg class="fig" id="f6" viewBox="-30 -50 60 56"></svg>
+  <div class="cap">图为示意齿轮 m10、z12、x = +0.3（放大看一个齿），图上数字随动画变化，和下面的例题不是同一个齿轮。</div>
   <ol class="steps">
     <li>分度圆上半个齿厚对应的圆心角：<span class="f">ψ = s / d</span></li>
     <li>齿面是渐开线，从分度圆到 d<sub>y</sub>，齿面的极角变化 <span class="f">inv α<sub>y</sub> − inv α</span></li>
@@ -198,6 +200,7 @@ ol.steps li{margin:4px 0}
   <h2><span class="no">08</span>中心距和啮合角（变位传动）</h2>
   <div class="meta">两个齿轮都变胖了，就只能往外挪</div>
   <svg class="fig" id="f8" viewBox="-30 -40 140 80"></svg>
+  <div class="cap">图为示意齿轮 m2.6、z<sub>1</sub> = 14、z<sub>2</sub> = 22，x<sub>1</sub> = x<sub>2</sub>，图上数字随动画变化，和下面的例题不是同一对齿轮。</div>
   <ol class="steps">
     <li>标准中心距：<span class="f">a = m (z<sub>1</sub> + z<sub>2</sub>) / 2</span></li>
     <li>无侧隙啮合：一个齿轮的齿厚 = 另一个的齿槽宽，在新的节圆上成立</li>
@@ -213,6 +216,7 @@ ol.steps li{margin:4px 0}
   <h2><span class="no">09</span>重合度 <span class="sym">ε<sub>α</sub></span></h2>
   <div class="meta">实际啮合线长度 ÷ 基节 = 平均同时啮合的齿对数</div>
   <svg class="fig" id="f9" viewBox="-28 -38 136 76"></svg>
+  <div class="cap">图为示意齿轮 m3、z<sub>1</sub> = 17、z<sub>2</sub> = 26（标准中心距），ε<sub>α</sub> = 1.57；例题齿轮的结果见下面的算例。</div>
   <ol class="steps">
     <li>接触点只在啮合线上走：从 A（从动轮齿顶进入）到 E（主动轮齿顶离开）</li>
     <li>从切点 N<sub>1</sub> 量到 E：<span class="f">√(r<sub>a1</sub>² − r<sub>b1</sub>²)</span>；从 N<sub>2</sub> 量到 A：<span class="f">√(r<sub>a2</sub>² − r<sub>b2</sub>²)</span></li>
@@ -258,15 +262,16 @@ ol.steps li{margin:4px 0}
 
 <section class="card" id="s12">
   <h2><span class="no">12</span>渐开线花键基本尺寸（GB/T 3478.1 / ISO 4156）</h2>
+  <div class="cap">GB/T 3478.1-2008 对应 ISO 4156-1:2005；ISO 4156 现行为 2021 年版。以下为两者共同的基本尺寸关系。</div>
   <div class="meta">花键是“短齿”的渐开线齿轮，压力角 30°、37.5° 或 45°</div>
   <svg class="fig" id="f12" viewBox="-62 -38 124 78"></svg>
   <ol class="steps">
     <li>分度圆 <span class="f">D = m z</span>，基圆 <span class="f">D<sub>b</sub> = m z cos α<sub>D</sub></span>，齿距 <span class="f">p = π m</span></li>
-    <li>基本齿槽宽 = 基本齿厚：<span class="f">E = S = π m / 2</span>（花键不变位）</li>
+    <li>基本齿槽宽 = 基本齿厚：<span class="f">E = S = π m / 2</span>（GB/T 3478 / ISO 4156 的花键不变位；DIN 5480 花键有变位，计算方法不同）</li>
     <li>外花键大径 <span class="f">D<sub>ee max</sub> = m(z + k<sub>1</sub>) + es<sub>v</sub>/tan α<sub>D</sub></span>，小径 <span class="f">D<sub>ie max</sub> = m(z − k<sub>2</sub>) + es<sub>v</sub>/tan α<sub>D</sub></span>（h 配合 es<sub>v</sub> = 0）</li>
     <li>内花键大径 <span class="f">D<sub>ei min</sub> = m(z + k<sub>3</sub>)</span></li>
     <li>内花键小径要躲开外花键的渐开线起始圆：<span class="f">D<sub>ii min</sub> = D<sub>Fe max</sub> + 2c<sub>F</sub></span>，c<sub>F</sub> = 0.1 m（形状余量）</li>
-    <li>外花键渐开线起始圆（按 H/h 配合取）：<span class="f">D<sub>Fe max</sub> = 2√[(0.5D<sub>b</sub>)² + (0.5D sin α<sub>D</sub> − h<sub>s</sub>/sin α<sub>D</sub>)²]</span>，h<sub>s</sub> 为形状齿高</li>
+    <li>外花键渐开线起始圆（按 H/h 配合取；非 h 配合时 h<sub>s</sub> 换成 h<sub>s</sub> − 0.5es<sub>v</sub>/tan α<sub>D</sub>）：<span class="f">D<sub>Fe max</sub> = 2√[(0.5D<sub>b</sub>)² + (0.5D sin α<sub>D</sub> − h<sub>s</sub>/sin α<sub>D</sub>)²]</span>，h<sub>s</sub> 为形状齿高</li>
   </ol>
   <table>
     <tr><th>齿形</th><th>k<sub>1</sub>（D<sub>ee</sub>）</th><th>k<sub>2</sub>（D<sub>ie</sub>）</th><th>k<sub>3</sub>（D<sub>ei</sub>）</th><th>h<sub>s</sub></th></tr>
@@ -291,7 +296,7 @@ ol.steps li{margin:4px 0}
     <li><b>作用齿槽宽 E<sub>v</sub></b>：把所有齿槽的齿距误差、齿形误差、齿向误差都算进去以后，“能装进去的那根理想外花键”的齿厚。误差让孔“变紧”，所以 <span class="f">E<sub>v</sub> ≤ E</span></li>
     <li>内花键：<span class="f">E<sub>v min</sub> = π m / 2</span>（H 基本偏差为 0）；<span class="f">E<sub>min</sub> = E<sub>v min</sub> + λ</span>；<span class="f">E<sub>max</sub> = E<sub>v min</sub> + (T + λ)</span></li>
     <li>外花键：<span class="f">S<sub>v max</sub> = S + es<sub>v</sub></span>（S = πm/2；h 为 0，f、e、d 为负）；<span class="f">S<sub>max</sub> = S<sub>v max</sub> − λ</span>；<span class="f">S<sub>min</sub> = S<sub>v max</sub> − (T + λ)</span></li>
-    <li>T 是加工公差，λ 是综合误差（齿距、齿形、齿向）的影响量，数值按公差等级查表</li>
+    <li>T 是加工公差；λ 是综合误差的影响量，按标准由齿距累积公差 F<sub>p</sub>、齿形公差 f<sub>f</sub>、齿向公差 F<sub>β</sub> 计算（这几项又按公差等级和 m、z 算出），不是单独查一个数</li>
   </ol>
   <div class="say">验收时：<b>作用尺寸用综合量规</b>（通规），<b>实际尺寸用量棒或止规</b>。两个都合格，花键才合格。</div>
   <div class="vo">花键要同时管两件事：单个齿槽量出来是多少，和所有误差叠加后还能不能装进去。前者叫实际齿槽宽，后者叫作用齿槽宽。</div>
@@ -326,7 +331,7 @@ ol.steps li{margin:4px 0}
     </div>
     <table class="out" id="cout"></table>
   </div>
-  <div class="say">计算器只算基本尺寸（不含公差，外花键按 h 配合）。内齿轮变位系数按国内习惯：正变位 = 直径变大、齿槽变宽；图纸按 DIN 3960 / ISO 21771 标注时要先换号。斜齿轮量棒距用端面公式，量棒直径按法面取（实际用量球）。</div>
+  <div class="say">计算器只算基本尺寸（不含公差，外花键按 h 配合）。内齿轮变位系数按国内习惯：正变位 = 直径变大、齿槽变宽；图纸按 DIN 3960 / ISO 21771-1 标注时（内齿轮齿数、直径为负），变位系数要先换号，齿数、直径按绝对值输入。斜齿轮量棒距用端面公式，量棒直径按法面取（实际用量球）。</div>
   <div class="vo">最后，把参数填进去，所有结果一步一步算给你看。</div>
 </section>
 
@@ -685,7 +690,7 @@ const set = (id, h) => { const e = document.getElementById(id); if (e) e.innerHT
 {
   const $ = id => document.getElementById(id), out = $('cout');
   const upd = () => {
-    const kind = $('ck').value, m = +$('cm').value, z = Math.round(+$('cz').value), al = +$('ca').value, be = +$('cb').value * D2R, x = +$('cx').value, dp = +$('cp').value;
+    const kind = $('ck').value, m = Math.abs(+$('cm').value), z = Math.abs(Math.round(+$('cz').value)), al = +$('ca').value, be = +$('cb').value * D2R, x = +$('cx').value, dp = +$('cp').value;
     if (!(m > 0 && z > 2 && al > 0)) { out.innerHTML = '<tr><td>请填写有效参数</td></tr>'; return; }
     const R = []; const row = (k, v, f) => R.push(`<tr><td>${k}${f ? `<div class="fx">${f}</div>` : ''}</td><td>${typeof v === 'number' ? n3(v) : v}</td></tr>`);
     const spl = kind[0] === 's', ext = kind[1] === 'e';

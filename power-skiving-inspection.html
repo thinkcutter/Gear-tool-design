@@ -79,7 +79,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <svg class="fig" id="f0" viewBox="0 0 150 92"></svg>
   <div class="say">滚插刀是靠<b>前刀面上的那条刃口</b>切出齿形的，所以检测的核心是刃口：形状对不对（廓形）、每个齿位置分得匀不匀（齿距）、转起来晃不晃（跳动）。再加上前刀面、后刀面的角度，以及刃口钝化。所有项目都以刀具的<b>安装基准</b>（内孔 + 支承端面，或刀柄）为准。</div>
   <ul>
-    <li>滚插刀目前没有自己专门的检测标准，行业里一般参照<b>插齿刀标准 DIN 1829</b>（精度分 AA、A、B 级），再加上刀具厂和用户约定的项目。</li>
+    <li>滚插刀目前没有自己专门的检测标准，行业里一般沿用<b>插齿刀的 AA、A、B 分级</b>（来自 DIN 1829，该标准已作废但仍被广泛引用；国内对应 GB/T 6081 / 6082，美国有 ANSI/AGMA 1104），再加上刀具厂和用户约定的项目。</li>
     <li>测量中心软件里需要输入刀具的<b>理论刃口</b>（设计数据），才能算出偏差——所以设计方要把刃口数据一起交给检测。</li>
   </ul>
   <div class="vo">一把滚插刀要测的东西很多，但核心只有一个：前刀面上那条刃口，形状对不对、分得匀不匀、转起来晃不晃。</div>
@@ -113,9 +113,9 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <h2><span class="no">03</span>齿距：每个齿分得匀不匀</h2>
   <div class="meta">一个齿一个齿地测，看相邻差和累积差</div>
   <svg class="fig" id="f3" viewBox="0 0 150 72"></svg>
-  <div class="say">测针在分度圆附近依次碰每个刀齿的同一侧刃口，记下每个齿的实际位置。<span class="f">f<sub>p</sub></span> 单个齿距偏差：相邻两齿的间隔差了多少；<span class="f">f<sub>u</sub></span> 相邻齿距差；<span class="f">F<sub>p</sub></span> 齿距累积总偏差：转一圈下来，所有齿的位置误差最大最小之差。</div>
+  <div class="say">测针在分度圆附近依次碰每个刀齿的同一侧刃口，记下每个齿的实际位置。<span class="f">f<sub>p</sub></span> 单个齿距偏差：实际齿距和理论齿距之差；<span class="f">f<sub>u</sub></span> 相邻齿距差；<span class="f">F<sub>p</sub></span> 齿距累积总偏差：转一圈下来，所有齿的位置误差最大最小之差。</div>
   <ul>
-    <li>F<sub>p</sub> 通常是一条“正弦”样的曲线，多半来自磨削时的偏心；这部分会直接复制到工件上，变成工件的齿距累积误差和跳动。</li>
+    <li>F<sub>p</sub> 通常是一条“正弦”样的曲线，多半来自磨削时的偏心。刀具齿数和工件齿数互质，每个齿槽轮流被所有刀齿切到，所以刀具的齿距误差不会一对一复制成工件的齿距误差；但会让工件齿面出现波纹、齿形和齿距的局部波动，影响齿面质量。</li>
     <li>两侧刃都要测。</li>
   </ul>
   <div class="vo">每个齿的位置一个个测出来，相邻的差多少、转一圈累积差多少，就是齿距偏差。</div>
@@ -125,9 +125,9 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <h2><span class="no">04</span>径向跳动：转起来晃不晃</h2>
   <div class="meta">测球放进每个齿槽，读半径方向的位置</div>
   <svg class="fig" id="f4" viewBox="0 0 150 72"></svg>
-  <div class="say">把一个测球依次放进每个齿槽（同时碰两侧刃口），读它在半径方向的位置，一圈下来最大减最小就是<b>齿圈径向跳动</b> <span class="f">F<sub>r</sub></span>。再测一圈齿顶，得到<b>齿顶圆跳动</b>。跳动大，切出来的工件齿厚就忽大忽小。</div>
+  <div class="say">把一个测球依次放进每个齿槽（同时碰两侧刃口），读它在半径方向的位置，一圈下来最大减最小就是<b>齿圈径向跳动</b> <span class="f">F<sub>r</sub></span>。再测一圈齿顶，得到<b>齿顶圆跳动</b>。跳动大，各刀齿切深不一样，工件齿面会出现沿齿宽的波纹，齿厚和齿形的一致性变差。</div>
   <ul>
-    <li>也可以由齿距测量的数据直接算出来，不用单独测。</li>
+    <li>如果左右两侧刃都测了齿距，也可以由齿距数据推算出来。</li>
   </ul>
   <div class="vo">测球放进每个齿槽量一下高低，转一圈最大减最小，就是径向跳动。</div>
 </section>
@@ -173,12 +173,12 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="meta">齿轮测量中心为主，光学设备看刃口</div>
   <table>
     <tr><th>设备</th><th>典型型号</th><th>适合测什么</th></tr>
-    <tr><td><b>Klingelnberg（克林贝格）</b> 精密测量中心</td><td>P 16 / P 26 / P 40 / P 65 等 P 系列（P 26 工件最大 Ø260，P 40 最大 Ø400），3D NANOSCAN 扫描测头</td><td>刃口廓形、齿距、跳动、前刀面、后刀面，可测刃口上和刃口后面；滚刀、插齿刀、滚插刀等齿轮刀具都能测，行业里很常用</td></tr>
-    <tr><td><b>Gleason（格里森）</b> GMS 系列</td><td>475GMS ～ 3000GMS</td><td>官方说明可检测滚刀、插齿刀和 Power Skiving 刀具</td></tr>
-    <tr><td><b>Hexagon（海克斯康）</b> 三坐标 + QUINDOS 齿轮刀具软件</td><td>Leitz 等高精度三坐标</td><td>插齿刀按 DIN 1829 评定：刃口角度、廓形、螺旋线、齿距、跳动、齿厚，支持锥形和台阶式前刀面</td></tr>
+    <tr><td><b>Klingelnberg（克林贝格）</b> 精密测量中心</td><td>P 26 / P 40 / P 65 等 P 系列（P 26 工件最大 Ø260，P 40 最大 Ø400），3D NANOSCAN 扫描测头</td><td>官网刀具测量列出滚刀、插齿刀、剃齿刀、拉刀等；测滚插刀要确认有对应的软件模块。可测刃口廓形、齿距、跳动、前后刀面</td></tr>
+    <tr><td><b>Gleason（格里森）</b> GMS 系列</td><td>300GMS、475GMS ～ 3000GMS</td><td>官方说明可检测滚刀、插齿刀和 Power Skiving 刀具</td></tr>
+    <tr><td><b>Hexagon（海克斯康）</b> 三坐标 + QUINDOS 齿轮刀具软件</td><td>Leitz 等高精度三坐标</td><td>插齿刀按 DIN 1829 评定：刃口角度、廓形、螺旋线、齿距、跳动、齿厚，支持锥形和台阶式前刀面；测滚插刀需向厂家确认</td></tr>
     <tr><td><b>Werth</b> 光学 / 多传感器坐标测量机</td><td>VideoCheck、ScopeCheck 等</td><td>刃口上的齿形、齿距、后角、台阶式前刀面；适合小模数刀具的非接触测量</td></tr>
     <tr><td><b>Zoller（卓勒）</b> 刃口测量</td><td>pomSkpGo 等</td><td>刃口钝化：几何形状、半径、K 值、崩刃</td></tr>
-    <tr><td>磨床在机测量</td><td>例如 ANCA GCX Linear 的模拟测头</td><td>磨削过程中测齿距和齿形，及时补偿砂轮磨损；出厂仍要上测量中心终检</td></tr>
+    <tr><td>磨床在机测量</td><td>例如 ANCA GCX Linear 的模拟测头</td><td>磨削过程中测齿形，闭环补偿砂轮磨损；出厂仍要上测量中心终检</td></tr>
   </table>
   <ul>
     <li>其他齿轮测量机品牌（例如大阪精密等）能不能测滚插刀，关键看有没有对应的<b>刀具测量软件</b>。</li>
@@ -188,11 +188,11 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 
 <section class="card" id="s9">
   <h2><span class="no">09</span>精度等级：多准才算合格</h2>
-  <div class="meta">参照插齿刀 DIN 1829：AA 级最高</div>
+  <div class="meta">沿用插齿刀的分级：AA 级最高</div>
   <svg class="fig" id="f9" viewBox="0 0 150 58"></svg>
-  <div class="say">DIN 1829 把插齿刀分为 <b>AA、A、B</b> 三级，滚插刀一般也按这个分级；高精度工件（比如要直接作为最终工序的内齿）用 AA 级。公差数值随模数和直径变化，具体以标准表格为准。图里是一个小模数刀具按 AA 级的例子。</div>
+  <div class="say">插齿刀分为 <b>AA、A、B</b> 三级（DIN 1829，已作废但仍被沿用；GB/T 6082 同样分三级），滚插刀一般也按这个分级；高精度工件（比如要直接作为最终工序的内齿）用 AA 级。公差数值随模数和直径变化，具体以标准表格为准。图里是厂商公开资料中一个小模数刀具按 AA 级的示例数值，正式验收以标准表格或双方约定为准。</div>
   <ul>
-    <li>工件要求越高，刀具等级越高；也可以按工件公差反推刀具公差（例如刀具齿形公差取工件的 1/4 左右）。</li>
+    <li>工件要求越高，刀具等级越高；也可以按工件公差反推刀具公差（经验上刀具齿形公差取工件的 1/4 左右）。</li>
     <li>国内插齿刀标准同样分 AA、A、B 三级：GB/T 6081 规定型式和尺寸，GB/T 6082 规定技术要求和公差。</li>
   </ul>
   <div class="vo">滚插刀的精度一般参照插齿刀标准分三级，最高是 AA 级，单项齿形误差只有两微米左右。</div>
@@ -217,7 +217,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
     <tr><td>支承端面跳动</td><td>—</td><td>测头碰支承端面，转一圈</td><td>刀装上就歪，两侧刃不一样</td></tr>
     <tr><td>刃口廓形</td><td><span class="f">F<sub>α</sub>, f<sub>fα</sub>, f<sub>Hα</sub></span></td><td>沿刃口扫描，和理论刃口比，测 3～4 个齿</td><td>工件齿形超差</td></tr>
     <tr><td>齿距</td><td><span class="f">f<sub>p</sub>, f<sub>u</sub>, F<sub>p</sub></span></td><td>逐齿测同侧刃口位置</td><td>工件齿距、跳动变差</td></tr>
-    <tr><td>径向跳动</td><td><span class="f">F<sub>r</sub></span></td><td>测球逐个放入齿槽</td><td>工件齿厚忽大忽小</td></tr>
+    <tr><td>径向跳动</td><td><span class="f">F<sub>r</sub></span></td><td>测球逐个放入齿槽</td><td>工件齿面波纹、齿厚一致性变差</td></tr>
     <tr><td>前刀面位置 / 平面度</td><td>—</td><td>台阶式逐齿测前刀面轴向位置</td><td>各齿刃口不一致</td></tr>
     <tr><td>前角</td><td><span class="f">γ</span></td><td>在前刀面上扫线</td><td>齿形变、切削性能变</td></tr>
     <tr><td>螺旋线 / 后角 / 锥角</td><td><span class="f">f<sub>Hβ</sub>, α<sub>k</sub></span></td><td>沿齿向扫后刀面，多截面查齿形</td><td>重磨后齿形跑偏、可重磨量少</td></tr>
@@ -591,11 +591,11 @@ const pitchF = (() => { const F = []; for (let i = 0; i < Z; i++) F.push(2.6 * M
   const svg = document.getElementById('f9');
   const rows = [['单个齿距偏差 f_{p}', 2.5], ['齿距累积偏差 F_{p}', 7], ['相邻齿距差 f_{u}', 3], ['齿形形状偏差 f_{fα}', 2], ['齿形总偏差 F_{α}', 3], ['齿形倾斜偏差 f_{Hα}', 2.5]];
   const X0 = 46, sc = 11, y0 = 8, h = 6.4;
-  txt(svg, 4, 3, '例：小模数滚插刀 DIN AA 级限值（µm）', { fs: 2.6, anchor: 'start', attr: { 'font-weight': 700 } });
+  txt(svg, 4, 3, '例：小模数滚插刀 AA 级示例数值（µm，厂商资料）', { fs: 2.6, anchor: 'start', attr: { 'font-weight': 700 } });
   const bars = rows.map(([n, v], i) => { const y = y0 + i * h; txt(svg, X0 - 2, y + 2, n, { fs: 2.5, anchor: 'end' }); const b = el('rect', { x: X0, y: y, width: 0, height: 4, rx: 0.8, fill: 'var(--blue)' }, svg); const t = txt(svg, X0, y + 2, '', { fs: 2.5, anchor: 'start', attr: { 'font-weight': 700 } }); return { b, t, v }; });
   const hy = y0 + 6 * h + 2; txt(svg, X0 - 2, hy + 2, '一根头发丝 ≈ 70 µm', { fs: 2.5, anchor: 'end', fill: 'var(--muted)' });
   el('rect', { x: X0, y: hy, width: 150 - X0 - 3, height: 4, rx: 0.8, fill: 'var(--steel)' }, svg);
-  txt(svg, 147 - 1, hy + 2, '按同一比例，要比最长的那条还长 10 倍', { fs: 2.2, anchor: 'end', fill: 'var(--ink)' });
+  txt(svg, 147 - 1, hy + 2, '按同一比例，是最长那条的 10 倍', { fs: 2.2, anchor: 'end', fill: 'var(--ink)' });
   scenes.push(t => { const u = smooth(((t % 6) / 2)); bars.forEach(({ b, t: tx, v }, i) => { const w = v * sc * smooth(u * 1.4 - i * 0.07); b.setAttribute('width', Math.max(0, w)); tx.setAttribute('x', X0 + w + 1.5); tx.textContent = w > 1 ? `${v} µm` : ''; }); });
 }
 

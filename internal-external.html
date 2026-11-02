@@ -84,7 +84,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <h2><span class="no">01</span>最快的判断：齿顶圆和齿根圆谁大</h2>
   <div class="meta">外齿：齿顶圆 &gt; 齿根圆；内齿：齿顶圆 &lt; 齿根圆</div>
   <svg class="fig" id="f1" viewBox="-62 -40 124 86"></svg>
-  <div class="say">外齿轮：<span class="f">d<sub>a</sub> &gt; d &gt; d<sub>f</sub></span>；内齿轮：<span class="f">d<sub>a</sub> &lt; d &lt; d<sub>f</sub></span>。<br>只要参数表上同时有齿顶圆和齿根圆，<b>齿顶圆比齿根圆小，就是内齿</b>。</div>
+  <div class="say">外齿轮：<span class="f">d<sub>a</sub> &gt; d &gt; d<sub>f</sub></span>；内齿轮：<span class="f">d<sub>a</sub> &lt; d &lt; d<sub>f</sub></span>。<br>只要参数表上同时有齿顶圆和齿根圆，<b>齿顶圆比齿根圆小，就是内齿</b>。<br>注意：按 DIN 3960 / ISO 21771-1 写法，内齿轮直径带负号（如 d<sub>a</sub> = −174、d<sub>f</sub> = −187.5），要<b>按绝对值比较</b>；直径带负号本身就说明是内齿轮。</div>
   <div class="vo">最快的办法，是比较齿顶圆和齿根圆。外齿的齿顶圆最大，内齿的齿顶圆反而最小。</div>
 </section>
 
@@ -124,13 +124,13 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
     <li><b>渐开线花键（GB/T 3478.1）</b><br>外花键：<span class="f"><b>EXT</b> 24z×2.5m×30R×5<b>h</b></span><br>内花键：<span class="f"><b>INT</b> 24z×2.5m×30P×5<b>H</b></span></li>
     <li><b>矩形花键（GB/T 1144）</b><br>外花键：<span class="f">6×23<b>f</b>7×26<b>a</b>11×6<b>d</b>10</span><br>内花键：<span class="f">6×23<b>H</b>7×26<b>H</b>10×6<b>H</b>11</span></li>
   </ul>
-  <div class="say">渐开线花键看前缀：<b>EXT</b> 是外花键，<b>INT</b> 是内花键（30R 为圆齿根，30P 为平齿根）。<br>矩形花键看公差代号：<b>小写是外花键，大写是内花键</b>。</div>
+  <div class="say">渐开线花键看前缀：<b>EXT</b> 是外花键，<b>INT</b> 是内花键（30R 为圆齿根，30P 为平齿根）。<br>矩形花键看公差代号：<b>小写是外花键，大写是内花键</b>。<br>德标 DIN 5480 花键看字母：<b>W</b>（Welle，轴）是外花键，<b>N</b>（Nabe，毂）是内花键，例如 <span class="f">DIN 5480 W 50×2×24×8h</span> / <span class="f">DIN 5480 N 50×2×24×9H</span>，公差代号同样是外小写、内大写。</div>
   <div class="vo">标记最直接：EXT 是外，INT 是内。公差代号也一样，小写是轴，大写是孔。</div>
 </section>
 
 <section class="card" id="s5">
   <h2><span class="no">05</span>齿数和中心距的正负</h2>
-  <div class="meta">DIN 3960 / ISO 21771：内齿轮齿数写成负数</div>
+  <div class="meta">DIN 3960 / ISO 21771-1：内齿轮齿数写成负数</div>
   <svg class="fig" id="f5" viewBox="-66 -34 132 70"></svg>
   <div class="say">德标和 ISO 的写法里，内齿轮的齿数是<b>负数</b>（比如 z = −36）。这样外啮合、内啮合可以用同一个公式：<span class="f">a = m(z<sub>1</sub>+z<sub>2</sub>)/2</span>。<br>外啮合 a = m(18+36)/2；内啮合 a = m(18−36)/2，算出来是负的，绝对值就是两个分度圆半径之差。</div>
   <div class="vo">德标和 ISO 图纸上，齿数前面有负号，就是内齿轮。内啮合的中心距是两个半径相减。</div>
@@ -419,13 +419,16 @@ const pulse = (t, k = 2) => 0.5 + 0.5 * Math.sin(t * k);
   const g = el('g', {}, svg); let isInt = false;
   const res = $('res');
   const upd = () => {
-    const da = parseFloat($('ida').value), df = parseFloat($('idf').value), mk = $('imk').value.trim();
+    const da0 = parseFloat($('ida').value), df0 = parseFloat($('idf').value), mk = $('imk').value.trim(), neg = da0 < 0 || df0 < 0, da = Math.abs(da0), df = Math.abs(df0);
     let byDia = null, byMk = null, why = [];
-    if (da > 0 && df > 0 && da !== df) { byDia = da < df ? 'int' : 'ext'; why.push(`齿顶圆 ${da} ${da < df ? '＜' : '＞'} 齿根圆 ${df}`); }
+    if (neg) { byDia = 'int'; why.push('直径带负号（DIN 3960 / ISO 21771-1 的内齿轮写法）'); }
+    else if (da > 0 && df > 0 && da !== df) { byDia = da < df ? 'int' : 'ext'; why.push(`齿顶圆 ${da} ${da < df ? '＜' : '＞'} 齿根圆 ${df}`); }
     if (mk) {
       const M = mk.toUpperCase();
       if (/^\s*INT\b/.test(M)) { byMk = 'int'; why.push('标记以 INT 开头'); }
       else if (/^\s*EXT\b/.test(M)) { byMk = 'ext'; why.push('标记以 EXT 开头'); }
+      else if (/DIN\s*5480\s*[-–]?\s*W\b|^\s*W\s*\d/.test(M)) { byMk = 'ext'; why.push('DIN 5480 标记里的 W（轴）'); }
+      else if (/DIN\s*5480\s*[-–]?\s*N\b|^\s*N\s*\d/.test(M)) { byMk = 'int'; why.push('DIN 5480 标记里的 N（毂）'); }
       else { const codes = mk.match(/\d+(?:\.\d+)?\s*([A-Za-z]{1,2})\d{1,2}\b/g) || [];
         const letters = codes.map(c => c.replace(/[\d.\s]/g, '')).filter(s => !/^(z|m|P|R)$/i.test(s));
         if (letters.length) { const up = letters.every(s => s === s.toUpperCase()), lo = letters.every(s => s === s.toLowerCase());
