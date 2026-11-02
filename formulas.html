@@ -112,7 +112,7 @@ ol.steps li{margin:4px 0}
     <li>标准齿条：齿顶高 <span class="f">h<sub>a</sub>* m</span>，齿根高 <span class="f">(h<sub>a</sub>* + c*) m</span>，多出来的 <span class="f">c* m</span> 是顶隙</li>
     <li>变位 x：刀具往外退 <span class="f">x m</span>，齿顶高、齿根高一起变：<span class="f">h<sub>a</sub> = (h<sub>a</sub>* + x) m</span>，<span class="f">h<sub>f</sub> = (h<sub>a</sub>* + c* − x) m</span></li>
     <li>外齿轮：<span class="f">d<sub>a</sub> = d + 2h<sub>a</sub></span>，<span class="f">d<sub>f</sub> = d − 2h<sub>f</sub></span></li>
-    <li>内齿轮方向相反：<span class="f">d<sub>a</sub> = d − 2h<sub>a</sub></span>，<span class="f">d<sub>f</sub> = d + 2h<sub>f</sub></span>。内齿轮变位按 DIN 3960 的符号（正变位 = 齿廓离开轴线、齿槽变宽）：<span class="f">h<sub>a</sub> = (h<sub>a</sub>* − x) m</span>，<span class="f">h<sub>f</sub> = (h<sub>a</sub>* + c* + x) m</span>；国内有的图纸符号相反，计算前要先确认</li>
+    <li>内齿轮方向相反：<span class="f">d<sub>a</sub> = d − 2h<sub>a</sub></span>，<span class="f">d<sub>f</sub> = d + 2h<sub>f</sub></span>。内齿轮的变位系数有两种符号规定，计算前要先确认图纸用的是哪一种：<br>· <b>国内和日本的习惯</b>：正变位使内齿轮直径变大、齿槽变宽，<span class="f">h<sub>a</sub> = (h<sub>a</sub>* − x) m</span>，<span class="f">h<sub>f</sub> = (h<sub>a</sub>* + c* + x) m</span>，齿槽宽 <span class="f">e = m(π/2 + 2x tan α)</span><br>· <b>DIN 3960 / ISO 21771</b>：内齿轮齿数、直径取负值，正变位使直径的绝对值变小、齿变厚，和上面正好差一个负号</li>
     <li>全齿高 <span class="f">h = h<sub>a</sub> + h<sub>f</sub> = (2h<sub>a</sub>* + c*) m</span>，和变位无关</li>
   </ol>
   <div class="ex">例题：<span id="x2"></span></div>
@@ -263,13 +263,23 @@ ol.steps li{margin:4px 0}
   <ol class="steps">
     <li>分度圆 <span class="f">D = m z</span>，基圆 <span class="f">D<sub>b</sub> = m z cos α<sub>D</sub></span>，齿距 <span class="f">p = π m</span></li>
     <li>基本齿槽宽 = 基本齿厚：<span class="f">E = S = π m / 2</span>（花键不变位）</li>
-    <li>30° 平齿根：外花键大径 <span class="f">D<sub>ee</sub> = m(z + 1)</span>，小径 <span class="f">D<sub>ie</sub> = m(z − 1.5)</span></li>
-    <li>30° 平齿根：内花键大径 <span class="f">D<sub>ei</sub> = m(z + 1.5)</span>，小径 <span class="f">D<sub>ii</sub> = m(z − 1)</span></li>
-    <li>圆齿根时外花键小径、内花键大径分别取 <span class="f">m(z − 1.8)</span>、<span class="f">m(z + 1.8)</span>；37.5°、45° 的系数不同，按标准表取</li>
+    <li>外花键大径 <span class="f">D<sub>ee max</sub> = m(z + k<sub>1</sub>) + es<sub>v</sub>/tan α<sub>D</sub></span>，小径 <span class="f">D<sub>ie max</sub> = m(z − k<sub>2</sub>) + es<sub>v</sub>/tan α<sub>D</sub></span>（h 配合 es<sub>v</sub> = 0）</li>
+    <li>内花键大径 <span class="f">D<sub>ei min</sub> = m(z + k<sub>3</sub>)</span></li>
+    <li>内花键小径要躲开外花键的渐开线起始圆：<span class="f">D<sub>ii min</sub> = D<sub>Fe max</sub> + 2c<sub>F</sub></span>，c<sub>F</sub> = 0.1 m（形状余量）</li>
+    <li>外花键渐开线起始圆（按 H/h 配合取）：<span class="f">D<sub>Fe max</sub> = 2√[(0.5D<sub>b</sub>)² + (0.5D sin α<sub>D</sub> − h<sub>s</sub>/sin α<sub>D</sub>)²]</span>，h<sub>s</sub> 为形状齿高</li>
+  </ol>
+  <table>
+    <tr><th>齿形</th><th>k<sub>1</sub>（D<sub>ee</sub>）</th><th>k<sub>2</sub>（D<sub>ie</sub>）</th><th>k<sub>3</sub>（D<sub>ei</sub>）</th><th>h<sub>s</sub></th></tr>
+    <tr><td>30° 平齿根（30P）</td><td>1</td><td>1.5</td><td>1.5</td><td>0.6 m</td></tr>
+    <tr><td>30° 圆齿根（30R）</td><td>1</td><td>1.8</td><td>1.8</td><td>0.6 m</td></tr>
+    <tr><td>37.5° 圆齿根</td><td>0.9</td><td>1.4</td><td>1.4</td><td>0.55 m</td></tr>
+    <tr><td>45° 圆齿根</td><td>0.8</td><td>1.2</td><td>1.2</td><td>0.5 m</td></tr>
+  </table>
+  <ol class="steps" style="display:none">
   </ol>
   <div class="ex">例题：<span id="x12"></span></div>
-  <div class="say">和齿轮相比，花键的齿顶高只有 0.5 m，齿短而粗，所以压力角要取大一些，强度高、承载均匀。</div>
-  <div class="vo">渐开线花键可以看成短齿的渐开线齿轮。分度圆、基圆、齿距的算法和齿轮完全一样，只是齿顶高只有半个模数。</div>
+  <div class="say">和齿轮相比，花键的齿顶高只有 0.4～0.5 m，齿短而粗，所以压力角要取大一些，强度高、承载均匀。</div>
+  <div class="vo">渐开线花键可以看成短齿的渐开线齿轮。分度圆、基圆、齿距的算法和齿轮完全一样，只是齿顶高只有半个模数左右。</div>
 </section>
 
 <section class="card" id="s13">
@@ -280,7 +290,7 @@ ol.steps li{margin:4px 0}
     <li><b>实际齿槽宽 E</b>：单个齿槽量出来的宽度（用量棒测）</li>
     <li><b>作用齿槽宽 E<sub>v</sub></b>：把所有齿槽的齿距误差、齿形误差、齿向误差都算进去以后，“能装进去的那根理想外花键”的齿厚。误差让孔“变紧”，所以 <span class="f">E<sub>v</sub> ≤ E</span></li>
     <li>内花键：<span class="f">E<sub>v min</sub> = π m / 2</span>（H 基本偏差为 0）；<span class="f">E<sub>min</sub> = E<sub>v min</sub> + λ</span>；<span class="f">E<sub>max</sub> = E<sub>v min</sub> + (T + λ)</span></li>
-    <li>外花键：<span class="f">S<sub>v max</sub> = E<sub>v min</sub> + es<sub>v</sub></span>（h 为 0，f、e、d 为负）；<span class="f">S<sub>max</sub> = S<sub>v max</sub> − λ</span>；<span class="f">S<sub>min</sub> = S<sub>v max</sub> − (T + λ)</span></li>
+    <li>外花键：<span class="f">S<sub>v max</sub> = S + es<sub>v</sub></span>（S = πm/2；h 为 0，f、e、d 为负）；<span class="f">S<sub>max</sub> = S<sub>v max</sub> − λ</span>；<span class="f">S<sub>min</sub> = S<sub>v max</sub> − (T + λ)</span></li>
     <li>T 是加工公差，λ 是综合误差（齿距、齿形、齿向）的影响量，数值按公差等级查表</li>
   </ol>
   <div class="say">验收时：<b>作用尺寸用综合量规</b>（通规），<b>实际尺寸用量棒或止规</b>。两个都合格，花键才合格。</div>
@@ -294,7 +304,7 @@ ol.steps li{margin:4px 0}
   <ol class="steps">
     <li><span class="f">N</span> 键数，<span class="f">d</span> 小径，<span class="f">D</span> 大径，<span class="f">B</span> 键宽（槽宽）</li>
     <li>国标采用<b>小径定心</b>：小径精度最高，可以磨削；大径、键宽主要保证不干涉和传扭</li>
-    <li>键高 <span class="f">(D − d) / 2</span>；分轻系列、中系列，尺寸按标准表选，没有复杂的公式</li>
+    <li>键高 <span class="f">(D − d) / 2</span>；分轻系列、中系列，尺寸按标准表选，没有复杂的公式。例：6×23×26×6 是轻系列，同样小径 23 的中系列是 6×23×28×6</li>
     <li>标记例：内花键 <span class="f">6×23H7×26H10×6H11</span>，外花键 <span class="f">6×23f7×26a11×6d10</span></li>
   </ol>
   <div class="vo">矩形花键简单得多，四个数：键数、小径、大径、键宽。国标用小径定心，所以小径的精度要求最高。</div>
@@ -305,17 +315,18 @@ ol.steps li{margin:4px 0}
   <div class="meta">改参数，每一步结果实时更新</div>
   <div class="play">
     <div class="ctl">
-      <label><span>类型</span></label><select id="ck"><option value="ge">外齿轮</option><option value="gi">内齿轮</option><option value="se">外花键（30° 平齿根）</option><option value="si">内花键（30° 平齿根）</option></select>
+      <label><span>类型</span></label><select id="ck"><option value="ge">外齿轮</option><option value="gi">内齿轮</option><option value="se">外花键</option><option value="si">内花键</option></select>
+      <label><span>花键齿根（30° 时可选）</span></label><select id="cr"><option value="P">平齿根 P</option><option value="R">圆齿根 R</option></select>
       <label><span>模数 m（斜齿为法面 m<sub>n</sub>）</span></label><input id="cm" type="number" step="any" value="3">
       <label><span>齿数 z</span></label><input id="cz" type="number" step="1" value="24">
-      <label><span>压力角 α（法面）</span></label><input id="ca" type="number" step="any" value="20">
+      <label><span>压力角 α（法面；花键 30 / 37.5 / 45）</span></label><input id="ca" type="number" step="any" value="20">
       <label><span>螺旋角 β</span></label><input id="cb" type="number" step="any" value="0">
       <label><span>变位系数 x（花键填 0）</span></label><input id="cx" type="number" step="any" value="0.2">
       <label><span>量棒直径 d<sub>p</sub></span></label><input id="cp" type="number" step="any" value="5">
     </div>
     <table class="out" id="cout"></table>
   </div>
-  <div class="say">计算器只算基本尺寸（不含公差）。内齿轮的变位系数按“正变位 = 齿槽变宽、齿变薄”处理，图纸用的符号规定不同时要换号。斜齿轮量棒距用端面公式（量棒直径按法面），偶数齿是精确值，奇数齿是近似值。</div>
+  <div class="say">计算器只算基本尺寸（不含公差，外花键按 h 配合）。内齿轮变位系数按国内习惯：正变位 = 直径变大、齿槽变宽；图纸按 DIN 3960 / ISO 21771 标注时要先换号。斜齿轮量棒距用端面公式，量棒直径按法面取（实际用量球）。</div>
   <div class="vo">最后，把参数填进去，所有结果一步一步算给你看。</div>
 </section>
 
@@ -408,7 +419,8 @@ const set = (id, h) => { const e = document.getElementById(id); if (e) e.innerHT
   const M = Mext(g, 5);
   set('x11', `inv α<sub>M</sub> = ${inv(g.A).toFixed(6)} + ${n3(g.s)}/72 + 5/${n3(g.db)} − π/24 = ${M.v.toFixed(6)} → α<sub>M</sub> = ${deg(M.aM).toFixed(4)}°；d<sub>M</sub> = ${n3(g.db)} / cos α<sub>M</sub> = ${n3(M.dM)}；z 为偶数，M = ${n3(M.dM)} + 5 = <b>${n3(M.M)}</b>`);
   const sm = 2, sz = 24, sA = 30 * D2R;
-  set('x12', `D = 2 × 24 = <b>48</b>；D<sub>b</sub> = 48 × cos30° = <b>${n3(48 * Math.cos(sA))}</b>；p = <b>${n3(PI * 2)}</b>；E = S = <b>${n3(PI)}</b>；D<sub>ee</sub> = <b>50</b>，D<sub>ie</sub> = <b>45</b>，D<sub>ei</sub> = <b>51</b>，D<sub>ii</sub> = <b>46</b>`);
+  const DFe = 2 * Math.sqrt((0.5 * 48 * Math.cos(sA)) ** 2 + (0.5 * 48 * Math.sin(sA) - 0.6 * 2 / Math.sin(sA)) ** 2);
+  set('x12', `D = 2 × 24 = <b>48</b>；D<sub>b</sub> = 48 × cos30° = <b>${n3(48 * Math.cos(sA))}</b>；p = <b>${n3(PI * 2)}</b>；E = S = <b>${n3(PI)}</b>；D<sub>ee max</sub> = 2 × 25 = <b>50</b>，D<sub>ie max</sub> = 2 × 22.5 = <b>45</b>，D<sub>ei min</sub> = 2 × 25.5 = <b>51</b>；D<sub>Fe max</sub> = 2√[${n3(24 * Math.cos(sA))}² + (12 − 1.2/0.5)²] = <b>${n3(DFe)}</b>，D<sub>ii min</sub> = ${n3(DFe)} + 2 × 0.2 = <b>${n3(DFe + 0.4)}</b>（不是简单的 m(z − 1) = 46）`);
 }
 
 // ================= 01 分度圆滚一圈 =================
@@ -632,7 +644,7 @@ const set = (id, h) => { const e = document.getElementById(id); if (e) e.innerHT
   el('path', { d: pathOf(gearPts(m, z, 30, 0, { ha: 0.5, c: 0.25, n: 8 }).pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g1);
   const Ri = r + 6 * m; el('path', { d: `M${Ri} 0 A${Ri} ${Ri} 0 1 0 ${-Ri} 0 A${Ri} ${Ri} 0 1 0 ${Ri} 0Z` + pathOf(gearPts(m, z, 30, 0, { ha: 0.75, c: -0.25, n: 8 }).pts), fill: 'var(--gear2)', 'fill-rule': 'evenodd', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g2);
   const items = [[cx1, r + 0.5 * m, 'Dee = m(z+1)', 'var(--red)'], [cx1, r - 0.75 * m, 'Die = m(z−1.5)', 'var(--green)'], [cx1, r, 'D = m z', 'var(--accent)'],
-    [cx2, r + 0.75 * m, 'Dei = m(z+1.5)', 'var(--red)'], [cx2, r - 0.5 * m, 'Dii = m(z−1)', 'var(--green)'], [cx2, r, 'D = m z', 'var(--accent)']].map(([cx, R, s, c]) => {
+    [cx2, r + 0.75 * m, 'Dei = m(z+1.5)', 'var(--red)'], [cx2, r - 0.5 * m, 'Dii = DFe + 2cF', 'var(--green)'], [cx2, r, 'D = m z', 'var(--accent)']].map(([cx, R, s, c]) => {
     const g = el('g', {}, svg); circle(g, cx, 0, R, { stroke: c, w: 0.8 }); txt(g, cx, R + 4.5 > 30 ? -R - 3 : R + 4, s, { fs: 3, fill: c, attr: { 'font-weight': 700 } }); return g; });
   txt(svg, cx1, -33, '外花键', { fs: 3.6, attr: { 'font-weight': 700 } }); txt(svg, cx2, -35.5, '内花键', { fs: 3.6, attr: { 'font-weight': 700 } });
   scenes.push(t => { g1.setAttribute('transform', `translate(${cx1} 0) rotate(${-t * 6})`); g2.setAttribute('transform', `translate(${cx2} 0) rotate(${-t * 4})`);
@@ -677,19 +689,24 @@ const set = (id, h) => { const e = document.getElementById(id); if (e) e.innerHT
     if (!(m > 0 && z > 2 && al > 0)) { out.innerHTML = '<tr><td>请填写有效参数</td></tr>'; return; }
     const R = []; const row = (k, v, f) => R.push(`<tr><td>${k}${f ? `<div class="fx">${f}</div>` : ''}</td><td>${typeof v === 'number' ? n3(v) : v}</td></tr>`);
     const spl = kind[0] === 's', ext = kind[1] === 'e';
-    const An = (spl ? 30 : al) * D2R, mt = spl ? m : m / Math.cos(be), At = spl ? An : Math.atan(Math.tan(An) / Math.cos(be)), d = mt * z, db = d * Math.cos(At), xx = spl ? 0 : x;
+    const An = al * D2R, mt = spl ? m : m / Math.cos(be), At = spl ? An : Math.atan(Math.tan(An) / Math.cos(be)), d = mt * z, db = d * Math.cos(At), xx = spl ? 0 : x;
     if (!spl && be) { row('端面模数 mₜ', mt, 'mₙ / cos β'); row('端面压力角 αₜ', deg(At).toFixed(4) + '°', 'arctan(tan αₙ / cos β)'); }
     row(spl ? '分度圆 D' : '分度圆 d', d, spl ? 'm z' : (be ? 'mₙ z / cos β' : 'm z'));
     row('基圆 d<sub>b</sub>', db, 'd cos αₜ'); row('基节 p<sub>b</sub>（端面）', PI * mt * Math.cos(At), 'π mₜ cos αₜ');
     if (spl) {
-      if (ext) { row('大径 Dee', m * (z + 1), 'm(z+1)'); row('小径 Die', m * (z - 1.5), 'm(z−1.5)，平齿根'); row('基本齿厚 S', PI * m / 2, 'πm/2'); }
-      else { row('大径 Dei', m * (z + 1.5), 'm(z+1.5)，平齿根'); row('小径 Dii', m * (z - 1), 'm(z−1)'); row('基本齿槽宽 E', PI * m / 2, 'πm/2'); }
+      const ad = +$('ca').value, root = ad === 30 ? $('cr').value : 'R';
+      const K = ad === 30 ? (root === 'P' ? [1, 1.5, 1.5, 0.6] : [1, 1.8, 1.8, 0.6]) : ad === 37.5 ? [0.9, 1.4, 1.4, 0.55] : ad === 45 ? [0.8, 1.2, 1.2, 0.5] : null;
+      if (!K) { out.innerHTML = '<tr><td>花键压力角请填 30、37.5 或 45</td></tr>'; return; }
+      const DFe = 2 * Math.sqrt((0.5 * db) ** 2 + (0.5 * d * Math.sin(An) - K[3] * m / Math.sin(An)) ** 2), cF = 0.1 * m;
+      row('渐开线起始圆 D<sub>Fe max</sub>', DFe, `2√[(0.5D<sub>b</sub>)² + (0.5D sin α − h<sub>s</sub>/sin α)²]，h<sub>s</sub> = ${K[3]}m`);
+      if (ext) { row('大径 D<sub>ee max</sub>', m * (z + K[0]), `m(z + ${K[0]})，h 配合`); row('小径 D<sub>ie max</sub>', m * (z - K[1]), `m(z − ${K[1]})，h 配合`); row('基本齿厚 S', PI * m / 2, 'πm/2'); }
+      else { row('大径 D<sub>ei min</sub>', m * (z + K[2]), `m(z + ${K[2]})`); row('小径 D<sub>ii min</sub>', DFe + 2 * cF, 'D<sub>Fe max</sub> + 2c<sub>F</sub>，c<sub>F</sub> = 0.1m'); row('渐开线终止圆 D<sub>Fi min</sub>', m * (z + K[0]) + 2 * cF, `m(z + ${K[0]}) + 2c<sub>F</sub>`); row('基本齿槽宽 E', PI * m / 2, 'πm/2'); }
     } else if (ext) { row('齿顶圆 dₐ', d + 2 * (1 + xx) * m, 'd + 2(1 + x)mₙ'); row('齿根圆 d_f'.replace('_f', 'f'), d - 2 * (1.25 - xx) * m, 'd − 2(1.25 − x)mₙ'); }
     else { row('齿顶圆 dₐ（内孔）', d - 2 * (1 - xx) * m, 'd − 2(1 − x)mₙ'); row('齿根圆 d_f'.replace('_f', 'f'), d + 2 * (1.25 + xx) * m, 'd + 2(1.25 + x)mₙ'); }
     const st = mt * (PI / 2 + 2 * xx * Math.tan(At)) * (spl ? 1 : 1);     // 端面齿厚（外）/ 齿槽宽（内）
     const sn = m * (PI / 2 + 2 * xx * Math.tan(An));
     if (!spl) row(ext ? '分度圆法面齿厚 sₙ' : '分度圆法面齿槽宽 eₙ', sn, 'mₙ(π/2 + 2x tan αₙ)');
-    if (ext && !(be)) { const W = Wk(G(m, z, spl ? 30 : al, xx)); row(`公法线 W${W.k}（跨 ${W.k} 齿）`, W.W, 'm cos α[π(k−0.5) + z inv α] + 2xm sin α'); }
+    if (ext && !(be)) { const W = Wk(G(m, z, al, xx)); row(`公法线 W${W.k}（跨 ${W.k} 齿）`, W.W, 'm cos α[π(k−0.5) + z inv α] + 2xm sin α'); }
     if (dp > 0) {
       // 端面公式（斜齿用法面齿厚和法面量棒直径换算）：inv αMt = inv αt ± sn/(mn z) ± dp/(mn z cos αn) − π/z
       const snn = m * (PI / 2 + 2 * xx * Math.tan(An));
@@ -702,7 +719,7 @@ const set = (id, h) => { const e = document.getElementById(id); if (e) e.innerHT
     }
     out.innerHTML = R.join('');
   };
-  ['ck', 'cm', 'cz', 'ca', 'cb', 'cx', 'cp'].forEach(id => { $(id).addEventListener('input', upd); $(id).addEventListener('change', upd); }); upd();
+  ['ck', 'cr', 'cm', 'cz', 'ca', 'cb', 'cx', 'cp'].forEach(id => { $(id).addEventListener('input', upd); $(id).addEventListener('change', upd); }); upd();
   $('ck').addEventListener('change', () => { const sp = $('ck').value[0] === 's'; if (sp) { $('cm').value = 2; $('cz').value = 24; $('ca').value = 30; $('cb').value = 0; $('cx').value = 0; $('cp').value = 3.5; } upd(); });
 }
 
