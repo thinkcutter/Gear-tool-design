@@ -60,6 +60,9 @@ td .f{font-size:15px}
 .out td:last-child{font-family:"Times New Roman",serif;font-size:16px;text-align:right}
 svg text{font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif}
 svg .math{font-family:"Times New Roman",serif;font-style:italic}
+table.aa{max-width:520px;margin:8px 0}
+table.aa td:nth-child(n+3),table.aa th:nth-child(n+3){text-align:right;font-family:"Times New Roman",serif}
+.src{font-size:13px;color:var(--muted);margin:4px 0 8px}
 footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 
 </style>
@@ -189,11 +192,24 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 <section class="card" id="s9">
   <h2><span class="no">09</span>精度等级：多准才算合格</h2>
   <div class="meta">沿用插齿刀的分级：AA 级最高</div>
-  <svg class="fig" id="f9" viewBox="0 0 150 58"></svg>
-  <div class="say">插齿刀分为 <b>AA、A、B</b> 三级（DIN 1829，已作废但仍被沿用；GB/T 6082 同样分三级），滚插刀一般也按这个分级；高精度工件（比如要直接作为最终工序的内齿）用 AA 级。公差数值随模数和直径变化，具体以标准表格为准。图里是厂商公开资料中一个小模数刀具按 AA 级的示例数值，正式验收以标准表格或双方约定为准。</div>
+  <svg class="fig" id="f9" viewBox="0 0 150 62"></svg>
+  <div class="say">插齿刀分为 <b>AA、A、B</b> 三级（DIN 1829-2:1977，已作废但仍被沿用；GB/T 6082 同样分三级），滚插刀一般也按这个分级；高精度工件（比如要直接作为最终工序的内齿）用 AA 级。公差数值随<b>模数和分度圆直径 d<sub>0</sub></b> 变化。图和下表取示例刀具（m2、d<sub>0</sub> ≈ 66 mm）所在的一档：<b>模数 1～2、d<sub>0</sub> 50～125 mm</b>。</div>
+  <table class="aa">
+    <tr><th>项目</th><th>符号</th><th>AA 级</th><th>A 级</th></tr>
+    <tr><td>齿形形状偏差</td><td>f<sub>fα</sub></td><td>2</td><td>3</td></tr>
+    <tr><td>齿形倾斜偏差</td><td>f<sub>Hα</sub></td><td>2</td><td>3</td></tr>
+    <tr><td>齿形总偏差</td><td>F<sub>α</sub></td><td>3</td><td>4</td></tr>
+    <tr><td>单个齿距偏差 / 基节偏差</td><td>f<sub>p</sub> / f<sub>pe</sub></td><td>2.5</td><td>4</td></tr>
+    <tr><td>相邻齿距差</td><td>f<sub>u</sub></td><td>3</td><td>5</td></tr>
+    <tr><td>齿距累积总偏差</td><td>F<sub>p</sub></td><td>9</td><td>14</td></tr>
+    <tr><td>径向跳动（齿圈 / 齿顶）</td><td>F<sub>r</sub> / F<sub>ra</sub></td><td>8</td><td>10</td></tr>
+    <tr><td>齿厚变动量</td><td>R<sub>s</sub></td><td>3.5</td><td>5</td></tr>
+  </table>
+  <div class="src">单位 µm。数值出自 Liebherr《Stock Tools》样本第 5 页按 DIN 1829 列出的 AA / A 级公差表（同表 d<sub>0</sub> 10～50 mm 一档的 AA 级：F<sub>p</sub> 为 7、F<sub>r</sub> 为 7、R<sub>s</sub> 为 3，其余相同）。另有论文按 DIN 1829-2 引用 AA 级 f<sub>Hα</sub> = 2 µm，与此一致。正式验收以标准原文或双方约定为准。</div>
   <ul>
     <li>工件要求越高，刀具等级越高；也可以按工件公差反推刀具公差（经验上刀具齿形公差取工件的 1/4 左右）。</li>
-    <li>国内插齿刀标准同样分 AA、A、B 三级：GB/T 6081 规定型式和尺寸，GB/T 6082 规定技术要求和公差。</li>
+    <li>比 AA 更高的要求，行业里有非正式的 <b>AAA</b> 说法（有资料取 AA 公差的 0.8 倍），刀具厂常用它说明齿距、齿形能做到的水平；标准里只有 AA、A、B。</li>
+    <li>国内插齿刀标准同样分 AA、A、B 三级：GB/T 6081 规定型式和尺寸，GB/T 6082 规定技术要求和公差。日本按 JIS B 4356 也分 AA、A、B 三级，例如 OSG 的滚插刀标注“JIS AA 级”。</li>
   </ul>
   <div class="vo">滚插刀的精度一般参照插齿刀标准分三级，最高是 AA 级，单项齿形误差只有两微米左右。</div>
 </section>
@@ -228,7 +244,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 <section class="card" id="rev">
   <h2>修订记录</h2>
   <div class="meta">本页于 2026-11-03 经过两轮全面复核（含独立复核和标准、资料查证），改正和完善了以下内容：</div>
-  <ul><li><b>00、09 节（改正）</b>：原写“参照插齿刀标准 DIN 1829”。DIN 1829 已作废，改为“沿用插齿刀的 AA、A、B 分级”，并补充国内 GB/T 6081 / 6082 和美国 ANSI/AGMA 1104</li><li><b>03 节（改正）</b>：原写刀具齿距累积误差“会直接复制到工件上”。刀具和工件齿数互质，误差不会一对一复制，主要表现为工件齿面波纹和局部波动；原说法也和《滚插刀参数图解》02 节矛盾</li><li><b>04 节、速查表（改正）</b>：径向跳动的影响由“工件齿厚忽大忽小”改为“各刀齿切深不一样，工件齿面出现沿齿宽的波纹，齿厚和齿形一致性变差”；“由齿距数据算出”补充前提：两侧刃都测了齿距</li><li><b>03 节（改正）</b>：单个齿距偏差 f<sub>p</sub> 的定义改为“实际齿距和理论齿距之差”</li><li><b>08 节设备表（改正）</b>：Klingelnberg 去掉官网未列的 P 16，注明测滚插刀要确认软件模块；Gleason 补充 300GMS；Hexagon 注明测滚插刀需向厂家确认；ANCA 在机测量按官方资料改为只测齿形</li><li><b>09 节（完善）</b>：AA 级图表注明为厂商公开资料的示例数值，正式验收以标准表格或双方约定为准；“还长 10 倍”改为“是最长那条的 10 倍”；刀具公差取工件 1/4 注明为经验值</li><li><b>07 节（显示）</b>：S<sub>γ</sub>、S<sub>α</sub> 改为一位小数显示，和 K 值对得上</li></ul>
+  <ul><li><b>09 节（核实并改正，11-03）</b>：上次标为“示例、未核实”的 AA 级数值，已按 Liebherr 样本中 DIN 1829 的 AA / A 级公差表逐项核对。原图 f<sub>Hα</sub> 写 2.5 µm，应为 <b>2 µm</b>；原图其余数值对应的是 d<sub>0</sub> 10～50 mm 一档，而示例刀具 d<sub>0</sub> ≈ 66 mm，应取 50～125 mm 一档，F<sub>p</sub> 由 7 改为 <b>9 µm</b>；补充径向跳动 F<sub>r</sub>、齿厚变动量 R<sub>s</sub> 和 A 级对照表，注明出处；“头发丝是最长那条的 10 倍”改为“约 8 倍”</li><li><b>00、09 节（改正）</b>：原写“参照插齿刀标准 DIN 1829”。DIN 1829 已作废，改为“沿用插齿刀的 AA、A、B 分级”，并补充国内 GB/T 6081 / 6082 和美国 ANSI/AGMA 1104</li><li><b>03 节（改正）</b>：原写刀具齿距累积误差“会直接复制到工件上”。刀具和工件齿数互质，误差不会一对一复制，主要表现为工件齿面波纹和局部波动；原说法也和《滚插刀参数图解》02 节矛盾</li><li><b>04 节、速查表（改正）</b>：径向跳动的影响由“工件齿厚忽大忽小”改为“各刀齿切深不一样，工件齿面出现沿齿宽的波纹，齿厚和齿形一致性变差”；“由齿距数据算出”补充前提：两侧刃都测了齿距</li><li><b>03 节（改正）</b>：单个齿距偏差 f<sub>p</sub> 的定义改为“实际齿距和理论齿距之差”</li><li><b>08 节设备表（改正）</b>：Klingelnberg 去掉官网未列的 P 16，注明测滚插刀要确认软件模块；Gleason 补充 300GMS；Hexagon 注明测滚插刀需向厂家确认；ANCA 在机测量按官方资料改为只测齿形</li><li><b>09 节（完善）</b>：AA 级图表注明为厂商公开资料的示例数值，正式验收以标准表格或双方约定为准；“还长 10 倍”改为“是最长那条的 10 倍”；刀具公差取工件 1/4 注明为经验值</li><li><b>07 节（显示）</b>：S<sub>γ</sub>、S<sub>α</sub> 改为一位小数显示，和 K 值对得上</li></ul>
 </section>
 <footer>刃口形状用示例刀具的设计刃口绘制；测量曲线、柱状图为示意数据。设备信息来自各厂商公开资料。</footer>
 </div>
@@ -594,13 +610,13 @@ const pitchF = (() => { const F = []; for (let i = 0; i < Z; i++) F.push(2.6 * M
 // ================= 09 精度等级 =================
 {
   const svg = document.getElementById('f9');
-  const rows = [['单个齿距偏差 f_{p}', 2.5], ['齿距累积偏差 F_{p}', 7], ['相邻齿距差 f_{u}', 3], ['齿形形状偏差 f_{fα}', 2], ['齿形总偏差 F_{α}', 3], ['齿形倾斜偏差 f_{Hα}', 2.5]];
-  const X0 = 46, sc = 11, y0 = 8, h = 6.4;
-  txt(svg, 4, 3, '例：小模数滚插刀 AA 级示例数值（µm，厂商资料）', { fs: 2.6, anchor: 'start', attr: { 'font-weight': 700 } });
+  const rows = [['齿形形状偏差 f_{fα}', 2], ['齿形倾斜偏差 f_{Hα}', 2], ['齿形总偏差 F_{α}', 3], ['单个齿距偏差 f_{p}', 2.5], ['相邻齿距差 f_{u}', 3], ['齿距累积偏差 F_{p}', 9], ['径向跳动 F_{r}', 8]];
+  const X0 = 46, sc = 10, y0 = 8, h = 6.2;
+  txt(svg, 4, 3, 'AA 级公差（µm）：模数 1～2、d₀ 50～125 mm（DIN 1829，Liebherr 样本）', { fs: 2.6, anchor: 'start', attr: { 'font-weight': 700 } });
   const bars = rows.map(([n, v], i) => { const y = y0 + i * h; txt(svg, X0 - 2, y + 2, n, { fs: 2.5, anchor: 'end' }); const b = el('rect', { x: X0, y: y, width: 0, height: 4, rx: 0.8, fill: 'var(--blue)' }, svg); const t = txt(svg, X0, y + 2, '', { fs: 2.5, anchor: 'start', attr: { 'font-weight': 700 } }); return { b, t, v }; });
-  const hy = y0 + 6 * h + 2; txt(svg, X0 - 2, hy + 2, '一根头发丝 ≈ 70 µm', { fs: 2.5, anchor: 'end', fill: 'var(--muted)' });
+  const hy = y0 + rows.length * h + 2; txt(svg, X0 - 2, hy + 2, '一根头发丝 ≈ 70 µm', { fs: 2.5, anchor: 'end', fill: 'var(--muted)' });
   el('rect', { x: X0, y: hy, width: 150 - X0 - 3, height: 4, rx: 0.8, fill: 'var(--steel)' }, svg);
-  txt(svg, 147 - 1, hy + 2, '按同一比例，是最长那条的 10 倍', { fs: 2.2, anchor: 'end', fill: 'var(--ink)' });
+  txt(svg, 147 - 1, hy + 2, '约是最大一项 Fp 的 8 倍（灰条未按比例）', { fs: 2.2, anchor: 'end', fill: 'var(--ink)' });
   scenes.push(t => { const u = smooth(((t % 6) / 2)); bars.forEach(({ b, t: tx, v }, i) => { const w = v * sc * smooth(u * 1.4 - i * 0.07); b.setAttribute('width', Math.max(0, w)); tx.setAttribute('x', X0 + w + 1.5); tx.textContent = w > 1 ? `${v} µm` : ''; }); });
 }
 
