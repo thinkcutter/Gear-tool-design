@@ -1,0 +1,22 @@
+{
+ "name": "齿轮及花键计算公式图解",
+ "short_name": "计算公式",
+ "start_url": "../formulas.html",
+ "scope": "../",
+ "display": "standalone",
+ "background_color": "#0F1012",
+ "theme_color": "#0F1012",
+ "icons": [
+  {
+   "src": "formulas-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "formulas-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}

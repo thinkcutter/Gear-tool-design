@@ -1,0 +1,719 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>齿轮及花键计算公式图解</title>
+<link rel="apple-touch-icon" href="icons/formulas-180.png">
+<link rel="icon" type="image/png" href="icons/formulas-192.png">
+<link rel="manifest" href="icons/formulas.webmanifest">
+<meta name="apple-mobile-web-app-title" content="计算公式">
+<style>
+:root{
+  --bg:#F4F1EA; --card:#FFFFFF; --ink:#1E2328; --muted:#66707A; --line:#D9D4CA;
+  --steel:#C9CED4; --steel2:#AEB5BD; --gear:#DDE3E9; --gear2:#F2D9B8;
+  --accent:#E06A1B; --blue:#2F6FB5; --green:#2E8B57; --red:#C8402E; --violet:#7A4FB0;
+  --chip:#F7EFE3;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121417; --card:#1B1E22; --ink:#ECEDEE; --muted:#9AA3AD; --line:#2E333A;
+    --steel:#4A525B; --steel2:#5E6772; --gear:#3A434D; --gear2:#6A4B2C;
+    --accent:#FF8A3D; --blue:#6FA8E8; --green:#5CC28C; --red:#F07A68; --violet:#B591E6; --chip:#2A2520;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121417; --card:#1B1E22; --ink:#ECEDEE; --muted:#9AA3AD; --line:#2E333A;
+  --steel:#4A525B; --steel2:#5E6772; --gear:#3A434D; --gear2:#6A4B2C;
+  --accent:#FF8A3D; --blue:#6FA8E8; --green:#5CC28C; --red:#F07A68; --violet:#B591E6; --chip:#2A2520;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:28px 16px 60px}
+header h1{font-size:30px;margin:0 0 6px;letter-spacing:1px}
+header p{margin:0;color:var(--muted)}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 8px}
+.toc a{font-size:13px;color:var(--ink);text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 20px 16px;margin:18px 0}
+.no{display:inline-block;font-size:12px;font-weight:700;color:var(--accent);border:1.5px solid var(--accent);border-radius:6px;padding:0 6px;margin-right:8px;vertical-align:3px}
+h2{font-size:22px;margin:0 0 4px}
+.sym{font-family:"Times New Roman",serif;font-style:italic;color:var(--accent);font-weight:400}
+.meta{color:var(--muted);font-size:14px;margin-bottom:10px}
+.fig{width:100%;display:block;margin:6px 0 6px}
+.say{background:var(--chip);border-radius:10px;padding:10px 14px;margin:10px 0;font-size:15px}
+.say b{color:var(--accent)}
+ul{margin:6px 0 6px;padding-left:20px}
+li{margin:2px 0}
+.f{display:inline-block;font-family:"Times New Roman",serif;font-size:17px;background:var(--chip);border-radius:6px;padding:1px 8px;margin:2px 4px 2px 0}
+.vo{border-left:3px solid var(--blue);padding:2px 0 2px 12px;margin:10px 0 0;color:var(--muted);font-size:14px}
+.vo::before{content:"旁白：";color:var(--blue);font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+td .f{font-size:15px}
+.play{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.play{grid-template-columns:1.1fr 1fr}}
+.ctl label{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-top:8px}
+.ctl input[type=range]{width:100%}
+.ctl select{width:100%;font-size:15px;padding:4px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px}
+.out td:last-child{font-family:"Times New Roman",serif;font-size:16px;text-align:right}
+svg text{font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif}
+svg .math{font-family:"Times New Roman",serif;font-style:italic}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
+ol.steps{margin:8px 0;padding-left:22px}
+ol.steps li{margin:4px 0}
+.ex{background:var(--chip);border-left:3px solid var(--accent);border-radius:8px;padding:8px 12px;margin:10px 0;font-size:14px;line-height:1.8}
+.ex::before{content:"算例 ";color:var(--accent);font-weight:700}
+.ctl input[type=number],.ctl input[type=text]{width:100%;font-size:16px;padding:6px 8px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px}
+.out .fx{font-size:12px;color:var(--muted);font-family:"Times New Roman",serif}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>齿轮及花键计算公式图解</h1>
+  <p>每个公式从哪来、怎么一步步算出来。图中齿形和例题数字都按公式实时计算。</p>
+  <nav class="toc" id="toc"></nav>
+</header>
+
+<section class="card" id="s0">
+  <h2><span class="no">00</span>符号和例题</h2>
+  <div class="meta">全文用同一组例题，方便对照</div>
+  <table>
+    <tr><th>符号</th><th>含义</th><th>符号</th><th>含义</th></tr>
+    <tr><td><span class="f">m</span></td><td>模数</td><td><span class="f">z</span></td><td>齿数</td></tr>
+    <tr><td><span class="f">α</span></td><td>压力角（分度圆）</td><td><span class="f">x</span></td><td>变位系数</td></tr>
+    <tr><td><span class="f">h<sub>a</sub>*</span></td><td>齿顶高系数（一般 1）</td><td><span class="f">c*</span></td><td>顶隙系数（一般 0.25）</td></tr>
+    <tr><td><span class="f">β</span></td><td>螺旋角</td><td><span class="f">d<sub>p</sub></span></td><td>量棒直径</td></tr>
+  </table>
+  <div class="say">例题齿轮：<b>m = 3，z = 24，α = 20°，x = +0.2</b>，h<sub>a</sub>* = 1，c* = 0.25；配对齿轮 z<sub>2</sub> = 40，x<sub>2</sub> = 0；量棒 d<sub>p</sub> = 5。<br>例题花键：<b>m = 2，z = 24，α<sub>D</sub> = 30°，平齿根</b>。</div>
+  <div class="vo">齿轮和花键的公式看着多，其实都是从几个基本关系推出来的。我们一个一个拆开算。</div>
+</section>
+
+<section class="card" id="s1">
+  <h2><span class="no">01</span>分度圆 <span class="sym">d = m z</span></h2>
+  <div class="meta">一圈的周长 = 齿数 × 齿距</div>
+  <svg class="fig" id="f1" viewBox="-4 -36 112 62"></svg>
+  <ol class="steps">
+    <li>分度圆周长上排着 z 个齿距：<span class="f">π d = z p</span></li>
+    <li>所以 <span class="f">d = z p / π</span>。p 里总带着 π，不好用</li>
+    <li>规定 <span class="f">m = p / π</span>，叫模数，按标准系列取整数或简单小数</li>
+    <li>代回去：<span class="f">d = m z</span>，<span class="f">p = π m</span></li>
+  </ol>
+  <div class="ex">例题：<span id="x1"></span></div>
+  <div class="vo">分度圆一圈排满 z 个齿距。把齿距除以 π 定义成模数，分度圆直径就是模数乘齿数。</div>
+</section>
+
+<section class="card" id="s2">
+  <h2><span class="no">02</span>齿顶圆、齿根圆</h2>
+  <div class="meta">从分度圆往外加齿顶高，往里减齿根高</div>
+  <svg class="fig" id="f2" viewBox="-60 -22 120 50"></svg>
+  <ol class="steps">
+    <li>标准齿条：齿顶高 <span class="f">h<sub>a</sub>* m</span>，齿根高 <span class="f">(h<sub>a</sub>* + c*) m</span>，多出来的 <span class="f">c* m</span> 是顶隙</li>
+    <li>变位 x：刀具往外退 <span class="f">x m</span>，齿顶高、齿根高一起变：<span class="f">h<sub>a</sub> = (h<sub>a</sub>* + x) m</span>，<span class="f">h<sub>f</sub> = (h<sub>a</sub>* + c* − x) m</span></li>
+    <li>外齿轮：<span class="f">d<sub>a</sub> = d + 2h<sub>a</sub></span>，<span class="f">d<sub>f</sub> = d − 2h<sub>f</sub></span></li>
+    <li>内齿轮方向相反：<span class="f">d<sub>a</sub> = d − 2h<sub>a</sub></span>，<span class="f">d<sub>f</sub> = d + 2h<sub>f</sub></span>。内齿轮变位按 DIN 3960 的符号（正变位 = 齿廓离开轴线、齿槽变宽）：<span class="f">h<sub>a</sub> = (h<sub>a</sub>* − x) m</span>，<span class="f">h<sub>f</sub> = (h<sub>a</sub>* + c* + x) m</span>；国内有的图纸符号相反，计算前要先确认</li>
+    <li>全齿高 <span class="f">h = h<sub>a</sub> + h<sub>f</sub> = (2h<sub>a</sub>* + c*) m</span>，和变位无关</li>
+  </ol>
+  <div class="ex">例题：<span id="x2"></span></div>
+  <div class="say">变位传动的中心距如果不等于标准中心距，齿顶圆还要再减一个“齿顶高变动量”，见第 08 节。</div>
+  <div class="vo">齿顶圆是分度圆加两个齿顶高，齿根圆是减两个齿根高。变位以后，齿顶高和齿根高此消彼长，全齿高不变。</div>
+</section>
+
+<section class="card" id="s3">
+  <h2><span class="no">03</span>基圆 <span class="sym">d<sub>b</sub> = d cos α</span></h2>
+  <div class="meta">啮合线和基圆相切，和分度圆的交点是节点</div>
+  <svg class="fig" id="f3" viewBox="-46 -44 92 88"></svg>
+  <ol class="steps">
+    <li>渐开线齿轮的受力方向（啮合线）始终和基圆相切，切点 N</li>
+    <li>啮合线穿过分度圆上的节点 P，和 P 点切线的夹角就是压力角 α</li>
+    <li>直角三角形 O–N–P：斜边 OP = r，直角边 ON = r<sub>b</sub>，夹角 ∠NOP = α</li>
+    <li>所以 <span class="f">r<sub>b</sub> = r cos α</span>，<span class="f">d<sub>b</sub> = d cos α</span></li>
+    <li>基圆上的齿距叫基节：<span class="f">p<sub>b</sub> = p cos α = π m cos α</span></li>
+  </ol>
+  <div class="ex">例题：<span id="x3"></span></div>
+  <div class="vo">啮合线和基圆相切，又穿过节点。连上圆心就是一个直角三角形，基圆半径等于分度圆半径乘以压力角的余弦。</div>
+</section>
+
+<section class="card" id="s4">
+  <h2><span class="no">04</span>渐开线函数 <span class="sym">inv α = tan α − α</span></h2>
+  <div class="meta">绳子从基圆上展开，绳头走出的轨迹就是渐开线</div>
+  <svg class="fig" id="f4" viewBox="-40 -44 96 80"></svg>
+  <ol class="steps">
+    <li>绳子绕在基圆上，从 B 点开始拉直展开，绳头 K 画出渐开线</li>
+    <li>拉直的绳长 NK = 展开的弧长 BN：<span class="f">NK = r<sub>b</sub> (θ + α<sub>K</sub>)</span></li>
+    <li>三角形 O–N–K 是直角三角形：<span class="f">NK = r<sub>b</sub> tan α<sub>K</sub></span></li>
+    <li>两式相等：<span class="f">θ = tan α<sub>K</sub> − α<sub>K</sub></span>，记作 <span class="f">inv α<sub>K</sub></span>（α 用弧度）</li>
+    <li>K 点所在圆的半径：<span class="f">r<sub>K</sub> = r<sub>b</sub> / cos α<sub>K</sub></span>，也就是 <span class="f">cos α<sub>K</sub> = r<sub>b</sub> / r<sub>K</sub></span></li>
+  </ol>
+  <div class="ex">例题：<span id="x4"></span></div>
+  <div class="vo">绳长等于弧长，绳长又等于基圆半径乘正切。两边一减，就得到渐开线函数：正切减角度。</div>
+</section>
+
+<section class="card" id="s5">
+  <h2><span class="no">05</span>变位后的齿厚 <span class="sym">s = m(π/2 + 2x tan α)</span></h2>
+  <div class="meta">刀具往外退 x m，齿轮分度圆上的齿就变胖</div>
+  <svg class="fig" id="f5" viewBox="-60 -27 120 53"></svg>
+  <ol class="steps">
+    <li>标准安装时，齿条中线和齿轮分度圆相切，齿厚 = 齿槽宽 = <span class="f">π m / 2</span></li>
+    <li>刀具往外退 <span class="f">x m</span>，和分度圆相切的变成了刀具上一条更靠齿顶的线</li>
+    <li>刀齿在这条线上变窄，两侧各窄 <span class="f">x m tan α</span>（齿面斜度 α）</li>
+    <li>刀齿窄多少，切出来的齿就胖多少：<span class="f">s = π m / 2 + 2 x m tan α</span></li>
+  </ol>
+  <div class="ex">例题：<span id="x5"></span></div>
+  <div class="vo">刀具每往外退一点，在分度圆上的刀齿就窄一点，两边各窄 x m 乘以正切阿尔法，齿就胖了两倍这么多。</div>
+</section>
+
+<section class="card" id="s6">
+  <h2><span class="no">06</span>任意圆上的齿厚</h2>
+  <div class="meta">已知分度圆齿厚，求任意直径 d<sub>y</sub> 上的齿厚</div>
+  <svg class="fig" id="f6" viewBox="-30 -50 60 56"></svg>
+  <ol class="steps">
+    <li>分度圆上半个齿厚对应的圆心角：<span class="f">ψ = s / d</span></li>
+    <li>齿面是渐开线，从分度圆到 d<sub>y</sub>，齿面的极角变化 <span class="f">inv α<sub>y</sub> − inv α</span></li>
+    <li>d<sub>y</sub> 上半齿厚角：<span class="f">ψ<sub>y</sub> = s/d + inv α − inv α<sub>y</sub></span>，其中 <span class="f">cos α<sub>y</sub> = d<sub>b</sub> / d<sub>y</sub></span></li>
+    <li>齿厚（弧长）：<span class="f">s<sub>y</sub> = d<sub>y</sub> (s/d + inv α − inv α<sub>y</sub>)</span></li>
+    <li>齿顶圆上 s<sub>a</sub> 算出来 ≤ 0，就说明齿顶变尖了；一般要求 <span class="f">s<sub>a</sub> ≥ 0.25 m</span>（硬齿面取 0.4 m）</li>
+  </ol>
+  <div class="ex">例题：<span id="x6"></span></div>
+  <div class="vo">齿越往外越窄。用渐开线函数修正一下角度，就能算出任意圆上的齿厚，齿顶会不会变尖也是这样算的。</div>
+</section>
+
+<section class="card" id="s7">
+  <h2><span class="no">07</span>斜齿轮：法面和端面</h2>
+  <div class="meta">刀具按法面参数做，齿轮尺寸按端面算</div>
+  <svg class="fig" id="f7" viewBox="-60 -30 120 62"></svg>
+  <ol class="steps">
+    <li>把分度圆柱展开成平面，齿线是倾斜 β 的直线</li>
+    <li>垂直于齿线量是法面齿距 p<sub>n</sub>，沿圆周量是端面齿距 p<sub>t</sub>：<span class="f">p<sub>n</sub> = p<sub>t</sub> cos β</span></li>
+    <li>除以 π：<span class="f">m<sub>t</sub> = m<sub>n</sub> / cos β</span>，分度圆 <span class="f">d = m<sub>t</sub> z = m<sub>n</sub> z / cos β</span></li>
+    <li>齿高在两个面里一样，斜度被拉宽：<span class="f">tan α<sub>t</sub> = tan α<sub>n</sub> / cos β</span></li>
+    <li>基圆 <span class="f">d<sub>b</sub> = d cos α<sub>t</sub></span>；基圆螺旋角 <span class="f">tan β<sub>b</sub> = tan β cos α<sub>t</sub></span>；当量齿数近似 <span class="f">z<sub>v</sub> ≈ z / cos³β</span></li>
+  </ol>
+  <div class="ex">例题（m<sub>n</sub> = 3，z = 24，α<sub>n</sub> = 20°，β = 15°）：<span id="x7"></span></div>
+  <div class="vo">斜齿轮有两套参数：法面的和刀具一样，端面的用来算尺寸。两者之间只差一个螺旋角的余弦。</div>
+</section>
+
+<section class="card" id="s8">
+  <h2><span class="no">08</span>中心距和啮合角（变位传动）</h2>
+  <div class="meta">两个齿轮都变胖了，就只能往外挪</div>
+  <svg class="fig" id="f8" viewBox="-30 -40 140 80"></svg>
+  <ol class="steps">
+    <li>标准中心距：<span class="f">a = m (z<sub>1</sub> + z<sub>2</sub>) / 2</span></li>
+    <li>无侧隙啮合：一个齿轮的齿厚 = 另一个的齿槽宽，在新的节圆上成立</li>
+    <li>把这个条件用第 06 节的公式写出来、整理，得到：<span class="f">inv α′ = inv α + 2 (x<sub>1</sub> + x<sub>2</sub>) tan α / (z<sub>1</sub> + z<sub>2</sub>)</span></li>
+    <li>基圆不变：<span class="f">a cos α = a′ cos α′</span>，所以 <span class="f">a′ = a cos α / cos α′</span></li>
+    <li>中心距变动系数 <span class="f">y = (a′ − a)/m</span>；齿顶高变动系数 <span class="f">Δy = (x<sub>1</sub> + x<sub>2</sub>) − y</span>，齿顶圆各减 <span class="f">2Δy m</span>，保证顶隙</li>
+  </ol>
+  <div class="ex">例题（z<sub>1</sub> = 24、x<sub>1</sub> = 0.2，z<sub>2</sub> = 40、x<sub>2</sub> = 0）：<span id="x8"></span></div>
+  <div class="vo">变位让齿变胖，两个齿轮只能往外挪。挪多少由啮合角决定，而啮合角又可以用渐开线函数直接算出来。</div>
+</section>
+
+<section class="card" id="s9">
+  <h2><span class="no">09</span>重合度 <span class="sym">ε<sub>α</sub></span></h2>
+  <div class="meta">实际啮合线长度 ÷ 基节 = 平均同时啮合的齿对数</div>
+  <svg class="fig" id="f9" viewBox="-28 -38 136 76"></svg>
+  <ol class="steps">
+    <li>接触点只在啮合线上走：从 A（从动轮齿顶进入）到 E（主动轮齿顶离开）</li>
+    <li>从切点 N<sub>1</sub> 量到 E：<span class="f">√(r<sub>a1</sub>² − r<sub>b1</sub>²)</span>；从 N<sub>2</sub> 量到 A：<span class="f">√(r<sub>a2</sub>² − r<sub>b2</sub>²)</span></li>
+    <li>N<sub>1</sub>N<sub>2</sub> = <span class="f">a′ sin α′</span>，所以实际啮合线 <span class="f">g<sub>α</sub> = √(r<sub>a1</sub>² − r<sub>b1</sub>²) + √(r<sub>a2</sub>² − r<sub>b2</sub>²) − a′ sin α′</span></li>
+    <li>相邻两对齿在啮合线上相隔一个基节 p<sub>b</sub>：<span class="f">ε<sub>α</sub> = g<sub>α</sub> / p<sub>b</sub></span></li>
+    <li>ε<sub>α</sub> = 1.4 表示：40% 的时间两对齿啮合，60% 的时间一对齿啮合；一般要求 <span class="f">ε<sub>α</sub> ≥ 1.2</span></li>
+  </ol>
+  <div class="ex">例题：<span id="x9"></span></div>
+  <div class="vo">接触点在啮合线上从 A 走到 E。这段长度除以基节，就是平均有几对齿同时在啮合。</div>
+</section>
+
+<section class="card" id="s10">
+  <h2><span class="no">10</span>公法线长度 <span class="sym">W<sub>k</sub></span></h2>
+  <div class="meta">两个平行量爪跨 k 个齿，量爪之间的连线和基圆相切</div>
+  <svg class="fig" id="f10" viewBox="-44 -50 88 64"></svg>
+  <ol class="steps">
+    <li>两个量爪都垂直于同一条基圆切线，接触点都在这条切线上（渐开线的法线都和基圆相切）</li>
+    <li>沿切线量：中间跨了 <span class="f">k − 1</span> 个基节，再加一个基圆齿厚：<span class="f">W<sub>k</sub> = (k − 1) p<sub>b</sub> + s<sub>b</sub></span></li>
+    <li>基圆齿厚由第 06 节公式（d<sub>y</sub> = d<sub>b</sub>，α<sub>y</sub> = 0）：<span class="f">s<sub>b</sub> = d<sub>b</sub>(s/d + inv α)</span></li>
+    <li>代入整理：<span class="f">W<sub>k</sub> = m cos α [π (k − 0.5) + z inv α] + 2 x m sin α</span></li>
+    <li>跨齿数让接触点落在齿高中部：<span class="f">k = z α/180° + 0.5</span>（x = 0 时），取整</li>
+  </ol>
+  <div class="ex">例题：<span id="x10"></span></div>
+  <div class="vo">量爪之间的连线正好和基圆相切，所以公法线长度就是几个基节，加一个基圆齿厚。</div>
+</section>
+
+<section class="card" id="s11">
+  <h2><span class="no">11</span>量棒距 <span class="sym">M</span></h2>
+  <div class="meta">先求量棒中心在哪个圆上，再加减一个量棒直径</div>
+  <svg class="fig" id="f11" viewBox="-48 -48 96 96"></svg>
+  <ol class="steps">
+    <li>量棒同时碰到齿槽两侧齿面，碰点处的法线都过量棒中心，并且和基圆相切</li>
+    <li>沿这条法线，量棒中心到齿面的距离 = <span class="f">d<sub>p</sub>/2</span>，换成基圆上的角度：<span class="f">d<sub>p</sub> / d<sub>b</sub></span></li>
+    <li>外齿：<span class="f">inv α<sub>M</sub> = inv α + s/d + d<sub>p</sub>/d<sub>b</sub> − π/z</span>（s 为分度圆齿厚）</li>
+    <li>量棒中心圆：<span class="f">d<sub>M</sub> = d<sub>b</sub> / cos α<sub>M</sub></span></li>
+    <li>偶数齿 <span class="f">M = d<sub>M</sub> + d<sub>p</sub></span>；奇数齿 <span class="f">M = d<sub>M</sub> cos(90°/z) + d<sub>p</sub></span></li>
+    <li>内齿：<span class="f">inv α<sub>M</sub> = inv α + e/d − d<sub>p</sub>/d<sub>b</sub></span>（e 为分度圆齿槽宽），棒间距 <span class="f">M = d<sub>M</sub> − d<sub>p</sub></span>（奇数齿乘 cos(90°/z) 再减）</li>
+    <li>α<sub>M</sub> 要从 inv α<sub>M</sub> 反求，用迭代（计算器里自动算）</li>
+  </ol>
+  <div class="ex">例题：<span id="x11"></span></div>
+  <div class="vo">量棒两边碰到齿面的法线都和基圆相切。先用渐开线函数求出量棒中心所在的圆，再加上一个量棒直径，就是量棒距。</div>
+</section>
+
+<section class="card" id="s12">
+  <h2><span class="no">12</span>渐开线花键基本尺寸（GB/T 3478.1 / ISO 4156）</h2>
+  <div class="meta">花键是“短齿”的渐开线齿轮，压力角 30°、37.5° 或 45°</div>
+  <svg class="fig" id="f12" viewBox="-62 -38 124 78"></svg>
+  <ol class="steps">
+    <li>分度圆 <span class="f">D = m z</span>，基圆 <span class="f">D<sub>b</sub> = m z cos α<sub>D</sub></span>，齿距 <span class="f">p = π m</span></li>
+    <li>基本齿槽宽 = 基本齿厚：<span class="f">E = S = π m / 2</span>（花键不变位）</li>
+    <li>30° 平齿根：外花键大径 <span class="f">D<sub>ee</sub> = m(z + 1)</span>，小径 <span class="f">D<sub>ie</sub> = m(z − 1.5)</span></li>
+    <li>30° 平齿根：内花键大径 <span class="f">D<sub>ei</sub> = m(z + 1.5)</span>，小径 <span class="f">D<sub>ii</sub> = m(z − 1)</span></li>
+    <li>圆齿根时外花键小径、内花键大径分别取 <span class="f">m(z − 1.8)</span>、<span class="f">m(z + 1.8)</span>；37.5°、45° 的系数不同，按标准表取</li>
+  </ol>
+  <div class="ex">例题：<span id="x12"></span></div>
+  <div class="say">和齿轮相比，花键的齿顶高只有 0.5 m，齿短而粗，所以压力角要取大一些，强度高、承载均匀。</div>
+  <div class="vo">渐开线花键可以看成短齿的渐开线齿轮。分度圆、基圆、齿距的算法和齿轮完全一样，只是齿顶高只有半个模数。</div>
+</section>
+
+<section class="card" id="s13">
+  <h2><span class="no">13</span>作用齿槽宽和实际齿槽宽</h2>
+  <div class="meta">花键的公差为什么分“作用”和“实际”</div>
+  <svg class="fig" id="f13" viewBox="-62 -34 124 70"></svg>
+  <ol class="steps">
+    <li><b>实际齿槽宽 E</b>：单个齿槽量出来的宽度（用量棒测）</li>
+    <li><b>作用齿槽宽 E<sub>v</sub></b>：把所有齿槽的齿距误差、齿形误差、齿向误差都算进去以后，“能装进去的那根理想外花键”的齿厚。误差让孔“变紧”，所以 <span class="f">E<sub>v</sub> ≤ E</span></li>
+    <li>内花键：<span class="f">E<sub>v min</sub> = π m / 2</span>（H 基本偏差为 0）；<span class="f">E<sub>min</sub> = E<sub>v min</sub> + λ</span>；<span class="f">E<sub>max</sub> = E<sub>v min</sub> + (T + λ)</span></li>
+    <li>外花键：<span class="f">S<sub>v max</sub> = E<sub>v min</sub> + es<sub>v</sub></span>（h 为 0，f、e、d 为负）；<span class="f">S<sub>max</sub> = S<sub>v max</sub> − λ</span>；<span class="f">S<sub>min</sub> = S<sub>v max</sub> − (T + λ)</span></li>
+    <li>T 是加工公差，λ 是综合误差（齿距、齿形、齿向）的影响量，数值按公差等级查表</li>
+  </ol>
+  <div class="say">验收时：<b>作用尺寸用综合量规</b>（通规），<b>实际尺寸用量棒或止规</b>。两个都合格，花键才合格。</div>
+  <div class="vo">花键要同时管两件事：单个齿槽量出来是多少，和所有误差叠加后还能不能装进去。前者叫实际齿槽宽，后者叫作用齿槽宽。</div>
+</section>
+
+<section class="card" id="s14">
+  <h2><span class="no">14</span>矩形花键（GB/T 1144）</h2>
+  <div class="meta">规格写成 N × d × D × B，小径定心</div>
+  <svg class="fig" id="f14" viewBox="-36 -36 72 72" style="max-width:420px;margin:0 auto"></svg>
+  <ol class="steps">
+    <li><span class="f">N</span> 键数，<span class="f">d</span> 小径，<span class="f">D</span> 大径，<span class="f">B</span> 键宽（槽宽）</li>
+    <li>国标采用<b>小径定心</b>：小径精度最高，可以磨削；大径、键宽主要保证不干涉和传扭</li>
+    <li>键高 <span class="f">(D − d) / 2</span>；分轻系列、中系列，尺寸按标准表选，没有复杂的公式</li>
+    <li>标记例：内花键 <span class="f">6×23H7×26H10×6H11</span>，外花键 <span class="f">6×23f7×26a11×6d10</span></li>
+  </ol>
+  <div class="vo">矩形花键简单得多，四个数：键数、小径、大径、键宽。国标用小径定心，所以小径的精度要求最高。</div>
+</section>
+
+<section class="card" id="s15">
+  <h2><span class="no">15</span>动手算一算</h2>
+  <div class="meta">改参数，每一步结果实时更新</div>
+  <div class="play">
+    <div class="ctl">
+      <label><span>类型</span></label><select id="ck"><option value="ge">外齿轮</option><option value="gi">内齿轮</option><option value="se">外花键（30° 平齿根）</option><option value="si">内花键（30° 平齿根）</option></select>
+      <label><span>模数 m（斜齿为法面 m<sub>n</sub>）</span></label><input id="cm" type="number" step="any" value="3">
+      <label><span>齿数 z</span></label><input id="cz" type="number" step="1" value="24">
+      <label><span>压力角 α（法面）</span></label><input id="ca" type="number" step="any" value="20">
+      <label><span>螺旋角 β</span></label><input id="cb" type="number" step="any" value="0">
+      <label><span>变位系数 x（花键填 0）</span></label><input id="cx" type="number" step="any" value="0.2">
+      <label><span>量棒直径 d<sub>p</sub></span></label><input id="cp" type="number" step="any" value="5">
+    </div>
+    <table class="out" id="cout"></table>
+  </div>
+  <div class="say">计算器只算基本尺寸（不含公差）。内齿轮的变位系数按“正变位 = 齿槽变宽、齿变薄”处理，图纸用的符号规定不同时要换号。斜齿轮量棒距按端面近似计算（奇数齿和大螺旋角时误差会变大）。</div>
+  <div class="vo">最后，把参数填进去，所有结果一步一步算给你看。</div>
+</section>
+
+<footer>图中齿形均按渐开线公式实时计算绘制；花键尺寸系数以 GB/T 3478.1 为准。</footer>
+</div>
+
+<script>
+(() => {
+const PI = Math.PI, D2R = PI / 180, inv = a => Math.tan(a) - a;
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const txt = (parent, x, y, s, o = {}) => { const t = el('text', Object.assign({ x, y, 'font-size': o.fs || 3, fill: o.fill || 'var(--ink)', 'text-anchor': o.anchor || 'middle', 'dominant-baseline': 'middle', stroke: 'var(--card)', 'stroke-width': (o.fs || 3) * 0.2, 'stroke-linejoin': 'round', 'paint-order': 'stroke' }, o.attr || {}), parent); if (o.math) t.setAttribute('class', 'math'); t.textContent = s; return t; };
+const f = v => v.toFixed(2);
+
+// ---------- 渐开线外齿轮轮廓（屏幕坐标，y 向下；齿 0 的中心在 +x 方向） ----------
+function gearPts(m, z, alDeg, x = 0, o = {}) {
+  const al = alDeg * D2R, r = m * z / 2, rb = r * Math.cos(al), ha = o.ha ?? 1, c = o.c ?? 0.25, ds = o.ds || 0;
+  const ra = r + (ha + x) * m, rf = r - (ha + c - x) * m;
+  const s = m * (PI / 2 + 2 * x * Math.tan(al)) - ds, psiP = s / (2 * r);
+  const half = R => psiP + inv(al) - inv(Math.acos(Math.min(1, rb / R)));
+  const r0 = Math.max(rb, rf), N = o.n || 14, pts = [];
+  let raE = ra; if (half(ra) < 0) { let lo = r0, hi = ra; for (let i = 0; i < 40; i++) { const mm = (lo + hi) / 2; if (half(mm) > 0) lo = mm; else hi = mm; } raE = lo; }
+  const P = (R, t) => [R * Math.cos(t), -R * Math.sin(t)];
+  // 基圆以内用一段圆滑的过渡曲线接到齿根圆（示意的齿根圆角，牙根比基圆处更宽）
+  const gam = rf < rb ? Math.max(0, 0.45 * (PI / z - half(rb))) : 0, NF = 6;
+  for (let k = 0; k < z; k++) {
+    const tc = 2 * PI * k / z;
+    if (rf < rb) for (let i = 0; i < NF; i++) { const u = i / NF; pts.push(P(rf + (rb - rf) * (1 - (1 - u) * (1 - u)), tc - half(rb) - gam * (1 - u) * (1 - u) * (1 - u))); }
+    for (let i = 0; i <= N; i++) { const R = r0 + (raE - r0) * i / N; pts.push(P(R, tc - half(R))); }
+    for (let i = N; i >= 0; i--) { const R = r0 + (raE - r0) * i / N; pts.push(P(R, tc + half(R))); }
+    if (rf < rb) for (let i = NF - 1; i >= 0; i--) { const u = i / NF; pts.push(P(rf + (rb - rf) * (1 - (1 - u) * (1 - u)), tc + half(rb) + gam * (1 - u) * (1 - u) * (1 - u))); }
+    const a1 = tc + half(r0) + gam, a2 = tc + 2 * PI / z - half(r0) - gam;
+    for (let i = 1; i < 6; i++) pts.push(P(rf, a1 + (a2 - a1) * i / 6));
+  }
+  return { pts, r, rb, ra, rf, s, half, raE };
+}
+const pathOf = pts => 'M' + pts.map(p => p[0].toFixed(3) + ' ' + p[1].toFixed(3)).join('L') + 'Z';
+const circle = (g, cx, cy, r, o = {}) => el('circle', Object.assign({ cx, cy, r, fill: 'none', stroke: o.stroke || 'var(--muted)', 'stroke-width': o.w || 0.3, 'stroke-dasharray': o.dash || '' }, o.attr || {}), g);
+const line = (g, x1, y1, x2, y2, o = {}) => el('line', Object.assign({ x1, y1, x2, y2, stroke: o.stroke || 'var(--ink)', 'stroke-width': o.w || 0.3, 'stroke-dasharray': o.dash || '' }, o.attr || {}), g);
+function defsArrow(svg, id, color) {
+  const d = svg.querySelector('defs') || el('defs', {}, svg);
+  const mk = el('marker', { id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' }, d);
+  el('path', { d: 'M0 1 L10 5 L0 9 Z', fill: color }, mk);
+}
+const arrow = (g, x1, y1, x2, y2, id, o = {}) => el('line', { x1, y1, x2, y2, stroke: o.stroke || 'var(--accent)', 'stroke-width': o.w || 0.35, 'marker-end': `url(#${id})`, 'marker-start': o.both ? `url(#${id})` : '' }, g);
+const rot = (e, deg, cx = 0, cy = 0) => e.setAttribute('transform', `rotate(${deg} ${cx} ${cy})`);   // 屏幕坐标里正角度为顺时针
+
+const scenes = [];
+const pulse = (t, k = 2) => 0.5 + 0.5 * Math.sin(t * k);
+// ===== 公共计算 =====
+const subs = str => str.replace(/_([A-Za-zαβ0-9]+)/g, '<tspan baseline-shift="sub" font-size="70%">$1</tspan>');
+const setT = (e, str) => { e.innerHTML = subs(str); };
+const invInv = v => { let a = Math.cbrt(3 * v); for (let i = 0; i < 30; i++) { const t = Math.tan(a); a -= (t - a - v) / (t * t); } return a; };
+const deg = a => a / D2R, n3 = v => (+v).toFixed(3), n4 = v => (+v).toFixed(4);
+const EX = { m: 3, z: 24, al: 20, x: 0.2, ha: 1, c: 0.25, z2: 40, x2: 0, dp: 5 };
+function G(m, z, al, x, o = {}) {
+  const A = al * D2R, ha = o.ha ?? 1, c = o.c ?? 0.25, d = m * z, db = d * Math.cos(A);
+  const s = m * (PI / 2 + 2 * x * Math.tan(A)), pb = PI * m * Math.cos(A);
+  return { m, z, A, x, d, db, s, pb, da: d + 2 * (ha + x) * m, df: d - 2 * (ha + c - x) * m, ha: (ha + x) * m, hf: (ha + c - x) * m };
+}
+const sy = (g, dy) => { const ay = Math.acos(g.db / dy); return dy * (g.s / g.d + inv(g.A) - inv(ay)); };
+function Wk(g) { const ax = Math.acos(g.d * Math.cos(g.A) / (g.d + 2 * g.x * g.m));
+  const k = Math.max(2, Math.round(g.z / PI * (Math.tan(ax) - 2 * g.x * Math.tan(g.A) / g.z - inv(g.A)) + 0.5));
+  return { k, W: g.m * Math.cos(g.A) * (PI * (k - 0.5) + g.z * inv(g.A)) + 2 * g.x * g.m * Math.sin(g.A) }; }
+function Mext(g, dp) { const v = inv(g.A) + g.s / g.d + dp / g.db - PI / g.z, aM = invInv(v), dM = g.db / Math.cos(aM);
+  return { v, aM, dM, M: (g.z % 2 ? dM * Math.cos(PI / 2 / g.z) : dM) + dp }; }
+function Mint(m, z, A, e, dp) { const d = m * z, db = d * Math.cos(A), v = inv(A) + e / d - dp / db, aM = invInv(v), dM = db / Math.cos(aM);
+  return { v, aM, dM, M: (z % 2 ? dM * Math.cos(PI / 2 / z) : dM) - dp }; }
+const set = (id, h) => { const e = document.getElementById(id); if (e) e.innerHTML = h; };
+// 例题数字
+{
+  const g = G(EX.m, EX.z, EX.al, EX.x), g2 = G(EX.m, EX.z2, EX.al, EX.x2);
+  set('x1', `d = 3 × 24 = <b>${n3(g.d)}</b>；p = π × 3 = <b>${n3(PI * 3)}</b>；周长 πd = ${n3(PI * g.d)} = 24 × ${n3(PI * 3)} ✓`);
+  set('x2', `h<sub>a</sub> = (1 + 0.2) × 3 = ${n3(g.ha)}，h<sub>f</sub> = (1 + 0.25 − 0.2) × 3 = ${n3(g.hf)}；d<sub>a</sub> = 72 + 2 × ${n3(g.ha)} = <b>${n3(g.da)}</b>，d<sub>f</sub> = 72 − 2 × ${n3(g.hf)} = <b>${n3(g.df)}</b>；全齿高 ${n3(g.ha + g.hf)} = 2.25 × 3 ✓`);
+  set('x3', `d<sub>b</sub> = 72 × cos20° = 72 × ${n4(Math.cos(g.A))} = <b>${n3(g.db)}</b>；p<sub>b</sub> = π × 3 × cos20° = <b>${n3(g.pb)}</b>`);
+  const aa = Math.acos(g.db / g.da);
+  set('x4', `inv20° = tan20° − 20°×π/180 = ${n4(Math.tan(g.A))} − ${n4(g.A)} = <b>${(inv(g.A)).toFixed(6)}</b>；齿顶圆处 cos α<sub>a</sub> = ${n3(g.db)} / ${n3(g.da)} → α<sub>a</sub> = <b>${deg(aa).toFixed(3)}°</b>`);
+  set('x5', `s = 3 × (π/2 + 2 × 0.2 × tan20°) = 3 × (${n4(PI / 2)} + ${n4(0.4 * Math.tan(g.A))}) = <b>${n3(g.s)}</b>（标准齿厚 ${n3(PI * 1.5)}，胖了 ${n3(g.s - PI * 1.5)}）`);
+  const sa = sy(g, g.da);
+  set('x6', `齿顶圆 d<sub>a</sub> = ${n3(g.da)}：α<sub>a</sub> = ${deg(aa).toFixed(3)}°，inv α<sub>a</sub> = ${inv(aa).toFixed(6)}；s<sub>a</sub> = ${n3(g.da)} × (${n3(g.s)}/72 + ${inv(g.A).toFixed(6)} − ${inv(aa).toFixed(6)}) = <b>${n3(sa)}</b> = ${(sa / 3).toFixed(2)} m ${sa >= 0.75 ? '✓ 不尖' : ''}`);
+  const b = 15 * D2R, mt = 3 / Math.cos(b), at = Math.atan(Math.tan(g.A) / Math.cos(b)), dh = mt * 24, bb = Math.atan(Math.tan(b) * Math.cos(at));
+  set('x7', `m<sub>t</sub> = 3 / cos15° = <b>${n4(mt)}</b>；α<sub>t</sub> = arctan(tan20° / cos15°) = <b>${deg(at).toFixed(3)}°</b>；d = ${n4(mt)} × 24 = <b>${n3(dh)}</b>；d<sub>b</sub> = <b>${n3(dh * Math.cos(at))}</b>；β<sub>b</sub> = ${deg(bb).toFixed(3)}°；z<sub>v</sub> ≈ ${(24 / Math.pow(Math.cos(b), 3)).toFixed(2)}`);
+  const a = 3 * 64 / 2, ia = inv(g.A) + 2 * 0.2 * Math.tan(g.A) / 64, ap = invInv(ia), a2 = a * Math.cos(g.A) / Math.cos(ap), y = (a2 - a) / 3, dy = 0.2 - y;
+  set('x8', `a = 3 × 64 / 2 = ${n3(a)}；inv α′ = ${inv(g.A).toFixed(6)} + 2 × 0.2 × tan20° / 64 = ${ia.toFixed(6)} → α′ = <b>${deg(ap).toFixed(4)}°</b>；a′ = 96 × cos20° / cos α′ = <b>${n3(a2)}</b>；y = ${n4(y)}，Δy = ${n4(dy)}（齿顶圆各减 ${n3(2 * dy * 3)}）`);
+  // 重合度（按 a′，齿顶圆减 Δy）
+  const ra1 = g.da / 2 - dy * 3, ra2 = g2.da / 2 - dy * 3, L1 = Math.sqrt(ra1 * ra1 - (g.db / 2) ** 2), L2 = Math.sqrt(ra2 * ra2 - (g2.db / 2) ** 2), ga = L1 + L2 - a2 * Math.sin(ap);
+  set('x9', `r<sub>a1</sub> = ${n3(ra1)}，r<sub>a2</sub> = ${n3(ra2)}；g<sub>α</sub> = ${n3(L1)} + ${n3(L2)} − ${n3(a2 * Math.sin(ap))} = ${n3(ga)}；ε<sub>α</sub> = ${n3(ga)} / ${n3(g.pb)} = <b>${n3(ga / g.pb)}</b>`);
+  const w = Wk(g);
+  set('x10', `k = 24 × 20/180 + 0.5 ≈ ${(24 * 20 / 180 + 0.5).toFixed(2)}，考虑变位取 k = <b>${w.k}</b>；W<sub>${w.k}</sub> = 3cos20° × [π(${w.k} − 0.5) + 24 × ${inv(g.A).toFixed(6)}] + 2 × 0.2 × 3 × sin20° = <b>${n3(w.W)}</b>`);
+  const M = Mext(g, 5);
+  set('x11', `inv α<sub>M</sub> = ${inv(g.A).toFixed(6)} + ${n3(g.s)}/72 + 5/${n3(g.db)} − π/24 = ${M.v.toFixed(6)} → α<sub>M</sub> = ${deg(M.aM).toFixed(4)}°；d<sub>M</sub> = ${n3(g.db)} / cos α<sub>M</sub> = ${n3(M.dM)}；z 为偶数，M = ${n3(M.dM)} + 5 = <b>${n3(M.M)}</b>`);
+  const sm = 2, sz = 24, sA = 30 * D2R;
+  set('x12', `D = 2 × 24 = <b>48</b>；D<sub>b</sub> = 48 × cos30° = <b>${n3(48 * Math.cos(sA))}</b>；p = <b>${n3(PI * 2)}</b>；E = S = <b>${n3(PI)}</b>；D<sub>ee</sub> = <b>50</b>，D<sub>ie</sub> = <b>45</b>，D<sub>ei</sub> = <b>51</b>，D<sub>ii</sub> = <b>46</b>`);
+}
+
+// ================= 01 分度圆滚一圈 =================
+{
+  const svg = document.getElementById('f1'), r = 15, z = 12, p = 2 * PI * r / z, y0 = 18, x0 = 4;
+  line(svg, x0 - 2, y0, x0 + 2 * PI * r + 6, y0, { stroke: 'var(--muted)', w: 0.4 });
+  const g = el('g', {}, svg);
+  const Gp = gearPts(2 * r / z, z, 20); el('path', { d: pathOf(Gp.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g);
+  circle(g, 0, 0, r, { stroke: 'var(--accent)', w: 0.6, dash: '1.4 0.9' }); circle(g, 0, 0, 1.2, { stroke: 'var(--ink)', w: 0.4 });
+  const dot = el('circle', { r: 1, fill: 'var(--red)' }, g); dot.setAttribute('cx', 0); dot.setAttribute('cy', r);
+  const ticks = []; for (let k = 0; k <= z; k++) { const t = line(svg, x0 + k * p, y0 - 1.6, x0 + k * p, y0 + 1.6, { stroke: 'var(--red)', w: 0.5 }); ticks.push(t); }
+  const lab = txt(svg, 54, -30, '', { fs: 4.4, fill: 'var(--ink)', attr: { 'font-weight': 700 } }), lab2 = txt(svg, 54, y0 + 6.5, '', { fs: 4.2, fill: 'var(--accent)' });
+  scenes.push(t => { const cyc = 6, u = Math.min(1, (t % cyc) / 4.5), L = u * 2 * PI * r, cx = x0 + L;
+    g.setAttribute('transform', `translate(${cx} ${y0 - r}) rotate(${deg(L / r)})`);
+    const n = Math.floor(L / p + 1e-6); ticks.forEach((tk, k) => tk.setAttribute('opacity', k <= n ? 1 : 0));
+    lab.textContent = u < 1 ? `滚过 ${n} 个齿距` : '滚一圈 = z 个齿距'; lab2.textContent = u < 1 ? '' : 'πd = z·p  →  d = z·p/π = m·z'; });
+}
+// ================= 02 齿条：齿顶高、齿根高 =================
+{
+  const svg = document.getElementById('f2'); defsArrow(svg, 'a2', 'var(--accent)');
+  const m = 8, p = PI * m, ta = Math.tan(20 * D2R), yP = 0, pts = [];
+  const xs = -58; pts.push([xs, 15]);
+  for (let i = -1; i < 6; i++) { const c = -40 + i * p; pts.push([c - p / 4 - 1.25 * m * ta, yP + 1.25 * m], [c - p / 4 + m * ta, yP - m], [c + p / 4 - m * ta, yP - m], [c + p / 4 + 1.25 * m * ta, yP + 1.25 * m]); }
+  pts.push([58, 15]);
+  const cl = el('clipPath', { id: 'c2' }, svg); el('rect', { x: -58, y: -24, width: 74, height: 50 }, cl);
+  el('path', { d: 'M' + pts.map(q => q.join(' ')).join('L') + 'Z', fill: 'var(--steel)', stroke: 'var(--ink)', 'stroke-width': 0.35, 'clip-path': 'url(#c2)' }, svg);
+  line(svg, -58, yP, 58, yP, { stroke: 'var(--accent)', w: 0.5, dash: '1.6 1' }); txt(svg, 58, yP - 2, '中线', { fs: 3, fill: 'var(--accent)', anchor: 'end' });
+  line(svg, -58, -m, 58, -m, { stroke: 'var(--red)', w: 0.35, dash: '1 0.8' }); line(svg, -58, 1.25 * m, 58, 1.25 * m, { stroke: 'var(--blue)', w: 0.35, dash: '1 0.8' });
+  line(svg, -58, m, 58, m, { stroke: 'var(--green)', w: 0.3, dash: '0.6 0.8' });
+  const A = [[24, 0, -m, 'h_a', 'var(--red)'], [36, 0, 1.25 * m, 'h_f', 'var(--blue)'], [48, m, 1.25 * m, 'c', 'var(--green)']];
+  setT(txt(svg, 0, 22, '', { fs: 3.4, fill: 'var(--ink)' }), 'h_a = h_a*·m　h_f = (h_a* + c*)·m　c = c*·m');
+  const ar = A.map(([x, y1, y2, s, c]) => { const g = el('g', {}, svg); line(g, x, y1, x, y2, { stroke: c, w: 0.5, attr: { 'marker-end': 'url(#a2)', 'marker-start': 'url(#a2)' } }); setT(txt(g, x + 1.2, (y1 + y2) / 2, '', { fs: 3.4, fill: c, anchor: 'start', attr: { 'font-weight': 700 } }), s); return g; });
+  scenes.push(t => { const k = Math.floor(t / 1.3) % 4; ar.forEach((g, i) => g.setAttribute('opacity', k === 3 || k === i ? 1 : 0.2)); });
+}
+// ================= 03 基圆、节点、啮合线 =================
+{
+  const svg = document.getElementById('f3'), m = 3, z = 22, Gp = gearPts(m, z, 20), r = Gp.r, rb = Gp.rb, A = 20 * D2R;
+  const g = el('g', {}, svg); el('path', { d: pathOf(Gp.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g);
+  circle(svg, 0, 0, r, { stroke: 'var(--accent)', w: 0.5, dash: '1.4 0.9' }); circle(svg, 0, 0, rb, { stroke: 'var(--violet)', w: 0.5, dash: '1 0.7' });
+  // 数学坐标：P = (r,0)，N = rb(cos α, sin α)；屏幕 y 取反
+  const P = [r, 0], N = [rb * Math.cos(A), -rb * Math.sin(A)], u = [Math.sin(A), Math.cos(A)];
+  const lo = line(svg, N[0] - 26 * u[0], N[1] - 26 * u[1], N[0] + 40 * u[0], N[1] + 40 * u[1], { stroke: 'var(--red)', w: 0.5 });
+  const tri = el('path', { d: `M0 0L${N[0]} ${N[1]}L${P[0]} ${P[1]}Z`, fill: 'var(--accent)', 'fill-opacity': 0.18, stroke: 'var(--accent)', 'stroke-width': 0.5 }, svg);
+  el('path', { d: `M8 0 A8 8 0 0 0 ${8 * Math.cos(A)} ${-8 * Math.sin(A)}`, fill: 'none', stroke: 'var(--ink)', 'stroke-width': 0.4 }, svg);
+  txt(svg, 10.5, -1.8, 'α', { fs: 3.2, math: true }); txt(svg, -2, 2.5, 'O', { fs: 3 }); txt(svg, N[0] - 1.5, N[1] - 2.5, 'N', { fs: 3 }); txt(svg, P[0] + 2.5, P[1] + 2.2, 'P', { fs: 3 });
+  setT(txt(svg, 0, 40, '', { fs: 2.8, fill: 'var(--muted)' }), '紫：基圆 r_b　橙：分度圆 r　红：啮合线');
+  setT(txt(svg, -20, -38, '', { fs: 4, fill: 'var(--accent)', math: true }), 'r_b = r cos α');
+  scenes.push(t => { g.setAttribute('transform', `rotate(${-t * 6})`); tri.setAttribute('fill-opacity', 0.1 + 0.2 * pulse(t, 2.5)); });
+}
+// ================= 04 渐开线生成 =================
+{
+  const svg = document.getElementById('f4'), rb = 22;
+  circle(svg, 0, 0, rb, { stroke: 'var(--violet)', w: 0.6 }); circle(svg, 0, 0, 0.9, { stroke: 'var(--ink)', w: 0.4 });
+  const inv_ = el('path', { fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.8 }, svg);
+  const str = line(svg, 0, 0, 0, 0, { stroke: 'var(--ink)', w: 0.55 }), wrap = el('path', { fill: 'none', stroke: 'var(--red)', 'stroke-width': 1.1 }, svg);
+  const oK = line(svg, 0, 0, 0, 0, { stroke: 'var(--muted)', w: 0.35, dash: '1 0.7' }), oN = line(svg, 0, 0, 0, 0, { stroke: 'var(--muted)', w: 0.35, dash: '1 0.7' });
+  const K = el('circle', { r: 1.1, fill: 'var(--accent)' }, svg), Nd = el('circle', { r: 0.8, fill: 'var(--ink)' }, svg);
+  const tK = txt(svg, 0, 0, 'K', { fs: 3 }), tN = txt(svg, 0, 0, 'N', { fs: 3 }); txt(svg, rb + 2.5, 2, 'B', { fs: 3 });
+  const info = txt(svg, 34, -39, '', { fs: 3.4, fill: 'var(--ink)' }), info2 = txt(svg, 34, -34, '', { fs: 3.4, fill: 'var(--accent)' });
+  // 数学坐标：B 在 0°，展开角 t；N 在 t，K = N + rb·t·(sin t, −cos t)；屏幕 y 取反
+  const S = (x, y) => [x, -y], Kof = t => S(rb * (Math.cos(t) + t * Math.sin(t)), rb * (Math.sin(t) - t * Math.cos(t)));
+  scenes.push(tt => { const ph = (tt % 7) / 7, a = (ph < 0.5 ? ph * 2 : 2 - ph * 2) * 52 * D2R + 0.001, t = Math.tan(a);
+    const n = S(rb * Math.cos(t), rb * Math.sin(t)), k = Kof(t);
+    let d = ''; for (let i = 0; i <= 40; i++) { const q = Kof(t * i / 40); d += (i ? 'L' : 'M') + q[0].toFixed(2) + ' ' + q[1].toFixed(2); } inv_.setAttribute('d', d);
+    wrap.setAttribute('d', `M${rb} 0 A${rb} ${rb} 0 ${t > PI ? 1 : 0} 0 ${n[0]} ${n[1]}`);
+    for (const [e, q] of [[str, [n, k]], [oK, [[0, 0], k]], [oN, [[0, 0], n]]]) { e.setAttribute('x1', q[0][0]); e.setAttribute('y1', q[0][1]); e.setAttribute('x2', q[1][0]); e.setAttribute('y2', q[1][1]); }
+    K.setAttribute('cx', k[0]); K.setAttribute('cy', k[1]); Nd.setAttribute('cx', n[0]); Nd.setAttribute('cy', n[1]);
+    tK.setAttribute('x', k[0] + 2.5); tK.setAttribute('y', k[1]); tN.setAttribute('x', n[0] * 1.12); tN.setAttribute('y', n[1] * 1.12);
+    setT(info, `α_K = ${deg(a).toFixed(1)}°　NK = 弧长 BN`);
+    info2.textContent = `θ = inv α = ${(Math.tan(a) - a).toFixed(4)} rad`; });
+}
+// ================= 05 变位：齿条外移 =================
+{
+  const svg = document.getElementById('f5'); defsArrow(svg, 'a5', 'var(--accent)');
+  const m = 9, p = PI * m, ta = Math.tan(20 * D2R), yG = 0;   // yG：齿轮分度线（固定）
+  line(svg, -58, yG, 58, yG, { stroke: 'var(--accent)', w: 0.55, dash: '1.6 1' }); txt(svg, -56, yG - 2.5, '齿轮分度线', { fs: 2.8, fill: 'var(--accent)', anchor: 'start' });
+  const cl = el('clipPath', { id: 'c5' }, svg); el('rect', { x: -58, y: -24, width: 116, height: 48 }, cl);
+  const rack = el('path', { fill: 'var(--steel)', stroke: 'var(--ink)', 'stroke-width': 0.35, 'clip-path': 'url(#c5)' }, svg);
+  const mid = line(svg, -58, 0, 58, 0, { stroke: 'var(--blue)', w: 0.4, dash: '0.8 0.8' });
+  const sw = line(svg, 0, 0, 0, 0, { stroke: 'var(--red)', w: 1.2 }), s0 = line(svg, 0, 0, 0, 0, { stroke: 'var(--ink)', w: 0.4, dash: '0.8 0.6' });
+  const lab = txt(svg, -58, -21, '', { fs: 3.6, fill: 'var(--ink)', anchor: 'start', attr: { 'font-weight': 700 } }), lab2 = txt(svg, 58, -21, '', { fs: 3.6, fill: 'var(--red)', anchor: 'end', attr: { 'font-weight': 700 } });
+  txt(svg, 44, 9, '刀具中线', { fs: 2.6, fill: 'var(--blue)' });
+  scenes.push(t => { const x = 0.5 * (0.5 - 0.5 * Math.cos(t * 0.9)), yM = yG + x * m, pts = [[-60, 26]];   // 刀具（齿朝上）往下退 x m
+    for (let i = -2; i < 5; i++) { const c = i * p; pts.push([c - p / 4 - 1.25 * m * ta, yM + 1.25 * m], [c - p / 4 + m * ta, yM - m], [c + p / 4 - m * ta, yM - m], [c + p / 4 + 1.25 * m * ta, yM + 1.25 * m]); }
+    pts.push([60, 26]); rack.setAttribute('d', 'M' + pts.map(q => q.map(v => v.toFixed(2)).join(' ')).join('L') + 'Z');
+    mid.setAttribute('y1', yM); mid.setAttribute('y2', yM);
+    // 齿轮分度线上：刀具齿槽宽 = 被切齿轮的齿厚；齿槽中心在 x = p/2
+    const half = p / 4 + x * m * ta; sw.setAttribute('x1', p / 2 - half); sw.setAttribute('x2', p / 2 + half); sw.setAttribute('y1', yG); sw.setAttribute('y2', yG);
+    s0.setAttribute('x1', p / 2 - p / 4); s0.setAttribute('x2', p / 2 + p / 4); s0.setAttribute('y1', yG - 1.4); s0.setAttribute('y2', yG - 1.4);
+    lab.textContent = `x = +${x.toFixed(2)}`; lab2.textContent = `齿厚 s = πm/2 + 2·x·m·tanα = ${(PI / 2 + 2 * x * ta).toFixed(3)} m`; });
+}
+// ================= 06 任意圆齿厚 =================
+{
+  const svg = document.getElementById('f6'), m = 10, z = 12, x = 0.3, Gp = gearPts(m, z, 20, x), r = Gp.r, CY = Gp.ra - 40;
+  const g = el('g', { transform: `translate(0 ${CY}) rotate(-90)` });
+  const cl = el('clipPath', { id: 'c6' }, svg); el('rect', { x: -30, y: -50, width: 60, height: 56 }, cl);
+  const gg = el('g', { 'clip-path': 'url(#c6)' }, svg); gg.appendChild(g);
+  el('path', { d: pathOf(Gp.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g);
+  const arc = el('path', { fill: 'none', stroke: 'var(--red)', 'stroke-width': 1.2 }, svg), cir = el('path', { fill: 'none', stroke: 'var(--muted)', 'stroke-width': 0.3, 'stroke-dasharray': '1 0.7' }, svg);
+  const lab = txt(svg, 0, -45, '', { fs: 3.6, fill: 'var(--red)', attr: { 'font-weight': 700 } });
+  const gg2 = G(m, z, 20, x);
+  scenes.push(t => { const R = Gp.rf + 0.6 + (Gp.ra - Gp.rf - 0.6) * (0.5 - 0.5 * Math.cos(t * 0.8)), Rr = Math.max(R, Gp.rb + 0.01);
+    const ps = Gp.half(Rr), cy = CY;
+    const P1 = [R * Math.sin(-ps), cy - R * Math.cos(ps)], P2 = [R * Math.sin(ps), cy - R * Math.cos(ps)];
+    arc.setAttribute('d', `M${P1[0]} ${P1[1]} A${R} ${R} 0 0 1 ${P2[0]} ${P2[1]}`);
+    cir.setAttribute('d', `M${-R * Math.sin(0.5)} ${cy - R * Math.cos(0.5)} A${R} ${R} 0 0 1 ${R * Math.sin(0.5)} ${cy - R * Math.cos(0.5)}`);
+    setT(lab, `d_y = ${(2 * R).toFixed(1)}　s_y = ${(2 * Rr * ps).toFixed(2)}`); });
+}
+// ================= 07 斜齿展开图 =================
+{
+  const svg = document.getElementById('f7'); defsArrow(svg, 'a7', 'var(--accent)');
+  const W = 100, H = 40, x0 = -50, y0 = -20, pt = 16;
+  el('rect', { x: x0, y: y0, width: W, height: H, fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.35 }, svg);
+  const cl = el('clipPath', { id: 'c7' }, svg); el('rect', { x: x0, y: y0, width: W, height: H }, cl);
+  const tg = el('g', { 'clip-path': 'url(#c7)' }, svg), teeth = [];
+  for (let i = -4; i < 12; i++) teeth.push(el('path', { fill: 'var(--gear2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, tg));
+  const lt = line(svg, 0, 0, 0, 0, { stroke: 'var(--blue)', w: 0.6, attr: { 'marker-end': 'url(#a7)', 'marker-start': 'url(#a7)' } });
+  const ln = line(svg, 0, 0, 0, 0, { stroke: 'var(--red)', w: 0.6, attr: { 'marker-end': 'url(#a7)', 'marker-start': 'url(#a7)' } });
+  const t1 = txt(svg, 0, 0, '', { fs: 3, fill: 'var(--blue)' }), t2 = txt(svg, 0, 0, '', { fs: 3, fill: 'var(--red)' }), tb = txt(svg, 0, 27, '', { fs: 3.2 });
+  txt(svg, x0 + W / 2, y0 - 3.5, '分度圆柱展开（横向 = 圆周方向，纵向 = 齿宽方向）', { fs: 2.6, fill: 'var(--muted)' });
+  scenes.push(t => { const b = (5 + 25 * (0.5 - 0.5 * Math.cos(t * 0.7))) * D2R, tb_ = Math.tan(b), w = pt / 2;
+    teeth.forEach((e, k) => { const i = k - 4, xa = x0 + i * pt; e.setAttribute('d', `M${xa} ${y0 + H}L${xa + w} ${y0 + H}L${xa + w + H * tb_} ${y0}L${xa + H * tb_} ${y0}Z`); });
+    const ym = y0 + H * 0.55, xs = x0 + 2 * pt + (y0 + H - ym) * tb_;
+    lt.setAttribute('x1', xs); lt.setAttribute('x2', xs + pt); lt.setAttribute('y1', ym); lt.setAttribute('y2', ym);
+    const pn = pt * Math.cos(b), dx = pn * Math.cos(b), dy = -pn * Math.sin(b) * -1;
+    ln.setAttribute('x1', xs); ln.setAttribute('y1', ym); ln.setAttribute('x2', xs + dx); ln.setAttribute('y2', ym + pn * Math.sin(b) * -1 * -1 * 0 + (-pn * Math.sin(b)) * -1 * 0 + 0);
+    // 法向：垂直于齿线（齿线方向 (tanβ, −1) 归一化），法向 = (cosβ, sinβ)·…
+    ln.setAttribute('x2', xs + pn * Math.cos(b)); ln.setAttribute('y2', ym + pn * Math.sin(b));
+    t1.setAttribute('x', xs + pt / 2); t1.setAttribute('y', ym - 2.4); t1.textContent = 'pₜ（端面）';
+    t2.setAttribute('x', xs + pn * Math.cos(b) + 9); t2.setAttribute('y', ym + pn * Math.sin(b) + 2); t2.textContent = 'pₙ = pₜ cos β';
+    tb.textContent = `β = ${deg(b).toFixed(0)}°　mₜ = mₙ / cos β = ${(1 / Math.cos(b)).toFixed(3)} mₙ`; });
+}
+// ================= 08 变位传动中心距 =================
+{
+  const svg = document.getElementById('f8'), m = 2.6, z1 = 14, z2 = 22, A = 20 * D2R;
+  const p1 = el('path', { fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg), p2 = el('path', { fill: 'var(--gear2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  const c1 = circle(svg, 0, 0, 1, { stroke: 'var(--accent)', w: 0.4, dash: '1.2 0.8' }), c2 = circle(svg, 0, 0, 1, { stroke: 'var(--accent)', w: 0.4, dash: '1.2 0.8' });
+  const lab = txt(svg, 40, -36, '', { fs: 4, fill: 'var(--ink)', attr: { 'font-weight': 700 } }), lab2 = txt(svg, 40, 37, '', { fs: 3.8, fill: 'var(--accent)' });
+  const dl = line(svg, 0, 30, 0, 30, { stroke: 'var(--accent)', w: 0.5 });
+  let lastX = -1, cache = null;
+  scenes.push(t => { const xs = Math.round(20 * 0.8 * (0.5 - 0.5 * Math.cos(t * 0.6))) / 20, x1 = xs / 2, x2 = xs / 2;
+    if (xs !== lastX) { lastX = xs; const g1 = gearPts(m, z1, 20, x1, { n: 10 }), g2 = gearPts(m, z2, 20, x2, { n: 10 });
+      const a = m * (z1 + z2) / 2, ap = invInv(inv(A) + 2 * xs * Math.tan(A) / (z1 + z2)), a2 = a * Math.cos(A) / Math.cos(ap);
+      p1.setAttribute('d', pathOf(g1.pts)); p2.setAttribute('d', pathOf(g2.pts)); cache = { a, a2, ap, r1: a2 * z1 / (z1 + z2), r2: a2 * z2 / (z1 + z2) }; }
+    const { a, a2, ap, r1, r2 } = cache, th = t * 25;
+    p1.setAttribute('transform', `rotate(${-th})`); p2.setAttribute('transform', `translate(${a2} 0) rotate(${th * z1 / z2 + 180 + 180 / z2})`);
+    c1.setAttribute('r', r1); c2.setAttribute('cx', a2); c2.setAttribute('r', r2);
+    dl.setAttribute('x1', 0); dl.setAttribute('x2', a2);
+    lab.textContent = `x₁ + x₂ = ${xs.toFixed(2)}`; lab2.textContent = `α′ = ${deg(ap).toFixed(2)}°　a′ = ${a2.toFixed(2)}（标准 ${a.toFixed(2)}）`; });
+}
+// ================= 09 重合度 =================
+{
+  const svg = document.getElementById('f9'), m = 3, z1 = 17, z2 = 26, A = 20 * D2R;
+  const g1 = gearPts(m, z1, 20, 0, { n: 10 }), g2 = gearPts(m, z2, 20, 0, { n: 10 }), r1 = g1.r, r2 = g2.r, a = r1 + r2, rb1 = g1.rb, rb2 = g2.rb;
+  const p1 = el('path', { d: pathOf(g1.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  const p2 = el('path', { d: pathOf(g2.pts), fill: 'var(--gear2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  circle(svg, 0, 0, rb1, { stroke: 'var(--violet)', w: 0.35, dash: '1 0.7' }); circle(svg, a, 0, rb2, { stroke: 'var(--violet)', w: 0.35, dash: '1 0.7' });
+  // 数学坐标：N1 = rb1(cosα, sinα)，u = (sinα, −cosα)；屏幕 y 取反
+  const N1 = [rb1 * Math.cos(A), rb1 * Math.sin(A)], u = [Math.sin(A), -Math.cos(A)], NN = a * Math.sin(A);
+  const LE = Math.sqrt(g1.ra ** 2 - rb1 ** 2), LA = NN - Math.sqrt(g2.ra ** 2 - rb2 ** 2), pb = PI * m * Math.cos(A);
+  const S = L => [N1[0] + L * u[0], -(N1[1] + L * u[1])];
+  const l0 = S(0), l1 = S(NN), lA = S(LA), lE = S(LE);
+  line(svg, l0[0], l0[1], l1[0], l1[1], { stroke: 'var(--muted)', w: 0.4, dash: '1 0.8' });
+  line(svg, lA[0], lA[1], lE[0], lE[1], { stroke: 'var(--red)', w: 1.1 });
+  txt(svg, lA[0] - 2.5, lA[1] - 1.5, 'A', { fs: 3, fill: 'var(--red)' }); txt(svg, lE[0] + 2.5, lE[1] + 1.5, 'E', { fs: 3, fill: 'var(--red)' });
+  txt(svg, l0[0] - 1, l0[1] - 2.5, 'N₁', { fs: 2.8 }); txt(svg, l1[0] + 1, l1[1] + 3, 'N₂', { fs: 2.8 });
+  const dots = [0, 1, 2].map(() => el('circle', { r: 1.3, fill: 'var(--blue)', stroke: 'var(--card)', 'stroke-width': 0.3 }, svg));
+  const ea = (LE - LA) / pb, lab = txt(svg, 40, -34.5, '', { fs: 3.8, fill: 'var(--ink)' }); setT(lab, `ε_α = g_α / p_b = ${ea.toFixed(2)}`);
+  const lab2 = txt(svg, 40, 35, '', { fs: 3.8, fill: 'var(--blue)', attr: { 'font-weight': 700 } });
+  const s1 = g1.s;
+  scenes.push(t => { const ph1 = -t * 0.35, ph2 = PI + PI / z2 - ph1 * z1 / z2;     // 数学转角：主动轮顺时针
+    p1.setAttribute('transform', `rotate(${-deg(ph1)})`); p2.setAttribute('transform', `translate(${a} 0) rotate(${-deg(ph2)})`);
+    let n = 0; dots.forEach((d, k) => d.setAttribute('opacity', 0));
+    for (let k = -3; k < z1 + 3; k++) { const thB = ph1 + 2 * PI * k / z1 - s1 / (2 * r1) - inv(A); let L = rb1 * (A - thB); L = ((L % (2 * PI * rb1)) + 2 * PI * rb1) % (2 * PI * rb1);
+      if (L >= LA && L <= LE && n < 3) { const q = S(L); dots[n].setAttribute('cx', q[0]); dots[n].setAttribute('cy', q[1]); dots[n].setAttribute('opacity', 1); n++; } }
+    lab2.textContent = n >= 2 ? '两对齿啮合' : '一对齿啮合'; lab2.setAttribute('fill', n >= 2 ? 'var(--green)' : 'var(--blue)'); });
+}
+// ================= 10 公法线 =================
+{
+  const svg = document.getElementById('f10'), m = 3.2, z = 18, x = 0, A = 20 * D2R, Gp = gearPts(m, z, 20, x, { n: 12 }), rb = Gp.rb, r = Gp.r;
+  const k = Wk(G(m, z, 20, x)).k;
+  const tcR = PI / 2 - (k - 1) * PI / z, rot0 = tcR;    // 让 k 个齿对称地排在正上方（数学角）
+  el('path', { d: pathOf(Gp.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3, transform: `rotate(${-deg(rot0)})` }, svg);
+  circle(svg, 0, 0, rb, { stroke: 'var(--violet)', w: 0.4, dash: '1 0.7' });
+  const s = Gp.s, xA = rb * (PI / 2 - tcR + s / (2 * r) + inv(A)), tcL = tcR + (k - 1) * 2 * PI / z, xB = -rb * (tcL + s / (2 * r) + inv(A) - PI / 2);
+  line(svg, -40, -rb, 40, -rb, { stroke: 'var(--violet)', w: 0.4 }); txt(svg, 34, -rb + 3, '基圆切线', { fs: 2.6, fill: 'var(--violet)' });
+  const jL = el('rect', { y: -rb - 12, width: 3, height: 18, fill: 'var(--blue)' }, svg), jR = el('rect', { y: -rb - 12, width: 3, height: 18, fill: 'var(--blue)' }, svg);
+  const segs = []; for (let i = 0; i < k - 1; i++) segs.push(line(svg, xB + i * PI * m * Math.cos(A), -rb - 3, xB + (i + 1) * PI * m * Math.cos(A), -rb - 3, { stroke: i % 2 ? 'var(--accent)' : 'var(--red)', w: 1 }));
+  const sb = line(svg, xA - (xA - xB - (k - 1) * PI * m * Math.cos(A)), -rb - 3, xA, -rb - 3, { stroke: 'var(--green)', w: 1 });
+  const lab = txt(svg, 0, -rb - 16, '', { fs: 3.6, fill: 'var(--ink)', attr: { 'font-weight': 700 } });
+  scenes.push(t => { const u = Math.min(1, (t % 5) / 1.6), e = 1 - Math.pow(1 - u, 3), o = 10 * (1 - e);
+    jL.setAttribute('x', xB - 3 - o); jR.setAttribute('x', xA + o);
+    const sh = u >= 1; segs.forEach(s => s.setAttribute('opacity', sh ? 1 : 0)); sb.setAttribute('opacity', sh ? 1 : 0);
+    setT(lab, sh ? `W_${k} = ${k - 1} × p_b（红）+ s_b（绿）` : `跨 k = ${k} 个齿`); });
+}
+// ================= 11 量棒距 =================
+{
+  const svg = document.getElementById('f11'), m = 3.4, z = 18, A = 20 * D2R, Gp = gearPts(m, z, 20, 0, { n: 12 }), dp = 1.68 * m;
+  el('path', { d: pathOf(Gp.pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3, transform: `rotate(${-180 / z})` }, svg);   // 齿槽在 0° 和 180°
+  circle(svg, 0, 0, Gp.rb, { stroke: 'var(--violet)', w: 0.35, dash: '1 0.7' });
+  const g = G(m, z, 20, 0), Mm = Mext(g, dp), RM = Mm.dM / 2;
+  const cM = circle(svg, 0, 0, RM, { stroke: 'var(--green)', w: 0.4, dash: '1.2 0.8' });
+  const pins = [1, -1].map(s => el('circle', { r: dp / 2, fill: 'var(--steel2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg));
+  // 法线：从量棒中心沿基圆切线方向到碰点（右侧量棒，碰下方齿面）
+  const nl = line(svg, 0, 0, 0, 0, { stroke: 'var(--red)', w: 0.45 });
+  const dim = line(svg, -RM - dp / 2, 40, RM + dp / 2, 40, { stroke: 'var(--accent)', w: 0.5 });
+  const lab = txt(svg, 0, 44.5, '', { fs: 3.6, fill: 'var(--accent)', attr: { 'font-weight': 700 } }), lab2 = txt(svg, 0, -44, '', { fs: 3.4, fill: 'var(--green)' });
+  scenes.push(t => { const u = Math.min(1, (t % 5) / 1.8), e = 1 - Math.pow(1 - u, 3), R = RM + 14 * (1 - e);
+    pins[0].setAttribute('cx', R); pins[0].setAttribute('cy', 0); pins[1].setAttribute('cx', -R); pins[1].setAttribute('cy', 0);
+    const sh = u >= 1; cM.setAttribute('opacity', sh ? 1 : 0); dim.setAttribute('opacity', sh ? 1 : 0);
+    // 右量棒中心 (RM,0)，αM；切点 T = rb(cos αM, −sin αM)，法线沿 T→中心；碰点在中心往 T 方向 dp/2 处
+    const T = [Gp.rb * Math.cos(Mm.aM), Gp.rb * Math.sin(Mm.aM)], dir = [RM - T[0], -T[1]], L = Math.hypot(...dir), Cp = [RM - dir[0] / L * dp / 2, -dir[1] / L * dp / 2];
+    nl.setAttribute('x1', T[0]); nl.setAttribute('y1', T[1]); nl.setAttribute('x2', Cp[0]); nl.setAttribute('y2', Cp[1]); nl.setAttribute('opacity', sh ? 1 : 0);
+    setT(lab, sh ? `M = d_M + d_p = ${(2 * RM + dp).toFixed(2)}` : ''); setT(lab2, sh ? '绿：量棒中心圆 d_M = d_b / cos α_M' : '量棒放进齿槽…'); });
+}
+// ================= 12 渐开线花键 =================
+{
+  const svg = document.getElementById('f12'); defsArrow(svg, 'a12', 'var(--accent)');
+  const m = 2.2, z = 18, r = m * z / 2, cx1 = -30, cx2 = 30;
+  const g1 = el('g', {}, svg), g2 = el('g', {}, svg);
+  el('path', { d: pathOf(gearPts(m, z, 30, 0, { ha: 0.5, c: 0.25, n: 8 }).pts), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g1);
+  const Ri = r + 6 * m; el('path', { d: `M${Ri} 0 A${Ri} ${Ri} 0 1 0 ${-Ri} 0 A${Ri} ${Ri} 0 1 0 ${Ri} 0Z` + pathOf(gearPts(m, z, 30, 0, { ha: 0.75, c: -0.25, n: 8 }).pts), fill: 'var(--gear2)', 'fill-rule': 'evenodd', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g2);
+  const items = [[cx1, r + 0.5 * m, 'Dee = m(z+1)', 'var(--red)'], [cx1, r - 0.75 * m, 'Die = m(z−1.5)', 'var(--green)'], [cx1, r, 'D = m z', 'var(--accent)'],
+    [cx2, r + 0.75 * m, 'Dei = m(z+1.5)', 'var(--red)'], [cx2, r - 0.5 * m, 'Dii = m(z−1)', 'var(--green)'], [cx2, r, 'D = m z', 'var(--accent)']].map(([cx, R, s, c]) => {
+    const g = el('g', {}, svg); circle(g, cx, 0, R, { stroke: c, w: 0.8 }); txt(g, cx, R + 4.5 > 30 ? -R - 3 : R + 4, s, { fs: 3, fill: c, attr: { 'font-weight': 700 } }); return g; });
+  txt(svg, cx1, -33, '外花键', { fs: 3.6, attr: { 'font-weight': 700 } }); txt(svg, cx2, -35.5, '内花键', { fs: 3.6, attr: { 'font-weight': 700 } });
+  scenes.push(t => { g1.setAttribute('transform', `translate(${cx1} 0) rotate(${-t * 6})`); g2.setAttribute('transform', `translate(${cx2} 0) rotate(${-t * 4})`);
+    const k = Math.floor(t / 1.5) % 3; items.forEach((g, i) => g.setAttribute('opacity', i % 3 === k ? 1 : 0)); });
+}
+// ================= 13 作用 / 实际 公差带 =================
+{
+  const svg = document.getElementById('f13'); defsArrow(svg, 'a13', 'var(--accent)');
+  const X = v => -40 + v * 80, y1 = -12, y2 = 16;   // v：0..1 示意比例
+  line(svg, X(0.25), -30, X(0.25), 32, { stroke: 'var(--ink)', w: 0.5 }); setT(txt(svg, X(0.25), -31, '', { fs: 3.6, attr: { 'font-weight': 700 } }), 'E_v min = πm/2');
+  // 内花键：λ 从基线往大，T 再往大
+  const bI = el('rect', { x: X(0.25), y: y1 - 4, width: 0, height: 8, fill: 'var(--blue)', opacity: 0.25 }, svg), bIl = el('rect', { x: X(0.25), y: y1 - 4, width: 0, height: 8, fill: 'var(--violet)', opacity: 0.35 }, svg);
+  txt(svg, -60, y1, '内花键', { fs: 3.6, anchor: 'start', attr: { 'font-weight': 700 } }); txt(svg, -60, y2, '外花键', { fs: 3.6, anchor: 'start', attr: { 'font-weight': 700 } });
+  const bE = el('rect', { x: 0, y: y2 - 4, width: 0, height: 8, fill: 'var(--red)', opacity: 0.25 }, svg), bEl = el('rect', { x: 0, y: y2 - 4, width: 0, height: 8, fill: 'var(--violet)', opacity: 0.35 }, svg);
+  const es = line(svg, X(0.25), y2 + 8, X(0.2), y2 + 8, { stroke: 'var(--accent)', w: 0.5, attr: { 'marker-end': 'url(#a13)' } });
+  const t1 = txt(svg, 0, y1 - 7.5, '', { fs: 3.2, fill: 'var(--ink)' }), t2 = txt(svg, 0, y2 - 7.5, '', { fs: 3.2, fill: 'var(--ink)' }), t3 = txt(svg, X(0.13), y2 + 11.5, '', { fs: 3.2, fill: 'var(--accent)' }); setT(t3, 'es_v');
+  const lgd = txt(svg, 0, 31, '紫：λ（综合误差影响）　蓝 / 红：T（加工公差）', { fs: 3.2, fill: 'var(--muted)' });
+  scenes.push(t => { const u = Math.min(1, (t % 6) / 2.4), e = 1 - Math.pow(1 - u, 2), lam = 0.12 * e, T = 0.3 * e;
+    bIl.setAttribute('width', lam * 80); bI.setAttribute('x', X(0.25 + lam)); bI.setAttribute('width', T * 80);
+    const sv = 0.2; bEl.setAttribute('x', X(sv - lam)); bEl.setAttribute('width', lam * 80); bE.setAttribute('x', X(sv - lam - T)); bE.setAttribute('width', T * 80);
+    t1.setAttribute('x', X(0.25 + lam + T / 2)); setT(t1, u >= 1 ? '实际齿槽宽 E_min ~ E_max' : '');
+    t2.setAttribute('x', X(sv - lam - T / 2)); setT(t2, u >= 1 ? '实际齿厚 S_min ~ S_max' : ''); });
+}
+// ================= 14 矩形花键 =================
+{
+  const svg = document.getElementById('f14'), N = 6, d = 23, D = 26, B = 6, s = 1.2, rd = d / 2 * s, rD = D / 2 * s, hb = B / 2 * s;
+  const g = el('g', {}, svg); let pth = '';
+  for (let k = 0; k < N; k++) { const c = 2 * PI * k / N, a1 = Math.asin(hb / rD), a0 = Math.asin(hb / rd), cn = 2 * PI * (k + 1) / N;
+    const P = (R, a) => `${(R * Math.cos(a)).toFixed(2)} ${(-R * Math.sin(a)).toFixed(2)}`;
+    pth += (k ? 'L' : 'M') + P(rd, c - a0) + 'L' + P(rD, c - a1) + `A${rD} ${rD} 0 0 0 ` + P(rD, c + a1) + 'L' + P(rd, c + a0) + `A${rd} ${rd} 0 0 0 ` + P(rd, cn - a0); }
+  el('path', { d: pth + 'Z', fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.35 }, g);
+  const cd = circle(svg, 0, 0, rd, { stroke: 'var(--red)', w: 0.9 }), cD = circle(svg, 0, 0, rD, { stroke: 'var(--blue)', w: 0.5, dash: '1 0.7' });
+  txt(svg, 0, 0, '6 × 23 × 26 × 6', { fs: 3.4, attr: { 'font-weight': 700 } }); txt(svg, 0, 5, 'N × d × D × B', { fs: 3, fill: 'var(--muted)', math: true });
+  txt(svg, 0, -33, '红：小径 d（定心，精度最高）', { fs: 2.8, fill: 'var(--red)' }); txt(svg, 0, 34, '蓝虚线：大径 D', { fs: 2.8, fill: 'var(--blue)' });
+  scenes.push(t => { g.setAttribute('transform', `rotate(${-t * 8})`); cd.setAttribute('stroke-width', 0.5 + 0.8 * pulse(t, 3)); });
+}
+// ================= 15 计算器 =================
+{
+  const $ = id => document.getElementById(id), out = $('cout');
+  const upd = () => {
+    const kind = $('ck').value, m = +$('cm').value, z = Math.round(+$('cz').value), al = +$('ca').value, be = +$('cb').value * D2R, x = +$('cx').value, dp = +$('cp').value;
+    if (!(m > 0 && z > 2 && al > 0)) { out.innerHTML = '<tr><td>请填写有效参数</td></tr>'; return; }
+    const R = []; const row = (k, v, f) => R.push(`<tr><td>${k}${f ? `<div class="fx">${f}</div>` : ''}</td><td>${typeof v === 'number' ? n3(v) : v}</td></tr>`);
+    const spl = kind[0] === 's', ext = kind[1] === 'e';
+    const An = (spl ? 30 : al) * D2R, mt = spl ? m : m / Math.cos(be), At = spl ? An : Math.atan(Math.tan(An) / Math.cos(be)), d = mt * z, db = d * Math.cos(At), xx = spl ? 0 : x;
+    if (!spl && be) { row('端面模数 mₜ', mt, 'mₙ / cos β'); row('端面压力角 αₜ', deg(At).toFixed(4) + '°', 'arctan(tan αₙ / cos β)'); }
+    row(spl ? '分度圆 D' : '分度圆 d', d, spl ? 'm z' : (be ? 'mₙ z / cos β' : 'm z'));
+    row('基圆 d<sub>b</sub>', db, 'd cos αₜ'); row('基节 p<sub>b</sub>（端面）', PI * mt * Math.cos(At), 'π mₜ cos αₜ');
+    if (spl) {
+      if (ext) { row('大径 Dee', m * (z + 1), 'm(z+1)'); row('小径 Die', m * (z - 1.5), 'm(z−1.5)，平齿根'); row('基本齿厚 S', PI * m / 2, 'πm/2'); }
+      else { row('大径 Dei', m * (z + 1.5), 'm(z+1.5)，平齿根'); row('小径 Dii', m * (z - 1), 'm(z−1)'); row('基本齿槽宽 E', PI * m / 2, 'πm/2'); }
+    } else if (ext) { row('齿顶圆 dₐ', d + 2 * (1 + xx) * m, 'd + 2(1 + x)mₙ'); row('齿根圆 d_f'.replace('_f', 'f'), d - 2 * (1.25 - xx) * m, 'd − 2(1.25 − x)mₙ'); }
+    else { row('齿顶圆 dₐ（内孔）', d - 2 * (1 - xx) * m, 'd − 2(1 − x)mₙ'); row('齿根圆 d_f'.replace('_f', 'f'), d + 2 * (1.25 + xx) * m, 'd + 2(1.25 + x)mₙ'); }
+    const st = mt * (PI / 2 + 2 * xx * Math.tan(At)) * (spl ? 1 : 1);     // 端面齿厚（外）/ 齿槽宽（内）
+    const sn = m * (PI / 2 + 2 * xx * Math.tan(An));
+    if (!spl) row(ext ? '分度圆法面齿厚 sₙ' : '分度圆法面齿槽宽 eₙ', sn, 'mₙ(π/2 + 2x tan αₙ)');
+    if (ext && !(be)) { const W = Wk(G(m, z, spl ? 30 : al, xx)); row(`公法线 W${W.k}（跨 ${W.k} 齿）`, W.W, 'm cos α[π(k−0.5) + z inv α] + 2xm sin α'); }
+    if (dp > 0) {
+      const sT = mt * (PI / 2 + 2 * xx * Math.tan(At));
+      const M = ext ? (() => { const v = inv(At) + sT / d + dp / db - PI / z, aM = invInv(v), dM = db / Math.cos(aM); return { v, aM, dM, M: (z % 2 ? dM * Math.cos(PI / 2 / z) : dM) + dp }; })()
+        : Mint(mt, z, At, sT, dp);
+      row('inv α<sub>M</sub>', M.v.toFixed(6), ext ? 'inv α + s/d + dₚ/d<sub>b</sub> − π/z' : 'inv α + e/d − dₚ/d<sub>b</sub>');
+      row('α<sub>M</sub>', deg(M.aM).toFixed(4) + '°', '迭代反求');
+      row('量棒中心圆 d<sub>M</sub>', M.dM, 'd<sub>b</sub> / cos α<sub>M</sub>');
+      row(ext ? `跨棒距 M（${z % 2 ? '奇数齿' : '偶数齿'}）` : `棒间距 M（${z % 2 ? '奇数齿' : '偶数齿'}）`, M.M, (z % 2 ? 'dM cos(90°/z) ' : 'dM ') + (ext ? '+ dₚ' : '− dₚ'));
+    }
+    out.innerHTML = R.join('');
+  };
+  ['ck', 'cm', 'cz', 'ca', 'cb', 'cx', 'cp'].forEach(id => { $(id).addEventListener('input', upd); $(id).addEventListener('change', upd); }); upd();
+  $('ck').addEventListener('change', () => { const sp = $('ck').value[0] === 's'; if (sp) { $('cm').value = 2; $('cz').value = 24; $('ca').value = 30; $('cb').value = 0; $('cx').value = 0; $('cp').value = 3.5; } upd(); });
+}
+
+// ---------- 目录 ----------
+document.getElementById('toc').innerHTML = [...document.querySelectorAll('section.card')].map(s => `<a href="#${s.id}">${s.querySelector('h2').textContent.replace(/^\d\d/, '')}</a>`).join('');
+// ---------- 动画循环（可被外部按时间渲染，用于截图/录屏） ----------
+let paused = false;
+window.__render = t => { paused = true; scenes.forEach(s => s(t)); };
+const t0 = performance.now();
+const loop = now => { if (!paused) { const t = (now - t0) / 1000; scenes.forEach(s => s(t)); } requestAnimationFrame(loop); };
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
