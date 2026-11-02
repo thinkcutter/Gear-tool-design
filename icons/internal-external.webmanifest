@@ -1,0 +1,22 @@
+{
+ "name": "内外齿识别图解",
+ "short_name": "内外齿识别",
+ "start_url": "../internal-external.html",
+ "scope": "../",
+ "display": "standalone",
+ "background_color": "#0F1012",
+ "theme_color": "#0F1012",
+ "icons": [
+  {
+   "src": "internal-external-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "internal-external-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
