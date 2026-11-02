@@ -315,7 +315,7 @@ ol.steps li{margin:4px 0}
     </div>
     <table class="out" id="cout"></table>
   </div>
-  <div class="say">计算器只算基本尺寸（不含公差）。内齿轮的变位系数按“正变位 = 齿槽变宽、齿变薄”处理，图纸用的符号规定不同时要换号。斜齿轮量棒距按端面近似计算（奇数齿和大螺旋角时误差会变大）。</div>
+  <div class="say">计算器只算基本尺寸（不含公差）。内齿轮的变位系数按“正变位 = 齿槽变宽、齿变薄”处理，图纸用的符号规定不同时要换号。斜齿轮量棒距用端面公式（量棒直径按法面），偶数齿是精确值，奇数齿是近似值。</div>
   <div class="vo">最后，把参数填进去，所有结果一步一步算给你看。</div>
 </section>
 
@@ -691,10 +691,11 @@ const set = (id, h) => { const e = document.getElementById(id); if (e) e.innerHT
     if (!spl) row(ext ? '分度圆法面齿厚 sₙ' : '分度圆法面齿槽宽 eₙ', sn, 'mₙ(π/2 + 2x tan αₙ)');
     if (ext && !(be)) { const W = Wk(G(m, z, spl ? 30 : al, xx)); row(`公法线 W${W.k}（跨 ${W.k} 齿）`, W.W, 'm cos α[π(k−0.5) + z inv α] + 2xm sin α'); }
     if (dp > 0) {
-      const sT = mt * (PI / 2 + 2 * xx * Math.tan(At));
-      const M = ext ? (() => { const v = inv(At) + sT / d + dp / db - PI / z, aM = invInv(v), dM = db / Math.cos(aM); return { v, aM, dM, M: (z % 2 ? dM * Math.cos(PI / 2 / z) : dM) + dp }; })()
-        : Mint(mt, z, At, sT, dp);
-      row('inv α<sub>M</sub>', M.v.toFixed(6), ext ? 'inv α + s/d + dₚ/d<sub>b</sub> − π/z' : 'inv α + e/d − dₚ/d<sub>b</sub>');
+      // 端面公式（斜齿用法面齿厚和法面量棒直径换算）：inv αMt = inv αt ± sn/(mn z) ± dp/(mn z cos αn) − π/z
+      const snn = m * (PI / 2 + 2 * xx * Math.tan(An));
+      const v = ext ? inv(At) + snn / (m * z) + dp / (m * z * Math.cos(An)) - PI / z : inv(At) + snn / (m * z) - dp / (m * z * Math.cos(An));
+      const aM = invInv(v), dM = db / Math.cos(aM), M = { v, aM, dM, M: (z % 2 ? dM * Math.cos(PI / 2 / z) : dM) + (ext ? dp : -dp) };
+      row('inv α<sub>M</sub>', M.v.toFixed(6), ext ? 'inv αₜ + sₙ/(mₙz) + dₚ/(mₙz cos αₙ) − π/z' : 'inv αₜ + eₙ/(mₙz) − dₚ/(mₙz cos αₙ)');
       row('α<sub>M</sub>', deg(M.aM).toFixed(4) + '°', '迭代反求');
       row('量棒中心圆 d<sub>M</sub>', M.dM, 'd<sub>b</sub> / cos α<sub>M</sub>');
       row(ext ? `跨棒距 M（${z % 2 ? '奇数齿' : '偶数齿'}）` : `棒间距 M（${z % 2 ? '奇数齿' : '偶数齿'}）`, M.M, (z % 2 ? 'dM cos(90°/z) ' : 'dM ') + (ext ? '+ dₚ' : '− dₚ'));
