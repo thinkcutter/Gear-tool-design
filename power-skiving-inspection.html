@@ -193,7 +193,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="say">DIN 1829 把插齿刀分为 <b>AA、A、B</b> 三级，滚插刀一般也按这个分级；高精度工件（比如要直接作为最终工序的内齿）用 AA 级。公差数值随模数和直径变化，具体以标准表格为准。图里是一个小模数刀具按 AA 级的例子。</div>
   <ul>
     <li>工件要求越高，刀具等级越高；也可以按工件公差反推刀具公差（例如刀具齿形公差取工件的 1/4 左右）。</li>
-    <li>国内插齿刀标准（GB/T 6081）同样分 AA、A、B 三级。</li>
+    <li>国内插齿刀标准同样分 AA、A、B 三级：GB/T 6081 规定型式和尺寸，GB/T 6082 规定技术要求和公差。</li>
   </ul>
   <div class="vo">滚插刀的精度一般参照插齿刀标准分三级，最高是 AA 级，单项齿形误差只有两微米左右。</div>
 </section>
@@ -579,9 +579,9 @@ const pitchF = (() => { const F = []; for (let i = 0; i < Z; i++) F.push(2.6 * M
     const A = [C[0] + uR[0] * 55, C[1] + uR[1] * 55], B = [C[0] + uF[0] * 40, C[1] + uF[1] * 40];
     shape.setAttribute('d', `M${A[0]} ${A[1]} L${P1[0]} ${P1[1]} C${P1[0] - uR[0] * Sg * 0.55} ${P1[1] - uR[1] * Sg * 0.55} ${P2[0] - uF[0] * Sa * 0.55} ${P2[1] - uF[1] * Sa * 0.55} ${P2[0]} ${P2[1]} L${B[0]} ${B[1]} L${A[0]} ${B[1]} Z`);
     const o = 5; dG.setAttribute('x1', C[0]); dG.setAttribute('y1', C[1] - o); dG.setAttribute('x2', P1[0]); dG.setAttribute('y2', P1[1] - o);
-    tG.setAttribute('x', (C[0] + P1[0]) / 2); tG.setAttribute('y', C[1] - o - 2.6); setT(tG, `S_{γ} ${Sg.toFixed(0)} µm`);
+    tG.setAttribute('x', (C[0] + P1[0]) / 2); tG.setAttribute('y', C[1] - o - 2.6); setT(tG, `S_{γ} ${Sg.toFixed(1)} µm`);
     dA.setAttribute('x1', C[0] + o); dA.setAttribute('y1', C[1]); dA.setAttribute('x2', P2[0] + o); dA.setAttribute('y2', P2[1]);
-    tA.setAttribute('x', C[0] + o + 1.5); tA.setAttribute('y', (C[1] + P2[1]) / 2); setT(tA, `S_{α} ${Sa.toFixed(0)} µm`);
+    tA.setAttribute('x', C[0] + o + 1.5); tA.setAttribute('y', (C[1] + P2[1]) / 2); setT(tA, `S_{α} ${Sa.toFixed(1)} µm`);
     k1.textContent = `K = ${K.toFixed(2)}`; k2.textContent = K < 0.9 ? '圆角偏向后刀面' : K > 1.1 ? '圆角偏向前刀面' : '对称圆角';
   });
 }

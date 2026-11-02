@@ -122,7 +122,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
     <tr><th>名称</th><th>标准齿轮公式</th><th>说明</th></tr>
     <tr><td>齿顶圆直径</td><td><span class="f">d<sub>a</sub> = d + 2m</span></td><td>齿轮的外径，毛坯就按它车</td></tr>
     <tr><td>齿根圆直径</td><td><span class="f">d<sub>f</sub> = d − 2.5m</span></td><td>牙根的底，铣刀/滚刀切到这里</td></tr>
-    <tr><td>齿根圆角</td><td><span class="f">ρ<sub>f</sub> ≈ 0.38m</span></td><td>牙根的圆角，越大牙根越不容易断</td></tr>
+    <tr><td>齿根过渡曲线</td><td><span class="f">刀具齿顶圆角 ρ<sub>fP</sub> = 0.38m</span></td><td>A 型基本齿廓的刀尖圆角，在齿根包络出过渡曲线；圆角越大，牙根越不容易断</td></tr>
   </table>
   <div class="vo">以分度圆为地平线，牙尖往外伸出一个模数，牙根往里挖一点二五个模数。</div>
 </section>
@@ -200,7 +200,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="say">分度圆上的齿厚是弧长，没法直接量。用公法线千分尺的两个盘形卡脚<b>跨 k 个牙</b>夹住两侧齿面，读数就是<b>公法线长度</b> <span class="f">W<sub>k</sub></span>。因为两卡脚之间的连线正好和基圆相切、同时垂直于两侧齿面，卡脚碰在齿面高一点低一点，读数都一样。</div>
   <ul>
     <li><span class="f">W<sub>k</sub> = m cos α [ (k − 0.5)π + z inv α ] + 2 x m sin α</span>，齿厚减薄 Δs，W 就减小 Δs·cos α。</li>
-    <li>内齿或者大齿轮常用<b>跨棒距 M</b>：在相对的两个齿槽里各放一根量棒，量两棒外侧的距离。</li>
+    <li>大齿轮常用<b>跨棒距 M</b>：在相对的两个齿槽里各放一根量棒，量两棒外侧的距离；<b>内齿</b>没法用公法线，改量<b>棒间距</b>（两棒内侧的距离）。</li>
   </ul>
   <div class="vo">牙的胖瘦用公法线千分尺量：跨几个牙夹住两侧齿面，读数就是公法线长度。</div>
 </section>
@@ -639,7 +639,7 @@ const scenes = [];
     const q1 = th1 * D2R, q2 = th2 * D2R;
     hand1.setAttribute('x2', (r1 - 4) * Math.cos(q1 + PI / 2)); hand1.setAttribute('y2', -(r1 - 4) * Math.sin(q1 + PI / 2));
     hand2.setAttribute('x2', a + (r2 - 5) * Math.cos(q2 + PI / 2)); hand2.setAttribute('y2', -(r2 - 5) * Math.sin(q2 + PI / 2));
-    n1.textContent = '小轮 z₁=15：' + (th1 / 360).toFixed(1) + ' 圈'; n2.textContent = '大轮 z₂=30：' + (Math.abs(th2) / 360).toFixed(1) + ' 圈';
+    n1.textContent = '小轮 z₁=15：' + (th1 / 360).toFixed(2) + ' 圈'; n2.textContent = '大轮 z₂=30：' + (Math.abs(th2) / 360).toFixed(2) + ' 圈';
   });
 }
 // ================= 11 公法线 =================
