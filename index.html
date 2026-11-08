@@ -279,7 +279,7 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
     <p><b>图纸核对</b>：程序把图纸上的齿顶圆、齿根圆和按标准公式（齿轮 ha*、c*、变位；花键按 GB/T 3478.1 或 DIN 5480 齿形）算出的值对比，在结果里列出差值。外齿齿顶圆偏大、齿根偏浅（内齿反过来）这类有干涉风险的偏差会提示向客户确认；齿根更深、齿顶缩短这类常见设计只列出不报警。程序计算一律以图纸数据为准，核对结果只作提醒。</p>
     <p><b>花键没有检测数据时</b>：在“精度等级换算”里填公差等级（如 6），程序按 GB/T 3478.1 的实际齿厚（外花键 h）或实际齿槽宽（内花键 H）公差中值设计刀具，不再用理论齿厚。“取值位置”可改为下限或上限。</p>
     <p><b>图纸检测数据</b>：选择齿厚依据（跨棒距、公法线或直接给齿厚）并填写上下限后，程序反算实际齿厚，并自动代替“齿厚减薄”。斜齿奇数齿用量球测量时，跨棒距按常用近似公式计算。一般按公差中值设计新刀；刀具磨损后槽变窄、跨棒距变大，所以也可以取下限，给磨损留出空间。填了渐开线起始圆后，程序会检查渐开线是否从这个圆（外齿）以下开始，齿根圆角越大起始圆越高。齿顶圆、齿根圆可直接按图纸填写，用来代替系数。</p>
-    <p>指型铣刀轴向进给，刀尖端面是平的，槽底只能铣成直线。外齿：选“角部到位”时槽底中心比根圆略深（见“槽底中心多铣”），选“中心到根圆”时圆角处会留下少量残留。内齿的槽底根圆弧向刀尖凸出：默认“中心到根圆”，直线过槽底中心、圆角重新相切，两角比根圆略深（见“两角多铣”）；选“两角到位”时圆角不变、槽底中心略浅。DXF 可粘贴到文本文件另存为 .dxf，图层 CUTTER 为刀具廓形。</p>
+    <p>指型铣刀轴向进给，刀尖端面是平的（即使磨成内凹，转起来最低的也是外缘一圈），直齿的槽底只能铣成直线；斜齿时工件边进给边转动，槽底中间一段接近圆弧。3D 图中的齿槽按刀具实际扫出的形状显示。外齿：选“角部到位”时槽底中心比根圆略深（见“槽底中心多铣”），选“中心到根圆”时圆角处会留下少量残留。内齿的槽底根圆弧向刀尖凸出：默认“中心到根圆”，直线过槽底中心、圆角重新相切，两角比根圆略深（见“两角多铣”）；选“两角到位”时圆角不变、槽底中心略浅。DXF 可粘贴到文本文件另存为 .dxf，图层 CUTTER 为刀具廓形。</p>
   </section>
 </div>
 </div>
@@ -2258,6 +2258,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     svg.innerHTML = s;
     $('lgT').innerHTML = `<span><i style="border-color:var(--ink)"></i>${geo.k ? '端面齿廓' : '齿廓'}</span><span><i style="border-color:var(--tin)"></i>${cut.slot ? '成形插刀端面' : cut.disc ? '盘形铣刀刀齿' : '指型铣刀轴截面'}${geo.M && (geo.M.q || geo.M.pr) ? '（含留磨量）' : ''}</span>` + (geo.k ? `<span><i style="border-color:var(--warn);border-top-style:dashed"></i>法向截面</span>` : '');
     $('sc1').textContent = geo.kind === 'int' ? '内齿（刀尖朝外）' : '';
+    svg.previousElementSibling.firstChild.textContent = '端面齿槽与刀具 ';   // 从蜗杆 / 转子页切回来时恢复标题
   }
 
   // ---------- 2D：刀具图 ----------
@@ -2475,8 +2476,46 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   const hexRGB = h => { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
 
   // 齿轮实体：侧壁(螺旋扫掠) + 两端面 + 内孔/外圈
+  // 指型铣刀实际铣出的端面槽形（半边，由槽底中心向齿顶排列）：把刀具回转体沿进给轨迹扫过，取包络。
+  // 刀轴沿径向，刀具点 (R cosψ, yTip ± h)，轴向偏离 ζ = R sinψ；斜齿时工件同时转过 k·ζ，换到齿槽坐标要反转 −k·ζ。
+  // 直齿时刀尖平面扫出的槽底是一条直线（不是根圆弧）；斜齿时槽底中间一段接近半径为刀尖距离的圆弧。
+  function machinedHalf(k) {
+    if (!cut || cut.disc || cut.slot || !cut.prof || cut.prof.length < 2) return null;
+    const isExt = geo.kind === 'ext', sg = isExt ? 1 : -1, ra = geo.ra;
+    const pr = G.resample(cut.prof, Math.max(1e-3, polyLen(cut.prof) / 240)), NP = 360, NJ = pr.length;
+    // 刀具回转面网格 (j 沿廓形, i 沿圆周) → 齿槽坐标里的 (ρ, φ)
+    const RHO = new Float64Array(NJ * NP), PHI = new Float64Array(NJ * NP);
+    let r0 = Infinity, r1 = -Infinity;
+    for (let j = 0; j < NJ; j++) {
+      const [hh, R] = pr[j], y = cut.yTip + sg * hh;
+      for (let i = 0; i < NP; i++) {
+        const ps = 2 * PI * i / NP, x = R * Math.cos(ps), ze = R * Math.sin(ps);
+        const q = k ? G.rot([x, y], -k * ze) : [x, y], o = j * NP + i;
+        RHO[o] = Math.hypot(q[0], q[1]); PHI[o] = Math.abs(Math.atan2(q[0], q[1]));
+        r0 = Math.min(r0, RHO[o]); r1 = Math.max(r1, RHO[o]);
+      }
+    }
+    // 每个半径 ρ 上，槽的半宽角 = 网格棱边与该半径圆交点的最大 φ（棱边上线性插值）
+    const lo = isExt ? r0 : ra, hi = isExt ? ra : r1; if (!(hi > lo)) return null;
+    const NB = 200, dr = (hi - lo) / NB, best = new Float64Array(NB + 1).fill(-1);
+    const edge = (a, c) => {
+      const ra_ = RHO[a], rc = RHO[c]; if (ra_ === rc) return;
+      const u0 = Math.min(ra_, rc), u1 = Math.max(ra_, rc);
+      for (let n = Math.max(0, Math.ceil((u0 - lo) / dr)); n <= NB; n++) {
+        const rr = lo + n * dr; if (rr > u1) break;
+        const t = (rr - ra_) / (rc - ra_), f = PHI[a] + (PHI[c] - PHI[a]) * t; if (f > best[n]) best[n] = f;
+      }
+    };
+    for (let j = 0; j < NJ; j++) for (let i = 0; i < NP; i++) { const o = j * NP + i; edge(o, j * NP + (i + 1) % NP); if (j + 1 < NJ) edge(o, o + NP); }
+    const out = [];
+    for (let n = 0; n <= NB; n++) if (best[n] >= 0) { const rr = lo + n * dr; out.push([rr * Math.sin(best[n]), rr * Math.cos(best[n])]); }
+    if (out.length < 5) return null;
+    if (!isExt) out.reverse();                                   // 内齿：槽底在外（大半径）
+    const rF = isExt ? r0 : r1; out.unshift([0, rF]);           // 槽底中心
+    return G.resample(out, Math.max(1e-3, polyLen(out) / 64));
+  }
   function gearMeshes(k, b) {
-    const half = halfRes(48), z = geo.z, isExt = geo.kind === 'ext';
+    const half = machinedHalf(k) || halfRes(48), z = geo.z, isExt = geo.kind === 'ext';
     const ol = outline(half, 0, z - 1), n = ol.length, nsp = spaceOutline(half).length;
     const Rc = isExt ? Math.max(geo.rf * 0.42, geo.rf - 9 * (P.mn || 2)) : geo.rf + 4 * (P.mn || 2);
     const twist = Math.abs(k * b), S = Math.max(1, Math.ceil(twist / (1.2 * D2R)));
@@ -2715,7 +2754,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   };
   let rafId = 0;
   function requestDraw() { if (!rafId && gl) rafId = requestAnimationFrame(frame); }
-  window.__fc3d = { cam, anim, scene, draw: () => requestDraw() };   // 调试 / 截图用
+  window.__fc3d = { cam, anim, scene, draw: () => requestDraw(), machined: k => machinedHalf(k), state: () => ({ geo, cut }) };   // 调试 / 截图用
   const reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduce) { anim.playing = false; $('play').textContent = '播放'; }
   function frame(ts) {
