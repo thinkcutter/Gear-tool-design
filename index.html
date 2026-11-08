@@ -1831,7 +1831,7 @@ if (typeof module !== 'undefined') module.exports = HX;
   function calcDin(isInt, out) {
     const A = parseFloat($('a_dA').value), TG = parseFloat($('a_dTG').value), Ta = parseFloat($('a_dTa').value);
     const cls = Math.round(parseFloat($('a_q').value) || 0);
-    const intro = 'DIN 5480 用公差等级（5–12）加偏差字母标注，如轴 8f、毂 9H。按 DIN 5480-1:2006 表 7 查出偏差 A<sub>s</sub>（轴）或 A<sub>e</sub>（毂）、总公差 T<sub>G</sub> 和实际公差 T<sub>act</sub>，填入上面三格，程序按表 6 算出作用和实际齿厚（齿槽宽）上下限及对应检测尺寸。表 7 的数值未能从公开资料取得，所以这三项需要手工查表填写。';
+    const intro = 'DIN 5480 用公差等级（5–12）加偏差字母标注，如轴 8f、毂 9H。按 DIN 5480-1:2006 表 7 查出偏差 A<sub>s</sub>（轴）或 A<sub>e</sub>（毂）、总公差 T<sub>G</sub> 和实际公差 T<sub>act</sub>，填入上面三格，程序按表 6 算出作用和实际齿厚（齿槽宽）上下限及对应检测尺寸。表 7 全表未能从公开资料取得，所以这三项需要手工查表填写。可核对的例子（DIN 5480-1 第 9 章数据框示例 120×3×38）：毂 9H 为 A<sub>e</sub> 0、T<sub>G</sub> 90、T<sub>act</sub> 56 µm；轴 8f 为 A<sub>s</sub> −28、T<sub>G</sub> 63、T<sub>act</sub> 40 µm。';
     if (!(isFinite(A) && TG > 0 && Ta > 0)) { out.innerHTML = `<div class="accnote">${intro}</div>`; return null; }
     if (Ta >= TG) { out.innerHTML = '<div class="accnote" style="color:var(--warn)">实际公差 T<sub>act</sub> 应小于总公差 T<sub>G</sub>（标准取 T<sub>G</sub>/T<sub>act</sub> ≈ 1.6）。</div>'; return null; }
     const m = P.mn, Te = TG - Ta, sB = m * (PI / 2 + 2 * P.x * Math.tan(P.an)), Q = qaInfo ? qaInfo.Q : {};
@@ -1948,7 +1948,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     let Q = g, note = '';
     if (std === 'agmaA') note = 'ANSI/AGMA ISO 1328-1-B14 等同 ISO 1328-1:2013，A 级与 ISO 同号等级相同；早先的 AGMA 2015-1-A01 公式也与它一致。';
     if (std === 'agmaQ') { Q = 17 - g; note = 'AGMA 2000 的 Q 级数字越大越精密，按经验 ISO ≈ 17 − Q，这里按 ISO 1328-1:2013 的 ' + Q + ' 级计算，只作参考，请向客户确认。'; }
-    if (gb2363) note = 'GB/T 2363-2025 第 5 章公式 (1)～(9) 的原文未能取得。公开解读给出的 f<sub>pT</sub>、F<sub>pT</sub>、F<sub>rT</sub> 公式与 GB/T 10095.1-2022 相同，标准正文又规定标注、评价按 GB/T 10095.1-2022 第 4.5、4.6 节执行，所以这里各项都按 GB/T 10095.1-2022 公式（4～11 级）计算。齿廓、螺旋线两项的系数未与原文核对，结果仅供参考，以标准原文为准。GB/T 2363-2025 不给切向、径向综合偏差的公差值。';
+    if (gb2363) note = 'GB/T 2363-2025 第 5 章公式 (1)～(9) 的原文未能取得。公开解读给出的 f<sub>pT</sub>、F<sub>pT</sub>、F<sub>rT</sub> 公式与 GB/T 10095.1-2022 相同，标准正文又规定标注、评价按 GB/T 10095.1-2022 第 4.5、4.6 节执行，所以这里各项都按 GB/T 10095.1-2022 公式（4～11 级）计算。齿廓、螺旋线两项的系数未与原文核对，结果仅供参考，以标准原文为准。GB/T 2363-2025 不给切向、径向综合偏差的公差值；法向模数小于 0.1 mm 时可参考本标准，但仅限供需双方协商使用。';
     const qMin = gb2363 ? 4 : ed13 ? 1 : 0, qMax = ed13 ? 11 : 12;
     if (!(Q >= qMin && Q <= qMax)) { out.innerHTML = '<div class="accnote">等级超出范围：' + (gb2363 ? 'GB/T 2363-2025 为 4–11 级。' : ed13 ? 'ISO 1328-1:2013 / GB/T 10095.1-2022 为 1–11 级。' : 'ISO 1328-1:1995 / GB/T 10095.1-2008 为 0–12 级。') + '</div>'; return null; }
     const d = 2 * geo.r, m = P.mn, b = P.b || 0, f = Math.pow(2, (Q - 5) / 2);
