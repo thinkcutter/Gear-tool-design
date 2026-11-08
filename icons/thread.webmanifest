@@ -1,0 +1,22 @@
+{
+ "name": "螺纹参数图解",
+ "short_name": "螺纹参数",
+ "start_url": "../thread.html",
+ "scope": "../",
+ "display": "standalone",
+ "background_color": "#0F1012",
+ "theme_color": "#0F1012",
+ "icons": [
+  {
+   "src": "thread-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "thread-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}

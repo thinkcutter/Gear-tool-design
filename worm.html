@@ -1,0 +1,1064 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>蜗杆参数图解</title>
+<link rel="apple-touch-icon" href="icons/worm-180.png">
+<link rel="icon" type="image/png" href="icons/worm-192.png">
+<link rel="manifest" href="icons/worm.webmanifest">
+<meta name="apple-mobile-web-app-title" content="蜗杆参数">
+<style>
+:root{
+  --bg:#F4F1EA; --card:#FFFFFF; --ink:#1E2328; --muted:#66707A; --line:#D9D4CA;
+  --steel:#C9CED4; --steel2:#AEB5BD; --gear:#DDE3E9; --gear2:#F2D9B8;
+  --accent:#E06A1B; --blue:#2F6FB5; --green:#2E8B57; --red:#C8402E; --violet:#7A4FB0;
+  --chip:#F7EFE3; --hi:#F7F8FA;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#121417; --card:#1B1E22; --ink:#ECEDEE; --muted:#9AA3AD; --line:#2E333A;
+    --steel:#4A525B; --steel2:#5E6772; --gear:#3A434D; --gear2:#6A4B2C;
+    --accent:#FF8A3D; --blue:#6FA8E8; --green:#5CC28C; --red:#F07A68; --violet:#B591E6; --chip:#2A2520; --hi:#7C8794;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#121417; --card:#1B1E22; --ink:#ECEDEE; --muted:#9AA3AD; --line:#2E333A;
+  --steel:#4A525B; --steel2:#5E6772; --gear:#3A434D; --gear2:#6A4B2C;
+  --accent:#FF8A3D; --blue:#6FA8E8; --green:#5CC28C; --red:#F07A68; --violet:#B591E6; --chip:#2A2520; --hi:#7C8794;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",system-ui,sans-serif;line-height:1.7}
+.wrap{max-width:900px;margin:0 auto;padding:28px 16px 60px}
+header h1{font-size:30px;margin:0 0 6px;letter-spacing:1px}
+header p{margin:0;color:var(--muted)}
+.toc{display:flex;flex-wrap:wrap;gap:6px;margin:18px 0 8px}
+.toc a{font-size:13px;color:var(--ink);text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px 10px}
+section.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 20px 16px;margin:18px 0}
+.no{display:inline-block;font-size:12px;font-weight:700;color:var(--accent);border:1.5px solid var(--accent);border-radius:6px;padding:0 6px;margin-right:8px;vertical-align:3px}
+h2{font-size:22px;margin:0 0 4px}
+.sym{font-family:"Times New Roman",serif;font-style:italic;color:var(--accent);font-weight:400}
+.meta{color:var(--muted);font-size:14px;margin-bottom:10px}
+.fig{width:100%;display:block;margin:6px 0 6px}
+.say{background:var(--chip);border-radius:10px;padding:10px 14px;margin:10px 0;font-size:15px}
+.say b{color:var(--accent)}
+ul{margin:6px 0 6px;padding-left:20px}
+li{margin:2px 0}
+.f{display:inline-block;font-family:"Times New Roman",serif;font-size:17px;background:var(--chip);border-radius:6px;padding:1px 8px;margin:2px 4px 2px 0}
+.vo{border-left:3px solid var(--blue);padding:2px 0 2px 12px;margin:10px 0 0;color:var(--muted);font-size:14px}
+.vo::before{content:"旁白：";color:var(--blue);font-weight:700}
+table{border-collapse:collapse;width:100%;font-size:14px}
+th,td{border-bottom:1px solid var(--line);padding:6px 6px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:600}
+td .f{font-size:15px}
+.play{display:grid;grid-template-columns:1fr;gap:12px}
+@media(min-width:760px){.play{grid-template-columns:1.1fr 1fr}}
+.ctl label{display:flex;justify-content:space-between;font-size:14px;color:var(--muted);margin-top:8px}
+.ctl input[type=range]{width:100%}
+.ctl select{width:100%;font-size:15px;padding:4px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px}
+.out td:last-child{font-family:"Times New Roman",serif;font-size:16px;text-align:right}
+svg text{font-family:"PingFang SC","Noto Sans CJK SC","Microsoft YaHei",sans-serif}
+svg .math{font-family:"Times New Roman",serif;font-style:italic}
+.btns{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:10px 0 6px}
+.btns button{font:inherit;font-size:14px;background:var(--chip);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:3px 12px;cursor:pointer}
+.hint{font-size:13px;color:var(--muted)}
+.note{font-size:14px;color:var(--accent);margin-top:6px;min-height:1.6em}
+.cap{font-size:13px;color:var(--muted);margin:0 0 8px}
+footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
+.btns button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ctl input[type=number]{width:100%;font-size:15px;padding:3px 6px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:6px}
+.warn{font-size:13px;color:var(--red);margin-top:6px}
+.tag{display:inline-block;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 6px;margin-left:6px;vertical-align:2px}
+.tw{overflow-x:auto}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>蜗杆参数图解</h1>
+  <p>头数、轴向模数、导程角、直径系数、齿形、变位、效率和自锁……一张图一个参数，看动画就懂。</p>
+  <nav class="toc" id="toc"></nav>
+</header>
+
+<section class="card" id="s0">
+  <h2><span class="no">00</span>蜗杆传动是怎么回事</h2>
+  <div class="meta">一根“螺杆”拧着一个齿轮转，两根轴空间交错 90°</div>
+  <svg class="fig" id="f0" viewBox="-74 -43 148 121"></svg>
+  <div class="say">把<b>蜗杆</b>想成一根粗螺丝，<b>蜗轮</b>是被它“拧”着走的齿轮：蜗杆转一圈，螺纹向前推过一个导程，蜗轮就被推着转过 <span class="f">z<sub>1</sub></span> 个齿。所以一级就能减速 <b>10～80 倍</b>，而且运转平稳、噪声小。</div>
+  <ul>
+    <li>两根轴在空间里<b>交错</b>（最常见是 90°），既不相交也不平行。图中蜗轮的轴线垂直于纸面。</li>
+    <li>一般<b>蜗杆主动、蜗轮从动</b>；导程角很小时，反过来用蜗轮推蜗杆推不动，这叫<b>自锁</b>（08 节）。</li>
+    <li>两齿面之间是<b>大量滑动</b>，所以发热多、效率比齿轮低；蜗轮通常用锡青铜做，蜗杆用钢淬硬后磨削。</li>
+    <li>常见用途：减速机、分度头和数控转台、升降机构、阀门执行器、卷扬机。</li>
+  </ul>
+  <div class="vo">蜗杆就像一根螺丝，蜗轮就像被它拧着走的齿轮。蜗杆转一圈，蜗轮只转过一两个齿，所以减速特别大。</div>
+</section>
+
+<section class="card" id="s1">
+  <h2><span class="no">01</span>头数 <span class="sym">z</span><sub>1</sub> 与传动比 <span class="sym">i</span></h2>
+  <div class="meta">一根蜗杆上绕了几条螺纹</div>
+  <svg class="fig" id="f1" viewBox="-60 -8 126 92"></svg>
+  <div class="say">头数就是蜗杆上<b>并排绕着几条螺纹</b>，像麻花绳有几股。图中每条螺纹用一种颜色：单头只有一条，双头两条，四头四条。三根蜗杆的齿距一样，转一圈时，橙色箭头跟着同一条螺纹走——单头走 1 个齿距，四头走 4 个齿距。</div>
+  <ul>
+    <li><b>传动比</b> <span class="f">i = n<sub>1</sub> / n<sub>2</sub> = z<sub>2</sub> / z<sub>1</sub></span>：蜗杆转一圈，蜗轮转过 <span class="f">z<sub>1</sub></span> 个齿。注意它<b>不等于</b>直径比 <span class="f">d<sub>2</sub>/d<sub>1</sub></span>，这一点和齿轮不同。</li>
+    <li>头数常取 <b>1、2、4</b>（也有 6）。头数少，传动比大、容易自锁，但效率低；头数多，效率高，但导程角大、蜗杆不好加工。</li>
+    <li>蜗轮齿数 <span class="f">z<sub>2</sub></span> 一般取 <b>28～80</b>：太少啮合区小，容易根切；太多蜗轮太大，蜗杆跨度长、刚度不够。</li>
+    <li>常用传动比 5、7.5、10、12.5、15、20、25、30、40、50、60、70、80，其中 <b>10、20、40、80</b> 为基本传动比，优先选用。</li>
+  </ul>
+  <div class="vo">头数就是蜗杆上绕了几条螺纹。蜗杆转一圈，蜗轮就转过几个齿，所以传动比等于蜗轮齿数除以蜗杆头数。</div>
+</section>
+
+<section class="card" id="s2">
+  <h2><span class="no">02</span>轴向模数 <span class="sym">m</span><sub>x</sub> 与轴向齿距 <span class="sym">p</span><sub>x</sub></h2>
+  <div class="meta">在中间平面里，蜗杆就是一根齿条</div>
+  <svg class="fig" id="f2" viewBox="-24 -12 48 28"></svg>
+  <div class="say">用一个平面<b>沿蜗杆轴线、垂直于蜗轮轴线</b>切开，这个平面叫<b>中间平面</b>。在这个平面里，蜗杆的齿形（橙色线）就是一根<b>齿条</b>，蜗轮就是和它啮合的齿轮——所以蜗杆的参数都在<b>轴向</b>定义，蜗轮的参数都在<b>端面</b>定义。</div>
+  <ul>
+    <li>正确啮合条件：<span class="f">m<sub>x1</sub> = m<sub>t2</sub> = m</span>，<span class="f">α<sub>x1</sub> = α<sub>t2</sub> = α</span>，并且蜗杆导程角等于蜗轮螺旋角 <span class="f">γ = β<sub>2</sub></span>、<b>旋向相同</b>。</li>
+    <li>轴向齿距 <span class="f">p<sub>x</sub> = π m</span>：相邻两个牙在轴线方向上的距离，在分度圆柱上量，牙厚和槽宽相等，各为 <span class="f">π m / 2</span>。</li>
+    <li>蜗杆模数按 GB/T 10088 取，常用 1、1.25、1.6、2、2.5、<b>3.15</b>、4、5、<b>6.3</b>、8、10、12.5、16、20、25……注意 3.15、6.3 和齿轮模数系列（3、6）不一样。</li>
+  </ul>
+  <div class="vo">顺着蜗杆的轴线切一刀，蜗杆的齿形就是一根齿条，蜗轮就是和它啮合的齿轮。所以蜗杆的模数叫轴向模数。</div>
+</section>
+
+<section class="card" id="s3">
+  <h2><span class="no">03</span>导程 <span class="sym">p</span><sub>z</sub> 与导程角 <span class="sym">γ</span></h2>
+  <div class="meta">把分度圆柱展开，螺旋线就是一条斜线</div>
+  <svg class="fig" id="f3" viewBox="-2 6 128 44"></svg>
+  <div class="btns" id="b3"><span class="hint">头数 z₁：</span><button data-z="1" class="on">1</button><button data-z="2">2</button><button data-z="4">4</button></div>
+  <div class="ctl"><label>直径系数 q = d₁ / m <b id="v3"></b></label><input id="i3" type="range" min="7" max="18" step="0.25" value="10"></div>
+  <table class="out" id="t3"></table>
+  <div class="say">把蜗杆的分度圆柱像纸筒一样<b>剪开铺平</b>：一圈的周长是 <span class="f">π d<sub>1</sub></span>，同一条螺纹绕一圈沿轴向前进一个<b>导程</b> <span class="f">p<sub>z</sub> = z<sub>1</sub> p<sub>x</sub></span>，螺旋线就变成直角三角形的斜边。斜边和圆周方向的夹角就是<b>导程角</b> <span class="f">γ</span>。</div>
+  <ul>
+    <li><span class="f">tan γ = p<sub>z</sub> / (π d<sub>1</sub>) = z<sub>1</sub> m / d<sub>1</sub> = z<sub>1</sub> / q</span>。头数越多、蜗杆越细，导程角越大。</li>
+    <li>导程角决定了效率和能不能自锁：<span class="f">γ</span> 小（约 3.5°～4.5° 以下）可能自锁但效率低；要效率时取 15°～30°。</li>
+    <li>蜗杆的导程角 <span class="f">γ</span> 和螺旋角 <span class="f">β<sub>1</sub></span> 互余：<span class="f">β<sub>1</sub> = 90° − γ</span>；而蜗轮的螺旋角 <span class="f">β<sub>2</sub> = γ</span>。</li>
+  </ul>
+  <div class="vo">把分度圆柱剪开铺平，螺旋线就是一条斜线。斜线越陡，导程角越大，蜗杆越“快”，但也越不容易自锁。</div>
+</section>
+
+<section class="card" id="s4">
+  <h2><span class="no">04</span>分度圆直径 <span class="sym">d</span><sub>1</sub> 与直径系数 <span class="sym">q</span></h2>
+  <div class="meta">同一个模数，蜗杆可以粗也可以细——但要按标准选</div>
+  <svg class="fig" id="f4" viewBox="-60 -4 124 74"></svg>
+  <div class="say">齿轮的分度圆直径由齿数决定（<span class="f">d = m z</span>），蜗杆却不行：同样模数、同样头数，蜗杆可以做粗，也可以做细。图中两根蜗杆都是 <span class="f">m = 4、z<sub>1</sub> = 2</span>，细的 <span class="f">d<sub>1</sub> = 40</span>，粗的 <span class="f">d<sub>1</sub> = 71</span>，螺纹的倾斜程度（导程角）明显不同。</div>
+  <ul>
+    <li><b>直径系数</b> <span class="f">q = d<sub>1</sub> / m</span>，所以 <span class="f">d<sub>1</sub> = q m</span>。</li>
+    <li>为什么要标准化？蜗轮是用和蜗杆<b>一模一样</b>的滚刀切出来的，蜗杆直径每多一种，就要多备一把滚刀。所以 GB/T 10088 / GB/T 10085 对每个模数只规定了少数几个 <span class="f">d<sub>1</sub></span>（例如 <span class="f">m = 4</span>：40、71）。</li>
+    <li>细蜗杆导程角大、效率高，但刚度差、容易弯；粗蜗杆刚度好但效率低。传递功率时按 GB/T 10085 的匹配表选 <span class="f">m、d<sub>1</sub>、z<sub>1</sub></span>。</li>
+  </ul>
+  <div class="vo">蜗杆的粗细不由齿数决定，而是标准里规定好的几种。因为每一种粗细都要配一把专门的滚刀去切蜗轮。</div>
+</section>
+
+<section class="card" id="s5">
+  <h2><span class="no">05</span>齿形：ZA、ZN、ZI、ZK、ZC</h2>
+  <div class="meta">齿面在哪个截面里是直线——取决于刀具怎么放</div>
+  <div class="btns" id="b5"><button data-k="ZA" class="on">ZA 阿基米德</button><button data-k="ZN">ZN 法向直廓</button><button data-k="ZI">ZI 渐开线</button><button data-k="ZK">ZK 锥面包络</button><button data-k="ZC">ZC 圆弧</button></div>
+  <svg class="fig" id="f5" viewBox="-56 -27 116 52"></svg>
+  <p class="cap">左：侧视图和刀具位置（橙色为齿面是直线的截面）；右：端面（垂直于轴线的截面）里的齿形，双头蜗杆。</p>
+  <div class="say" id="say5"></div>
+  <ul>
+    <li>GB/T 10087 规定基本蜗杆的齿形角：ZA 为<b>轴向</b>齿形角 <span class="f">α<sub>x</sub> = 20°</span>；ZN、ZI 为<b>法向</b>齿形角 <span class="f">α<sub>n</sub> = 20°</span>；ZK 为生成刀具（砂轮）的齿形角 20°。</li>
+    <li>GB/T 10085 <b>推荐采用 ZI 和 ZK 蜗杆</b>；除特殊要求外，蜗杆用<b>右旋</b>。ZC 蜗杆的齿形和其他几种不同，齿顶圆、齿根圆要另行计算。</li>
+    <li>蜗轮必须用和配对蜗杆<b>同一种齿形</b>的滚刀加工，否则啮合不对。</li>
+  </ul>
+  <div class="vo">五种蜗杆长得差不多，区别在于车刀或砂轮放在什么位置，所以齿面在哪个截面里是直线也不一样。</div>
+</section>
+
+<section class="card" id="s6">
+  <h2><span class="no">06</span>齿顶圆、齿根圆和基本齿廓</h2>
+  <div class="meta">在轴向截面里规定牙有多高、多厚</div>
+  <svg class="fig" id="f6" viewBox="-25 -13 50 27"></svg>
+  <div class="say">GB/T 10087 在蜗杆的<b>轴向截面</b>里规定了基本齿廓：牙高出分度线 <b>1 个模数</b>，往下挖 <b>1.2 个模数</b>，多出的 0.2 个模数就是留给蜗轮齿顶的<b>顶隙</b>。图中虚线是蜗轮的齿，它插进蜗杆的齿槽，底下留一条缝。</div>
+  <ul>
+    <li>齿顶高 <span class="f">h<sub>a</sub> = 1 m</span>，工作齿高 <span class="f">h′ = 2 m</span>；采用短齿时 <span class="f">h<sub>a</sub> = 0.8 m</span>、<span class="f">h′ = 1.6 m</span>。</li>
+    <li>顶隙 <span class="f">c = 0.2 m</span>，必要时允许 0.15m～0.35m；齿根圆角 <span class="f">ρ<sub>f</sub> = 0.3 m</span>，必要时允许 0.2m～0.4m，也可做成单圆弧；齿顶允许倒圆，半径不大于 0.2m。</li>
+    <li>齿顶圆 <span class="f">d<sub>a1</sub> = d<sub>1</sub> + 2 m</span>，齿根圆 <span class="f">d<sub>f1</sub> = d<sub>1</sub> − 2.4 m</span>（按 <span class="f">c = 0.2m</span>）。</li>
+    <li>分度圆上轴向齿厚 = 齿槽宽 = <span class="f">π m / 2</span>；法向齿厚约 <span class="f">s<sub>n</sub> = (π m / 2) cos γ</span>。</li>
+  </ul>
+  <div class="vo">蜗杆的牙高出分度线一个模数，往下挖一点二个模数，下面留出零点二个模数的顶隙给蜗轮的齿顶。</div>
+</section>
+
+<section class="card" id="s7">
+  <h2><span class="no">07</span>蜗轮：分度圆 <span class="sym">d</span><sub>2</sub>、变位 <span class="sym">x</span><sub>2</sub> 与中心距 <span class="sym">a</span></h2>
+  <div class="meta">只给蜗轮变位，蜗杆永远不变</div>
+  <svg class="fig" id="f7" viewBox="-48 -28 146 64"></svg>
+  <div class="play">
+    <div class="ctl">
+      <label>蜗轮齿数 z₂ <b id="v7z"></b></label><input id="i7z" type="range" min="26" max="60" step="1" value="40">
+      <label>变位系数 x₂ <b id="v7x"></b></label><input id="i7x" type="range" min="-0.5" max="0.5" step="0.05" value="0">
+    </div>
+    <table class="out" id="t7"></table>
+  </div>
+  <div class="say">蜗轮分度圆 <span class="f">d<sub>2</sub> = m z<sub>2</sub></span>。要凑一个整数中心距，或者改一点传动比，就给<b>蜗轮变位</b>：滚刀（也就是蜗杆）离蜗轮远一点或近一点。蜗杆尺寸<b>不变</b>，只是它和蜗轮相切的那条线（节线）离开了分度线 <span class="f">x<sub>2</sub> m</span>。右图是侧视：蜗轮齿顶做成凹圆弧（喉部），把蜗杆“抱”住。</div>
+  <ul>
+    <li>中心距 <span class="f">a = (d<sub>1</sub> + d<sub>2</sub> + 2 x<sub>2</sub> m) / 2</span>；标准中心距优先取 40、50、63、80、100、125、160、200、250、315、400、500。</li>
+    <li>蜗轮喉圆 <span class="f">d<sub>a2</sub> = d<sub>2</sub> + 2m(1 + x<sub>2</sub>)</span>，齿根圆 <span class="f">d<sub>f2</sub> = d<sub>2</sub> − 2m(1.2 − x<sub>2</sub>)</span>，喉母圆半径 <span class="f">r<sub>g2</sub> = a − d<sub>a2</sub>/2</span>。</li>
+    <li>蜗轮外径和宽度常用经验值：<span class="f">d<sub>e2</sub> ≤ d<sub>a2</sub> + 2m</span>（单头）、<span class="f">+1.5m</span>（2～3 头）、<span class="f">+m</span>（4 头）；<span class="f">b<sub>2</sub> ≤ 0.75 d<sub>a1</sub></span>（≤3 头）、<span class="f">0.67 d<sub>a1</sub></span>（4～6 头）。</li>
+    <li>变位系数一般在 −1～+1 之间，常用 −0.5～+0.5；变位后蜗轮齿厚变化，蜗轮滚刀不用换。</li>
+  </ul>
+  <div class="vo">蜗杆从来不变位，只给蜗轮变位。变位以后，蜗杆的节线离开分度线，中心距跟着变。</div>
+</section>
+
+<section class="card" id="s8">
+  <h2><span class="no">08</span>效率与自锁</h2>
+  <div class="meta">斜面越平越省力，但也越容易“卡住不动”</div>
+  <svg class="fig" id="f8" viewBox="-10 3 112 58"></svg>
+  <div class="play">
+    <div class="ctl">
+      <label>导程角 γ <b id="v8g"></b></label><input id="i8g" type="range" min="1" max="35" step="0.25" value="11.31">
+      <label>当量摩擦系数 f′ <b id="v8f"></b></label><input id="i8f" type="range" min="0.01" max="0.15" step="0.005" value="0.05">
+    </div>
+    <table class="out" id="t8"></table>
+  </div>
+  <div class="say">蜗杆推蜗轮就像<b>沿斜面推箱子</b>：导程角就是斜面的坡度。坡太平，推的力大部分耗在摩擦上，效率低；反过来想让箱子自己滑下来（蜗轮推蜗杆），如果坡度小于摩擦角，它根本滑不动——这就是<b>自锁</b>。</div>
+  <ul>
+    <li>蜗杆主动时啮合效率 <span class="f">η<sub>1</sub> = tan γ / tan(γ + ρ<sub>v</sub>)</span>；蜗轮主动时 <span class="f">η′ = tan(γ − ρ<sub>v</sub>) / tan γ</span>。当量摩擦角 <span class="f">ρ<sub>v</sub> = arctan f′</span>。</li>
+    <li><span class="f">γ ≤ ρ<sub>v</sub></span> 时 <span class="f">η′ ≤ 0</span>，蜗轮推不动蜗杆，即<b>自锁</b>；此时蜗杆主动的效率也低于 50%。</li>
+    <li>f′ 随滑动速度、材料和润滑变化，钢蜗杆配锡青铜蜗轮一般在 0.02～0.1 之间，滑动速度越高、润滑越好，f′ 越小。</li>
+    <li>总效率还要乘上轴承和搅油损失（约 0.95～0.96）。粗略估计：单头 0.70～0.75，双头 0.75～0.82，四头 0.87～0.92。</li>
+    <li><b>注意</b>：振动、冲击会让自锁失效，起重、升降等安全场合不能只靠蜗杆自锁，必须另加制动器。</li>
+  </ul>
+  <div class="vo">导程角就是斜面的坡度。坡太平，蜗轮就推不动蜗杆，这叫自锁；但自锁的蜗杆，效率一定不到一半。</div>
+</section>
+
+<section class="card" id="s9">
+  <h2><span class="no">09</span>齿面滑动速度 <span class="sym">v</span><sub>s</sub></h2>
+  <div class="meta">蜗杆的齿面是“擦”着蜗轮走的</div>
+  <svg class="fig" id="f9" viewBox="-4 -6 108 56"></svg>
+  <div class="ctl"><label>导程角 γ <b id="v9"></b></label><input id="i9" type="range" min="2" max="30" step="0.5" value="11.5"></div>
+  <div class="say">在节点处，蜗杆表面的速度 <span class="f">v<sub>1</sub></span> 沿圆周方向，蜗轮的速度 <span class="f">v<sub>2</sub></span> 沿蜗杆轴线方向，两者互相垂直，差别全靠齿面之间<b>沿螺纹方向滑过去</b>。滑动速度 <span class="f">v<sub>s</sub></span> 比 <span class="f">v<sub>1</sub></span> 还大。</div>
+  <ul>
+    <li><span class="f">v<sub>s</sub> = v<sub>1</sub> / cos γ = √(v<sub>1</sub>² + v<sub>2</sub>²)</span>，<span class="f">v<sub>2</sub> = v<sub>1</sub> tan γ</span>，<span class="f">v<sub>1</sub> = π d<sub>1</sub> n<sub>1</sub> / 60000</span>（m/s，d 用 mm）。</li>
+    <li>滑动速度高，发热大、容易<b>胶合</b>和磨损，所以蜗轮用减摩的锡青铜（如 ZCuSn10P1），蜗杆淬硬磨光，并要充分润滑、散热。</li>
+    <li>滑动速度也是选材料、选润滑油和查当量摩擦系数 f′ 的依据。</li>
+  </ul>
+  <div class="vo">蜗杆的齿面不是滚过蜗轮，而是擦过蜗轮。滑动速度比蜗杆表面的线速度还大，所以蜗杆传动特别怕发热。</div>
+</section>
+
+<section class="card" id="s10">
+  <h2><span class="no">10</span>怎么加工</h2>
+  <div class="meta">蜗杆像车螺纹一样车出来，蜗轮用“蜗杆”去滚出来</div>
+  <p class="cap">车蜗杆：工件转一圈，车刀沿轴向走一个导程，左边已车出螺纹，右边还是毛坯。</p>
+  <svg class="fig" id="f10a" viewBox="-62 -22 124 40"></svg>
+  <p class="cap">滚蜗轮：滚刀（开了容屑槽的“蜗杆”）和蜗轮按传动比一起转，同时径向切入到中心距。</p>
+  <svg class="fig" id="f10b" viewBox="-54 -16 108 36"></svg>
+  <div class="say"><b>车蜗杆</b>和车螺纹一样，工件转一圈，车刀沿轴向走一个导程 <span class="f">p<sub>z</sub></span>，分多刀车到全齿深。<b>滚蜗轮</b>的滚刀就是一根开了容屑槽、磨出后角的蜗杆，它和蜗轮按真实的传动比一起转，同时径向逐渐切入到中心距 <span class="f">a</span>。</div>
+  <ul>
+    <li><b>蜗杆</b>：ZA 用直线刃车刀、刀刃对准中心车削；ZN 车刀转过导程角；ZI 可用平面砂轮磨削；ZK 用盘铣刀铣削、锥面砂轮磨削；ZC 用凸圆弧砂轮磨削。长蜗杆也常用<b>旋风铣</b>。动力蜗杆一般淬硬后<b>磨削</b>。</li>
+    <li><b>蜗轮</b>：用蜗轮滚刀在滚齿机上滚切，可以径向进给，也可以切向进给（多头、大导程角时更好）；单件小批也可以用<b>飞刀</b>（单齿刀）切向展成。</li>
+    <li>蜗轮滚刀的模数、分度圆直径、头数、齿形角、齿形类型和旋向都必须和蜗杆<b>一致</b>，齿顶比蜗杆高出一个顶隙，用来切出蜗轮的齿根。</li>
+    <li>装配后在蜗杆齿面涂色，转动检查蜗轮上的<b>接触斑点</b>：位置和大小按 GB/T 10089 的要求，不合格就调整蜗轮的轴向位置。</li>
+  </ul>
+  <div class="vo">蜗杆像车螺纹一样车出来，蜗轮则用一把和蜗杆一模一样的滚刀滚出来，所以蜗杆和滚刀的参数必须完全一致。</div>
+</section>
+
+<section class="card" id="s11">
+  <h2><span class="no">11</span>怎么检测</h2>
+  <div class="meta">量棒法量中径，齿厚卡尺量牙厚</div>
+  <svg class="fig" id="f11" viewBox="-40 -24 80 54"></svg>
+  <div class="say">把三根直径相同的<b>量棒</b>放进蜗杆的齿槽（一边一根，另一边两根），用千分尺量棒外侧的距离 <span class="f">M</span>，就能算出分度圆上的齿厚对不对。量棒直径取得刚好在分度线附近接触齿面（<b>最佳量棒</b>），测量结果受齿形角误差影响最小。</div>
+  <ul>
+    <li>ZA 蜗杆（轴向直廓）：<span class="f">M = d<sub>1</sub> + d<sub>p</sub>(1 + 1/sin α<sub>x</sub>) − (p<sub>x</sub>/2) cot α<sub>x</sub></span>，最佳量棒 <span class="f">d<sub>p</sub> = p<sub>x</sub> / (2 cos α<sub>x</sub>) ≈ 1.672 m</span>，此时 <span class="f">M ≈ d<sub>1</sub> + 2.243 m</span>。导程角大时，量棒在齿槽里是斜着贴的，要按标准或手册做修正；ZN、ZI、ZK 齿形的轴向截面不是直线，也要用各自的公式。</li>
+    <li>也可以用<b>齿厚游标卡尺</b>在法向量弦齿厚：卡尺高度对准齿顶以下 <span class="f">h<sub>a</sub> = m</span>，量 <span class="f">s<sub>n</sub> ≈ (π m / 2) cos γ</span>。</li>
+    <li>精密蜗杆在<b>齿轮测量中心</b>或蜗杆测量仪上测齿廓、导程（螺旋线）和齿距偏差；蜗轮测齿距、径向跳动，也可以和标准蜗杆做<b>双面啮合</b>综合检测。精度等级按 GB/T 10089（1～12 级）。</li>
+  </ul>
+  <div class="vo">量棒放进齿槽，量棒外面量出一个尺寸，就能反算出齿厚。这和测螺纹中径用的是同一个办法。</div>
+</section>
+
+<section class="card" id="s12">
+  <h2><span class="no">12</span>动手试一试</h2>
+  <div class="meta">选模数和蜗杆直径，看蜗杆副的尺寸和效率怎么变</div>
+  <div class="play">
+    <svg class="fig" id="f12" viewBox="-60 -60 120 120"></svg>
+    <div class="ctl">
+      <label>模数 m（GB/T 10088）</label><select id="cm"></select>
+      <label>蜗杆分度圆直径 d₁ <span class="tag">GB/T 10085 常用匹配</span></label><select id="cd"></select>
+      <label>头数 z₁</label><select id="cz1"><option>1</option><option selected>2</option><option>4</option><option>6</option></select>
+      <label>蜗轮齿数 z₂ <b id="vz2"></b></label><input id="cz2" type="range" min="20" max="100" step="1" value="40">
+      <label>蜗轮变位系数 x₂ <b id="vx2"></b></label><input id="cx2" type="range" min="-1" max="1" step="0.05" value="0">
+      <label>当量摩擦系数 f′ <b id="vf"></b></label><input id="cf" type="range" min="0.01" max="0.15" step="0.005" value="0.04">
+      <label>蜗杆转速 n₁（r/min）</label><input id="cn" type="number" min="1" max="6000" step="10" value="1450">
+      <div class="warn" id="cw"></div>
+    </div>
+  </div>
+  <div class="tw"><table class="out" id="tout"></table></div>
+  <div class="vo">模数和蜗杆直径按标准选，头数决定导程角，蜗轮齿数决定传动比，变位调中心距，摩擦系数决定效率和能不能自锁。</div>
+</section>
+
+<section class="card" id="s13">
+  <h2><span class="no">13</span>公式速查（普通圆柱蜗杆传动，轴交角 90°）</h2>
+  <div class="tw"><table>
+    <tr><th>参数</th><th>符号</th><th>公式</th><th>一句话记忆</th></tr>
+    <tr><td>头数 / 齿数</td><td><span class="f">z<sub>1</sub>, z<sub>2</sub></span></td><td>z₁ = 1、2、4、6；z₂ ≈ 28～80</td><td>几条螺纹 / 几个牙</td></tr>
+    <tr><td>传动比</td><td><span class="f">i</span></td><td><span class="f">n<sub>1</sub>/n<sub>2</sub> = z<sub>2</sub>/z<sub>1</sub></span></td><td>不等于直径比</td></tr>
+    <tr><td>模数</td><td><span class="f">m</span></td><td><span class="f">m<sub>x1</sub> = m<sub>t2</sub></span>（GB/T 10088）</td><td>蜗杆轴向 = 蜗轮端面</td></tr>
+    <tr><td>齿形角</td><td><span class="f">α</span></td><td>ZA：α<sub>x</sub> = 20°；ZN、ZI：α<sub>n</sub> = 20°</td><td>看哪个截面是直线</td></tr>
+    <tr><td>轴向齿距</td><td><span class="f">p<sub>x</sub></span></td><td><span class="f">π m</span></td><td>相邻两牙的轴向距离</td></tr>
+    <tr><td>导程</td><td><span class="f">p<sub>z</sub></span></td><td><span class="f">z<sub>1</sub> π m</span></td><td>同一条螺纹绕一圈前进多少</td></tr>
+    <tr><td>直径系数</td><td><span class="f">q</span></td><td><span class="f">d<sub>1</sub> / m</span></td><td>蜗杆有多粗</td></tr>
+    <tr><td>导程角</td><td><span class="f">γ</span></td><td><span class="f">tan γ = z<sub>1</sub>/q = z<sub>1</sub> m/d<sub>1</sub></span></td><td>展开三角形的坡度</td></tr>
+    <tr><td>法向模数（ZA）</td><td><span class="f">m<sub>n</sub></span></td><td><span class="f">m cos γ</span></td><td>垂直于螺纹量</td></tr>
+    <tr><td>蜗杆齿顶圆 / 齿根圆</td><td><span class="f">d<sub>a1</sub>, d<sub>f1</sub></span></td><td><span class="f">d<sub>1</sub> + 2m</span>，<span class="f">d<sub>1</sub> − 2.4m</span></td><td>高 1m，挖 1.2m</td></tr>
+    <tr><td>蜗轮分度圆</td><td><span class="f">d<sub>2</sub></span></td><td><span class="f">m z<sub>2</sub></span></td><td>和齿轮一样</td></tr>
+    <tr><td>蜗轮喉圆 / 齿根圆</td><td><span class="f">d<sub>a2</sub>, d<sub>f2</sub></span></td><td><span class="f">d<sub>2</sub> + 2m(1 + x<sub>2</sub>)</span>，<span class="f">d<sub>2</sub> − 2m(1.2 − x<sub>2</sub>)</span></td><td>变位只改蜗轮</td></tr>
+    <tr><td>中心距</td><td><span class="f">a</span></td><td><span class="f">(d<sub>1</sub> + d<sub>2</sub> + 2x<sub>2</sub>m)/2</span></td><td>变位一次推开 x₂m</td></tr>
+    <tr><td>喉母圆半径</td><td><span class="f">r<sub>g2</sub></span></td><td><span class="f">a − d<sub>a2</sub>/2</span></td><td>蜗轮抱住蜗杆的弧</td></tr>
+    <tr><td>滑动速度</td><td><span class="f">v<sub>s</sub></span></td><td><span class="f">v<sub>1</sub> / cos γ</span></td><td>比蜗杆线速度还快</td></tr>
+    <tr><td>啮合效率</td><td><span class="f">η<sub>1</sub></span></td><td><span class="f">tan γ / tan(γ + ρ<sub>v</sub>)</span></td><td>斜面效率</td></tr>
+    <tr><td>自锁条件</td><td>—</td><td><span class="f">γ ≤ ρ<sub>v</sub> = arctan f′</span></td><td>坡度小于摩擦角</td></tr>
+    <tr><td>量棒测量（ZA）</td><td><span class="f">M</span></td><td><span class="f">d<sub>1</sub> + d<sub>p</sub>(1 + 1/sin α) − (p<sub>x</sub>/2) cot α</span></td><td>和螺纹三针法一样</td></tr>
+  </table></div>
+</section>
+
+<section class="card" id="rev">
+  <h2>版本记录</h2>
+  <div class="meta">本页依据 GB/T 10085、GB/T 10087、GB/T 10088、GB/T 10089、DIN 3975 及《机械设计》教材整理，标准原文不一致时以标准为准。</div>
+  <ul>
+    <li><b>2026-11-08 首版</b>：14 节内容：蜗杆传动原理、头数与传动比、轴向模数、导程角（可调展开图）、直径系数、五种齿形（侧视和端面齿形按公式实时计算）、基本齿廓、蜗轮变位与中心距（可调）、效率与自锁曲线、滑动速度、加工、量棒测量、计算器和公式速查。</li>
+    <li>基本齿廓数值按 GB/T 10087-2018：<span class="f">h<sub>a</sub> = 1m</span>（短齿 0.8m）、<span class="f">c = 0.2m</span>（0.15～0.35m）、<span class="f">ρ<sub>f</sub> = 0.3m</span>（0.2～0.4m）；同时把指型铣刀计算器里蜗杆齿根圆角系数的默认值由 0.2 改为 0.3。</li>
+  </ul>
+</section>
+<footer>图中蜗杆、蜗轮的齿形均按公式实时计算绘制；为看清结构，部分图的比例有放大。</footer>
+
+</div>
+
+<script>
+(() => {
+const PI = Math.PI, D2R = PI / 180, inv = a => Math.tan(a) - a;
+const NS = 'http://www.w3.org/2000/svg';
+const el = (tag, attrs = {}, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; };
+const txt = (parent, x, y, s, o = {}) => { const t = el('text', Object.assign({ x, y, 'font-size': o.fs || 3, fill: o.fill || 'var(--ink)', 'text-anchor': o.anchor || 'middle', 'dominant-baseline': 'middle', stroke: 'var(--card)', 'stroke-width': (o.fs || 3) * 0.2, 'stroke-linejoin': 'round', 'paint-order': 'stroke' }, o.attr || {}), parent); if (o.math) t.setAttribute('class', 'math'); setT(t, s); return t; };
+const f = v => v.toFixed(2);
+
+// ---------- 渐开线外齿轮轮廓（屏幕坐标，y 向下；齿 0 的中心在 +x 方向） ----------
+function gearPts(m, z, alDeg, x = 0, o = {}) {
+  const al = alDeg * D2R, r = m * z / 2, rb = r * Math.cos(al), ha = o.ha ?? 1, c = o.c ?? 0.25, ds = o.ds || 0;
+  const ra = r + (ha + x) * m, rf = r - (ha + c - x) * m;
+  const s = m * (PI / 2 + 2 * x * Math.tan(al)) - ds, psiP = s / (2 * r);
+  const half = R => psiP + inv(al) - inv(Math.acos(Math.min(1, rb / R)));
+  const r0 = Math.max(rb, rf), N = o.n || 14, pts = [];
+  let raE = ra; if (half(ra) < 0) { let lo = r0, hi = ra; for (let i = 0; i < 40; i++) { const mm = (lo + hi) / 2; if (half(mm) > 0) lo = mm; else hi = mm; } raE = lo; }
+  const P = (R, t) => [R * Math.cos(t), -R * Math.sin(t)];
+  // 基圆以内用一段圆滑的过渡曲线接到齿根圆（示意的齿根圆角，牙根比基圆处更宽）
+  const gam = rf < rb ? Math.max(0, 0.45 * (PI / z - half(rb))) : 0, NF = 6;
+  for (let k = 0; k < z; k++) {
+    const tc = 2 * PI * k / z;
+    if (rf < rb) for (let i = 0; i < NF; i++) { const u = i / NF; pts.push(P(rf + (rb - rf) * (1 - (1 - u) * (1 - u)), tc - half(rb) - gam * (1 - u) * (1 - u) * (1 - u))); }
+    for (let i = 0; i <= N; i++) { const R = r0 + (raE - r0) * i / N; pts.push(P(R, tc - half(R))); }
+    for (let i = N; i >= 0; i--) { const R = r0 + (raE - r0) * i / N; pts.push(P(R, tc + half(R))); }
+    if (rf < rb) for (let i = NF - 1; i >= 0; i--) { const u = i / NF; pts.push(P(rf + (rb - rf) * (1 - (1 - u) * (1 - u)), tc + half(rb) + gam * (1 - u) * (1 - u) * (1 - u))); }
+    const a1 = tc + half(r0) + gam, a2 = tc + 2 * PI / z - half(r0) - gam;
+    for (let i = 1; i < 6; i++) pts.push(P(rf, a1 + (a2 - a1) * i / 6));
+  }
+  return { pts, r, rb, ra, rf, s, half, raE };
+}
+const pathOf = pts => 'M' + pts.map(p => p[0].toFixed(3) + ' ' + p[1].toFixed(3)).join('L') + 'Z';
+const circle = (g, cx, cy, r, o = {}) => el('circle', Object.assign({ cx, cy, r, fill: 'none', stroke: o.stroke || 'var(--muted)', 'stroke-width': o.w || 0.3, 'stroke-dasharray': o.dash || '' }, o.attr || {}), g);
+const line = (g, x1, y1, x2, y2, o = {}) => el('line', Object.assign({ x1, y1, x2, y2, stroke: o.stroke || 'var(--ink)', 'stroke-width': o.w || 0.3, 'stroke-dasharray': o.dash || '' }, o.attr || {}), g);
+function defsArrow(svg, id, color) {
+  const d = svg.querySelector('defs') || el('defs', {}, svg);
+  const mk = el('marker', { id, viewBox: '0 0 10 10', refX: 9, refY: 5, markerWidth: 5, markerHeight: 5, orient: 'auto-start-reverse' }, d);
+  el('path', { d: 'M0 1 L10 5 L0 9 Z', fill: color }, mk);
+}
+const arrow = (g, x1, y1, x2, y2, id, o = {}) => el('line', { x1, y1, x2, y2, stroke: o.stroke || 'var(--accent)', 'stroke-width': o.w || 0.35, 'marker-end': `url(#${id})`, 'marker-start': o.both ? `url(#${id})` : '' }, g);
+const rot = (e, deg, cx = 0, cy = 0) => e.setAttribute('transform', `rotate(${deg} ${cx} ${cy})`);   // 屏幕坐标里正角度为顺时针
+
+
+function setT(t, s) {   // 文字里的 _xx 显示为下标
+  s = String(s);
+  if (s.indexOf('_') < 0) { t.textContent = s; return; }
+  t.textContent = '';
+  const re = /_([A-Za-z0-9′]+)/g; let i = 0, mm;
+  while ((mm = re.exec(s))) {
+    if (mm.index > i) t.appendChild(document.createTextNode(s.slice(i, mm.index)));
+    const ts = document.createElementNS('http://www.w3.org/2000/svg', 'tspan'); ts.setAttribute('baseline-shift', 'sub'); ts.setAttribute('font-size', '72%'); ts.textContent = mm[1]; t.appendChild(ts);
+    i = mm.index + mm[0].length;
+  }
+  if (i < s.length) { const ts = document.createElementNS('http://www.w3.org/2000/svg', 'tspan'); ts.setAttribute('baseline-shift', '0'); ts.textContent = s.slice(i); t.appendChild(ts); }
+}
+const hs = s => String(s).replace(/_([A-Za-z0-9′]+)/g, '<sub>$1</sub>');
+const $ = id => document.getElementById(id);
+const f3 = v => (+v).toFixed(3);
+// ---------- 牙型（轴向截面）：一个螺距内的点 [u, r]，u 单调递增；牙顶中心在 u = P/2 ----------
+// sp: {P, ra, rf, wc 牙顶宽, b1 牙左侧面角, b2 牙右侧面角（都从垂直于轴线的径向线量起）, rA 左侧面牙底圆角, rB 右侧面牙底圆角, rc 牙顶圆角}
+function buildProf(sp) {
+  const { P, ra, rf } = sp, h = ra - rf, t1 = Math.tan(sp.b1 * D2R), t2 = Math.tan(sp.b2 * D2R), wc = sp.wc || 0;
+  let V = [];
+  for (let k = -1; k <= 2; k++) {
+    const c = k * P + P / 2;
+    V.push({ p: [c - wc / 2 - h * t1, rf], R: sp.rA || 0 }, { p: [c - wc / 2, ra], R: sp.rc || 0 }, { p: [c + wc / 2, ra], R: sp.rc || 0 }, { p: [c + wc / 2 + h * t2, rf], R: sp.rB || 0 });
+  }
+  const W = [];   // 合并重合的顶点（尖牙顶、尖牙底）
+  for (const v of V) { const L = W[W.length - 1]; if (L && Math.hypot(L.p[0] - v.p[0], L.p[1] - v.p[1]) < 1e-9 * P) L.R = Math.max(L.R, v.R); else W.push({ p: v.p.slice(), R: v.R }); }
+  const n = W.length, tl = new Array(n).fill(0), th = new Array(n).fill(0);
+  for (let i = 1; i < n - 1; i++) {
+    if (!(W[i].R > 0)) continue;
+    const V0 = W[i].p, A = W[i - 1].p, B = W[i + 1].p;
+    const d1 = [A[0] - V0[0], A[1] - V0[1]], d2 = [B[0] - V0[0], B[1] - V0[1]], l1 = Math.hypot(...d1), l2 = Math.hypot(...d2);
+    const c = (d1[0] * d2[0] + d1[1] * d2[1]) / l1 / l2; th[i] = Math.acos(Math.max(-1, Math.min(1, c)));
+    tl[i] = W[i].R / Math.tan(th[i] / 2);
+  }
+  for (let i = 0; i < n - 1; i++) {   // 相邻圆角放不下时按比例缩小
+    const L = Math.hypot(W[i + 1].p[0] - W[i].p[0], W[i + 1].p[1] - W[i].p[1]), s = tl[i] + tl[i + 1];
+    if (s > L * (1 + 1e-9)) { const k = L / s; tl[i] *= k; tl[i + 1] *= k; }
+  }
+  const pts = [W[0].p];
+  for (let i = 1; i < n - 1; i++) {
+    const V0 = W[i].p;
+    if (!(tl[i] > 0)) { pts.push(V0); continue; }
+    const A = W[i - 1].p, B = W[i + 1].p, l1 = Math.hypot(A[0] - V0[0], A[1] - V0[1]), l2 = Math.hypot(B[0] - V0[0], B[1] - V0[1]);
+    const u1 = [(A[0] - V0[0]) / l1, (A[1] - V0[1]) / l1], u2 = [(B[0] - V0[0]) / l2, (B[1] - V0[1]) / l2];
+    const R = tl[i] * Math.tan(th[i] / 2), bs = [u1[0] + u2[0], u1[1] + u2[1]], bl = Math.hypot(...bs), dc = R / Math.sin(th[i] / 2);
+    const C = [V0[0] + bs[0] / bl * dc, V0[1] + bs[1] / bl * dc];
+    const T1 = [V0[0] + u1[0] * tl[i], V0[1] + u1[1] * tl[i]], T2 = [V0[0] + u2[0] * tl[i], V0[1] + u2[1] * tl[i]];
+    const a1 = Math.atan2(T1[1] - C[1], T1[0] - C[0]); let da = Math.atan2(T2[1] - C[1], T2[0] - C[0]) - a1;
+    while (da > PI) da -= 2 * PI; while (da < -PI) da += 2 * PI;
+    for (let j = 0; j <= 10; j++) { const a = a1 + da * j / 10; pts.push([C[0] + R * Math.cos(a), C[1] + R * Math.sin(a)]); }
+  }
+  pts.push(W[n - 1].p);
+  const Rf = u => { let lo = 0, hi = pts.length - 1; if (u <= pts[0][0]) return pts[0][1]; if (u >= pts[hi][0]) return pts[hi][1];
+    while (hi - lo > 1) { const md = (lo + hi) >> 1; if (pts[md][0] <= u) lo = md; else hi = md; }
+    const a = pts[lo], b = pts[hi], t = b[0] > a[0] ? (u - a[0]) / (b[0] - a[0]) : 0; return a[1] + (b[1] - a[1]) * t; };
+  const one = [[0, Rf(0)]]; for (const p of pts) if (p[0] > 0 && p[0] < P) one.push(p); one.push([P, Rf(P)]);
+  const R = u => Rf(((u % P) + P) % P);
+  return { pts: one, R, P, ra: Math.max(...one.map(p => p[1])), rf: Math.min(...one.map(p => p[1])), uc: P / 2, ur: ((h * (t2 - t1) / 2) % P + P) % P, h, sp };
+}
+// 轴线水平的侧视轮廓（上沿），s 为轴向相位
+function sil(pr, s, x0, x1, tap = 0, xt = 0) {
+  const P = pr.P, out = [[x0, pr.R(x0 - s)]];
+  const k0 = Math.floor((x0 - s) / P) - 1, k1 = Math.ceil((x1 - s) / P) + 1;
+  for (let k = k0; k <= k1; k++) for (const [u, r] of pr.pts) { const X = s + k * P + u; if (X > x0 && X < x1) out.push([X, r]); }
+  out.push([x1, pr.R(x1 - s)]);
+  if (tap) out.forEach(p => p[1] += (p[0] - xt) * tap);
+  return out;
+}
+let UID = 0;
+function steelGrad(svg) {
+  const d = svg.querySelector('defs') || el('defs', {}, svg), id = 'sg_' + svg.id;
+  if (!svg.querySelector('#' + id)) { const g = el('linearGradient', { id, x1: 0, y1: 0, x2: 0, y2: 1 }, d); [[0, 'var(--steel2)'], [0.28, 'var(--hi)'], [0.6, 'var(--steel)'], [1, 'var(--steel2)']].forEach(([o, c]) => el('stop', { offset: o, 'stop-color': c }, g)); }
+  return `url(#${id})`;
+}
+// 螺纹 / 蜗杆侧视图（右旋时，看得见的牙顶线从左上斜向右下，竖起来看则向右上升）
+// o: {pr, x0, x1, cy, n 线数, hand 1 右旋 / -1 左旋, colors 各线颜色, cw 牙顶线宽, fill, taper 半径锥度, xt}
+function makeScrew(svg, parent, o) {
+  const d = svg.querySelector('defs') || el('defs', {}, svg), id = 'scl' + (++UID), fill = o.fill || steelGrad(svg);
+  const g = el('g', {}, parent);
+  const body = el('path', { fill, stroke: 'var(--ink)', 'stroke-width': o.w || 0.3, 'stroke-linejoin': 'round' }, g);
+  const cpp = el('path', {}, el('clipPath', { id }, d));
+  const ln = el('g', { 'clip-path': `url(#${id})`, fill: 'none', 'stroke-linecap': 'round' }, g);
+  const n = o.n || 1, cols = o.colors || ['var(--ink)'];
+  const rootP = el('path', { stroke: 'var(--muted)', 'stroke-width': (o.cw || 0.3) * 0.6, opacity: 0.8 }, ln);
+  const crestP = []; for (let j = 0; j < n; j++) crestP.push(el('path', { stroke: cols[j % cols.length], 'stroke-width': o.cw || 0.3 }, ln));
+  const S = { g, body, o };
+  S.update = s => {
+    const { pr, x0, x1, cy } = o, P = pr.P, Ph = P * n, hd = o.hand || 1, tap = o.taper || 0, xt = o.xt || 0;
+    const top = sil(pr, s, x0, x1, tap, xt), bot = sil(pr, s + hd * Ph / 2, x0, x1, tap, xt);
+    const dd = 'M' + top.map(p => f3(p[0]) + ' ' + f3(cy - p[1])).join('L') + 'L' + bot.reverse().map(p => f3(p[0]) + ' ' + f3(cy + p[1])).join('L') + 'Z';
+    body.setAttribute('d', dd); cpp.setAttribute('d', dd);
+    const hel = (Xc, r) => { let q = ''; for (let i = 0; i <= 16; i++) { const th = PI * i / 16, X = Xc + hd * Ph * th / (2 * PI), rr = r + (X - xt) * tap; q += (i ? 'L' : 'M') + f3(X) + ' ' + f3(cy - rr * Math.cos(th)); } return q; };
+    const k0 = Math.floor((x0 - Ph - s) / P) - 1, k1 = Math.ceil((x1 + Ph - s) / P) + 1, cs = new Array(n).fill('');
+    let rs = '';
+    for (let k = k0; k <= k1; k++) { cs[((k % n) + n) % n] += hel(s + pr.uc + k * P, pr.ra); if (o.roots !== false) rs += hel(s + pr.ur + k * P, pr.rf); }
+    crestP.forEach((p, j) => p.setAttribute('d', cs[j])); rootP.setAttribute('d', rs);
+  };
+  return S;
+}
+// 轴向截面牙型（牙朝上），返回闭合路径：base 为截面下沿的 y，r0 为 y = y0 处对应的半径，sc 为缩放
+function profPath(pr, s, x0, x1, y0, r0, sc, yb) {
+  const top = sil(pr, s, x0, x1);
+  return 'M' + top.map(p => f3(p[0]) + ' ' + f3(y0 - (p[1] - r0) * sc)).join('L') + `L${f3(x1)} ${f3(yb)}L${f3(x0)} ${f3(yb)}Z`;
+}
+function hatch(svg, id, col = 'var(--muted)', gap = 1.2, w = 0.15) {
+  const d = svg.querySelector('defs') || el('defs', {}, svg);
+  const p = el('pattern', { id, width: gap, height: gap, patternUnits: 'userSpaceOnUse', patternTransform: 'rotate(45)' }, d);
+  el('line', { x1: 0, y1: 0, x2: 0, y2: gap, stroke: col, 'stroke-width': w }, p);
+  return `url(#${id})`;
+}
+const cline = (g, x1, y1, x2, y2) => line(g, x1, y1, x2, y2, { stroke: 'var(--muted)', w: 0.2, dash: '3 0.8 0.6 0.8' });
+function dimV(g, x, y1, y2, id, label, o = {}) {   // 竖向尺寸线
+  arrow(g, x, y1, x, y2, id, { both: true, w: o.w || 0.22, stroke: o.stroke || 'var(--accent)' });
+  if (label) txt(g, x + (o.dx ?? 1.2), (y1 + y2) / 2, label, { fs: o.fs || 2, fill: o.stroke || 'var(--accent)', anchor: o.anchor || 'start', math: o.math });
+}
+function dimH(g, x1, x2, y, id, label, o = {}) {
+  arrow(g, x1, y, x2, y, id, { both: true, w: o.w || 0.22, stroke: o.stroke || 'var(--accent)' });
+  if (label) txt(g, (x1 + x2) / 2, y + (o.dy ?? -1.4), label, { fs: o.fs || 2, fill: o.stroke || 'var(--accent)', math: o.math });
+}
+function arcMark(g, cx, cy, r, a1, a2, o = {}) {   // 屏幕角度（度，0 向右，顺时针为正）
+  const p = a => [cx + r * Math.cos(a * D2R), cy + r * Math.sin(a * D2R)], A = p(a1), B = p(a2);
+  return el('path', { d: `M${f3(A[0])} ${f3(A[1])}A${r} ${r} 0 ${Math.abs(a2 - a1) > 180 ? 1 : 0} ${a2 > a1 ? 1 : 0} ${f3(B[0])} ${f3(B[1])}`, fill: 'none', stroke: o.stroke || 'var(--accent)', 'stroke-width': o.w || 0.25 }, g);
+}
+// 多线螺纹演示：几根螺杆一起转，指针随某一线前进一个导程
+function startsFig(svg, list, o) {
+  defsArrow(svg, 'ast' + svg.id, 'var(--accent)');
+  const cols = ['var(--accent)', 'var(--blue)', 'var(--green)', 'var(--violet)', 'var(--red)', 'var(--ink)'];
+  const items = list.map(it => {
+    const S = makeScrew(svg, svg, { pr: it.pr, x0: o.x0, x1: o.x1, cy: it.cy, n: it.n, hand: 1, colors: cols, cw: 0.6 });
+    cline(svg, o.x0 - 3, it.cy, o.x1 + 3, it.cy);
+    const P = it.pr.P, Ph = P * it.n, yT = it.cy - it.pr.ra;
+    for (let k = 0; k <= 4 * it.n && o.xs + k * P <= o.x1; k++) line(svg, o.xs + k * P, yT - 1.6, o.xs + k * P, yT - (k % it.n ? 0.9 : 2.4), { stroke: 'var(--muted)', w: 0.2 });
+    const ghost = el('path', { d: `M${o.xs} ${yT - 0.3}l-0.9 -1.6h1.8z`, fill: 'var(--muted)', opacity: 0.6 }, svg);
+    const ptr = el('path', { d: `M0 ${yT - 0.3}l-0.9 -1.6h1.8z`, fill: 'var(--accent)' }, svg);
+    const dl = arrow(svg, o.xs, yT - 3.6, o.xs, yT - 3.6, 'ast' + svg.id, { w: 0.25 });
+    const dt = txt(svg, o.xs, yT - 5.4, o.lab(it), { fs: 2, fill: 'var(--accent)', anchor: 'start' });
+    txt(svg, o.x1 + 5, it.cy - 1.6, it.label, { fs: 2.6, anchor: 'start', attr: { 'font-weight': 700 } });
+    txt(svg, o.x1 + 5, it.cy + 1.8, it.sub, { fs: 2.1, anchor: 'start', fill: 'var(--muted)' });
+    return { S, P, Ph, it, ptr, dl, dt };
+  });
+  const T = o.T || 3;
+  scenes.push(t => {
+    const fr = (t % T) / T;
+    for (const I of items) {
+      I.S.update(o.xs - I.it.pr.uc + I.Ph * (t / T));
+      const X = o.xs + I.Ph * fr;
+      I.ptr.setAttribute('transform', `translate(${f3(X)} 0)`);
+      I.dl.setAttribute('x2', f3(Math.max(o.xs + 0.01, X))); I.dt.setAttribute('x', f3(Math.max(o.xs, X - 6)));
+    }
+  });
+}
+
+const scenes = [];
+// ---------- 蜗杆轴向齿形（ZA，GB/T 10087：ha = 1m，c = 0.2m，ρf = 0.3m，αx = 20°） ----------
+const wormProf = (m, r1, o = {}) => { const al = o.al ?? 20, ha = o.ha ?? 1, c = o.c ?? 0.2, px = PI * m;
+  return buildProf({ P: px, ra: r1 + ha * m, rf: r1 - (ha + c) * m, wc: px / 2 - 2 * ha * m * Math.tan(al * D2R), b1: al, b2: al, rA: (o.rho ?? 0.3) * m, rB: (o.rho ?? 0.3) * m }); };
+const shaft = (g, x0, x1, cy, r) => el('rect', { x: Math.min(x0, x1), y: cy - r, width: Math.abs(x1 - x0), height: 2 * r, fill: 'var(--steel)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g);
+// 蜗杆 + 蜗轮的中间平面啮合（蜗轮轴线垂直纸面）。返回 set(s)：s 为蜗杆轴向相位
+function wormPair(svg, o) {
+  const { m, z2, r1, cyW } = o, x2 = o.x2 || 0, r2 = m * z2 / 2, a = r1 + r2 + x2 * m, cy2 = cyW + a, z1 = o.z1 || 1;
+  const G = gearPts(m, z2, 20, x2, { c: 0.2 });
+  const gW = el('g', {}, svg);
+  const wheel = el('path', { d: pathOf(G.pts), fill: o.wfill || 'var(--gear2)', stroke: 'var(--ink)', 'stroke-width': 0.35 }, gW);
+  const pr = wormProf(m, r1), Ph = pr.P * z1;
+  const S = makeScrew(svg, svg, { pr, x0: o.x0, x1: o.x1, cy: cyW, n: z1, hand: 1, colors: o.colors, cw: o.cw || 0.3 });
+  const s0 = o.cx2 - pr.ur - Ph / 2;   // 蜗轮齿 0 朝上时正对蜗杆底部的齿槽
+  return { pr, a, cy2, r2, G, wheel, S, s0, set: s => { S.update(s); wheel.setAttribute('transform', `translate(${o.cx2} ${cy2}) rotate(${-90 + ((s - s0) / r2) / D2R})`); } };
+}
+// ================= 00 蜗杆传动 =================
+{
+  const svg = $('f0'); defsArrow(svg, 'a0', 'var(--accent)');
+  const m = 2.2, z2 = 36, r1 = 11, cyW = -22;
+  shaft(svg, -70, -58, cyW, 5.5); shaft(svg, 58, 70, cyW, 5.5);
+  const W = wormPair(svg, { m, z2, r1, cyW, cx2: 0, x0: -58, x1: 58 });
+  const hub = el('g', {}, svg);
+  circle(hub, 0, W.cy2, 10, { stroke: 'var(--ink)', w: 0.35, attr: { fill: 'var(--card)' } });
+  circle(hub, 0, W.cy2, 1.6, { stroke: 'var(--ink)', w: 0.35 }); el('circle', { cx: 0, cy: W.cy2, r: 0.5, fill: 'var(--ink)' }, hub);
+  svg.insertBefore(hub, W.S.g);
+  circle(svg, 0, W.cy2, W.r2, { dash: '1.5 1', stroke: 'var(--accent)', w: 0.3 });
+  cline(svg, -73, cyW, 73, cyW); cline(svg, -14, W.cy2, 14, W.cy2); cline(svg, 0, W.cy2 - 14, 0, W.cy2 + 14);
+  line(svg, -58, cyW + r1, 58, cyW + r1, { stroke: 'var(--accent)', w: 0.3, dash: '1.5 1' });
+  txt(svg, -40, cyW - 16, '蜗杆（主动）', { fs: 3.4, attr: { 'font-weight': 700 } });
+  txt(svg, 38, cyW - 16, '蜗杆轴线', { fs: 2.6, fill: 'var(--muted)' });
+  txt(svg, -58, W.cy2 - 22, '蜗轮（从动）', { fs: 3.4, attr: { 'font-weight': 700 } });
+  txt(svg, 0, W.cy2 + 14.5, '蜗轮轴线（垂直纸面）', { fs: 2.4, fill: 'var(--muted)' });
+  txt(svg, 46, cyW + r1 + 3.2, '虚线：蜗杆分度线 / 蜗轮分度圆', { fs: 2.3, fill: 'var(--accent)' });
+  // 转向示意：右旋蜗杆的螺纹向右移动时，前面的表面向上转
+  el('path', { d: `M-63 ${cyW + 6.5}q3 -6.5 0 -13`, fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.5, 'marker-end': 'url(#a0)' }, svg);
+  const cnt = txt(svg, 0, 75, '', { fs: 2.8, fill: 'var(--muted)' });
+  const V = 6;
+  scenes.push(t => { const s = W.s0 + V * t; W.set(s); const rev = V * t / W.pr.P; cnt.textContent = `蜗杆转了 ${Math.floor(rev)} 圈 → 蜗轮转过 ${Math.floor(rev)} 个齿（共 ${z2} 齿，i = ${z2}）`; });
+}
+// ================= 01 头数 =================
+{
+  const svg = $('f1'), m = 1.8, r1 = 9, pr = wormProf(m, r1);
+  startsFig(svg, [
+    { pr, n: 1, cy: 10, label: 'z₁ = 1 单头', sub: 'pz = px，i = z₂' },
+    { pr, n: 2, cy: 39, label: 'z₁ = 2 双头', sub: 'pz = 2px，i = z₂/2' },
+    { pr, n: 4, cy: 68, label: 'z₁ = 4 四头', sub: 'pz = 4px，i = z₂/4' },
+  ], { x0: -56, x1: 24, xs: -44, T: 4, lab: it => '导程 pz' });
+}
+// ================= 02 中间平面：齿条与齿轮 =================
+{
+  const svg = $('f2'); defsArrow(svg, 'a2', 'var(--accent)'); defsArrow(svg, 'a2b', 'var(--blue)');
+  const m = 4, z2 = 60, r1 = 20, cyW = -20;
+  const W = wormPair(svg, { m, z2, r1, cyW, cx2: 0, x0: -40, x1: 40 });
+  const hl = el('path', { fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.45 }, svg);
+  line(svg, -24, 0, 24, 0, { stroke: 'var(--accent)', w: 0.18, dash: '1 0.6' });
+  circle(svg, 0, W.cy2, W.r2, { stroke: 'var(--blue)', w: 0.18, dash: '1 0.6' });
+  txt(svg, -23.5, -1.2, '蜗杆分度线（d₁）', { fs: 1.5, fill: 'var(--accent)', anchor: 'start' });
+  txt(svg, 23.5, 15, '蜗轮分度圆（d₂）', { fs: 1.5, fill: 'var(--blue)', anchor: 'end' });
+  txt(svg, -23.5, -10.4, '蜗杆（中间平面里是一根齿条）', { fs: 1.6, anchor: 'start', attr: { 'font-weight': 700 } });
+  txt(svg, -23.5, 14.6, '蜗轮（端面里是一个齿轮）', { fs: 1.6, anchor: 'start', attr: { 'font-weight': 700 } });
+  const pxL = el('g', {}, svg), px = PI * m;
+  const pl = arrow(pxL, 0, 0, 0, 0, 'a2', { both: true, w: 0.22 }), pt = txt(pxL, 0, 0, 'pₓ = πm', { fs: 1.8, fill: 'var(--accent)', math: true });
+  const e1 = line(pxL, 0, -7.2, 0, cyW + 20 + 4, { stroke: 'var(--accent)', w: 0.12, dash: '0.5 0.4' }), e2 = line(pxL, 0, -7.2, 0, cyW + 20 + 4, { stroke: 'var(--accent)', w: 0.12, dash: '0.5 0.4' });
+  const alA = el('path', { fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.2 }, svg), alT = txt(svg, 0, 0, 'αₓ', { fs: 1.6, fill: 'var(--accent)', math: true });
+  const alL = line(svg, 0, 0, 0, 0, { stroke: 'var(--accent)', w: 0.15, dash: '0.6 0.4' });
+  // 蜗轮分度圆上的齿距（弧长 πm）
+  const ap = el('path', { fill: 'none', stroke: 'var(--blue)', 'stroke-width': 0.22, 'marker-start': 'url(#a2b)', 'marker-end': 'url(#a2b)' }, svg);
+  const apT = txt(svg, 0, 0, 'p = πm', { fs: 1.6, fill: 'var(--blue)', math: true });
+  scenes.push(t => {
+    const s = W.s0 + 1.2 * t; W.set(s);
+    // 底部轮廓（中间平面齿条）高亮
+    const bot = sil(W.pr, s + W.pr.P / 2, -24, 24);
+    hl.setAttribute('d', 'M' + bot.map(p => f3(p[0]) + ' ' + f3(cyW + p[1])).join('L'));
+    // 轴向齿距：取 x∈[-20,-4] 内一个牙顶中心
+    const ub = s + W.pr.P / 2 + W.pr.uc; let xc = ub - Math.floor((ub + 21) / px) * px;
+    const yA = -7.2;
+    pl.setAttribute('x1', xc); pl.setAttribute('x2', xc + px); pl.setAttribute('y1', yA); pl.setAttribute('y2', yA);
+    pt.setAttribute('x', xc + px / 2); pt.setAttribute('y', yA - 1.5);
+    e1.setAttribute('x1', xc); e1.setAttribute('x2', xc); e2.setAttribute('x1', xc + px); e2.setAttribute('x2', xc + px);
+    // 齿形角：右侧一个牙的右侧面
+    const xr = xc + 2 * px, tt = Math.tan(20 * D2R), xf = xr + W.pr.sp.wc / 2 + m * tt;   // 分度线上的点
+    alL.setAttribute('x1', xf); alL.setAttribute('x2', xf); alL.setAttribute('y1', -5.5); alL.setAttribute('y2', 4.5);
+    alA.setAttribute('d', `M${f3(xf)} ${-3.6}A3.6 3.6 0 0 1 ${f3(xf + 3.6 * Math.sin(20 * D2R))} ${f3(-3.6 * Math.cos(20 * D2R))}`);
+    alT.setAttribute('x', xf + 0.9); alT.setAttribute('y', -4.9);
+    // 蜗轮分度圆上的齿距（弧长 πm）：取右上方两个相邻齿心
+    const psi = -90 + ((s - W.s0) / W.r2) / D2R, dA = 360 / z2, ta = psi + dA * Math.ceil((-92 - psi) / dA), tb = ta + dA, R = W.r2;
+    const A = a => [R * Math.cos(a * D2R), W.cy2 + R * Math.sin(a * D2R)], Q1 = A(ta), Q2 = A(tb), Qm = [(R - 3.4) * Math.cos((ta + tb) / 2 * D2R), W.cy2 + (R - 3.4) * Math.sin((ta + tb) / 2 * D2R)];
+    ap.setAttribute('d', `M${f3(Q1[0])} ${f3(Q1[1])}A${R} ${R} 0 0 1 ${f3(Q2[0])} ${f3(Q2[1])}`);
+    apT.setAttribute('x', f3(Qm[0])); apT.setAttribute('y', f3(Qm[1]));
+  });
+}
+// ================= 03 导程角展开 =================
+{
+  const svg = $('f3'); defsArrow(svg, 'a3', 'var(--accent)');
+  const W0 = 60, R = W0 / (2 * PI), cyc = 25;
+  const g = el('g', {}, svg);
+  let z1 = 1, D3;
+  const cols = ['var(--accent)', 'var(--blue)', 'var(--green)', 'var(--violet)'];
+  const draw = () => {
+    const q = +$('i3').value, pz = W0 * z1 / q, px = pz / z1, gam = Math.atan(z1 / q), N = Math.max(1, Math.min(5, Math.floor(30 / pz)));
+    $('v3').textContent = q.toFixed(2);
+    g.innerHTML = '';
+    const L = N * pz + 8, X0 = 2;
+    el('rect', { x: X0, y: cyc - R, width: L, height: 2 * R, fill: steelGrad(svg), stroke: 'var(--ink)', 'stroke-width': 0.3 }, g);
+    cline(g, X0 - 1.5, cyc, X0 + L + 1.5, cyc);
+    for (let j = 0; j < z1; j++) {
+      let fr = '', bk = '';
+      for (let i = 0; i <= 60 * N; i++) { const th = 2 * PI * i / 60, X = X0 + 4 + j * px + pz * th / (2 * PI), Y = cyc - R * Math.cos(th);
+        if (X > X0 + L - 0.5) break;
+        const k = i % 60, front = k <= 30;
+        if (k <= 30) fr += (k === 0 || !fr ? 'M' : 'L') + f3(X) + ' ' + f3(Y);
+        if (k >= 30) bk += (k === 30 || !bk ? 'M' : 'L') + f3(X) + ' ' + f3(Y);
+      }
+      el('path', { d: fr, fill: 'none', stroke: cols[j], 'stroke-width': 0.6 }, g);
+      el('path', { d: bk, fill: 'none', stroke: cols[j], 'stroke-width': 0.35, 'stroke-dasharray': '1 0.8', opacity: 0.7 }, g);
+    }
+    dimH(g, X0 + 4, X0 + 4 + pz, cyc + R + 2.4, 'a3', '导程 p_z', { dy: 2.4, fs: 2.2 });
+    txt(g, X0 + L / 2, cyc - R - 2.4, '蜗杆分度圆柱', { fs: 2.4 });
+    const xa = 52, yb = 44, xb = xa + W0, yt = yb - pz;
+    el('path', { d: `M${xa} ${yb}L${xb} ${yb}L${xb} ${f3(yt)}Z`, fill: 'var(--chip)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, g);
+    line(g, xa, yb, xb, yt, { stroke: 'var(--accent)', w: 0.7 });
+    for (let j = 1; j < z1; j++) line(g, xb - 1.2, yb - j * px, xb + 1.2, yb - j * px, { stroke: 'var(--ink)', w: 0.3 });
+    txt(g, (xa + xb) / 2, yb + 2.6, 'π d₁（分度圆周长）', { fs: 2.4 });
+    txt(g, xb + 1.6, (yb + yt) / 2, `p_z = ${z1}·pₓ`, { fs: 2.4, anchor: 'start', math: true });
+    arcMark(g, xa, yb, 12, -gam / D2R, 0); txt(g, xa + 13.5, yb - 1.8, 'γ', { fs: 2.8, fill: 'var(--accent)', math: true, anchor: 'start' });
+    txt(g, (xa + xb) / 2 - 2, (yb + yt) / 2 - 2.6, '螺旋线展开', { fs: 2.3, fill: 'var(--accent)', anchor: 'end' });
+    $('t3').innerHTML = [['导程 p_z = z₁·πm', (z1 * PI).toFixed(3) + ' m'], ['分度圆周长 π d₁ = π q m', (PI * q).toFixed(3) + ' m'], ['tan γ = z₁ / q', (z1 / q).toFixed(4)], ['导程角 γ', (gam / D2R).toFixed(3) + '°']].map(r => `<tr><td>${hs(r[0])}</td><td>${r[1]}</td></tr>`).join('');
+    D3 = { X0, pz, xa, yb, xb, yt, N };
+  };
+  const dot1 = el('circle', { r: 1, fill: 'var(--red)' }, svg), dot2 = el('circle', { r: 1, fill: 'var(--red)' }, svg);
+  $('b3').querySelectorAll('button').forEach(b => b.onclick = () => { z1 = +b.dataset.z; $('b3').querySelectorAll('button').forEach(c => c.classList.toggle('on', c === b)); draw(); });
+  $('i3').oninput = draw; draw();
+  scenes.push(t => { const fr = (t % (2.5 * D3.N)) / (2.5 * D3.N), u = fr * D3.N, th = 2 * PI * u, f1 = u % 1;
+    dot1.setAttribute('cx', D3.X0 + 4 + D3.pz * u); dot1.setAttribute('cy', cyc - R * Math.cos(th)); dot1.setAttribute('opacity', (th % (2 * PI)) <= PI ? 1 : 0.35);
+    dot2.setAttribute('cx', D3.xa + (D3.xb - D3.xa) * f1); dot2.setAttribute('cy', D3.yb + (D3.yt - D3.yb) * f1); });
+}
+// ================= 04 直径系数 =================
+{
+  const svg = $('f4'), sc = 0.4, m = 4 * sc, z1 = 2;
+  const cols = ['var(--accent)', 'var(--blue)'];
+  const A = [{ d1: 40, cy: 12 }, { d1: 71, cy: 47 }].map(o => {
+    const r1 = o.d1 * sc / 2, pr = wormProf(m, r1);
+    const S = makeScrew(svg, svg, { pr, x0: -56, x1: 26, cy: o.cy, n: z1, hand: 1, colors: cols, cw: 0.55 });
+    cline(svg, -59, o.cy, 29, o.cy);
+    const q = o.d1 / 4, g = Math.atan(z1 / q) / D2R;
+    txt(svg, 30, o.cy - 2, `d₁ = ${o.d1}，q = ${q}`, { fs: 2.8, anchor: 'start', attr: { 'font-weight': 700 } });
+    txt(svg, 30, o.cy + 2.2, `γ = ${g.toFixed(2)}°`, { fs: 2.8, anchor: 'start', fill: 'var(--accent)' });
+    // 分度圆柱上的螺旋线切线与竖直方向夹角 = γ（在轴线中点）
+    const Ph = pr.P * z1, xm = -16, gl = el('g', {}, svg);
+    const L = r1 + 4, dx = Math.tan(g * D2R) * L;
+    line(gl, xm, o.cy - L, xm, o.cy + L, { stroke: 'var(--ink)', w: 0.25, dash: '1 0.6' });
+    line(gl, xm - dx, o.cy - L, xm + dx, o.cy + L, { stroke: 'var(--red)', w: 0.45 });
+    arcMark(gl, xm, o.cy, L - 1, 90, 90 - g, { stroke: 'var(--red)' }).setAttribute('transform', `rotate(0)`);
+    txt(gl, xm + dx + 1.4, o.cy + L - 0.4, 'γ', { fs: 2.6, fill: 'var(--red)', math: true, anchor: 'start' });
+    return { S, pr, Ph, xm };
+  });
+  txt(svg, -15, 68, '两根都是 m = 4、z₁ = 2（红线：分度圆柱上螺旋线的方向）', { fs: 2.3, fill: 'var(--muted)' });
+  scenes.push(t => A.forEach(a => a.S.update(a.xm - a.pr.uc + a.Ph * t / 6)));
+}
+// ================= 05 五种齿形 =================
+{
+  const svg = $('f5'); defsArrow(svg, 'a5', 'var(--accent)');
+  const m = 2.4, q = 10, z1 = 2, r1 = q * m / 2, px = PI * m, pz = z1 * px, gam = Math.atan(z1 / q), al = 20 * D2R;
+  const ra = r1 + m, rf = r1 - 1.2 * m, cy = 0, xL0 = -54, xL1 = -2;
+  const pr = wormProf(m, r1);
+  const S = makeScrew(svg, svg, { pr, x0: xL0, x1: xL1, cy, n: z1, hand: 1, colors: ['var(--ink)'], cw: 0.3 });
+  cline(svg, xL0 - 2, cy, xL1 + 2, cy);
+  const sOff = -28 - pr.ur;   // 顶部齿槽中心在 x = -28
+  S.update(sOff);
+  const over = el('g', {}, svg), ex = 34, ey = 0;   // 端面视图中心
+  const endG = el('g', {}, svg);
+  // 端面齿形：给出齿厚半角 half(r)（弧度）
+  const halfFn = k => {
+    if (k === 'ZA') return r => 2 * PI * (px / 4 - (r - r1) * Math.tan(al)) / pz;
+    if (k === 'ZI') { const at = Math.atan(Math.tan(al) / Math.sin(gam)), rb = r1 * Math.cos(at), h0 = 2 * PI * (px / 4) / pz;
+      const res = r => h0 + inv(at) - inv(Math.acos(Math.min(1, rb / r))); res.rb = rb; return res; }
+    if (k === 'ZN') {   // 齿厚法向直廓：直线在齿厚中线螺旋线的法平面内
+      const tbl = [], w0 = (px / 4) * Math.cos(gam);
+      for (let i = -60; i <= 60; i++) { const t = i * 0.06 * m, w = w0 - t * Math.tan(al), x = r1 + t, y = -w * Math.sin(gam), z = w * Math.cos(gam);
+        tbl.push([Math.hypot(x, y), -(Math.atan2(y, x) - 2 * PI * z / pz)]); }
+      tbl.sort((a, b) => a[0] - b[0]);
+      return r => { let i = 1; while (i < tbl.length - 1 && tbl[i][0] < r) i++; const a = tbl[i - 1], b = tbl[i]; return a[1] + (b[1] - a[1]) * (r - a[0]) / (b[0] - a[0]); };
+    }
+    return null;
+  };
+  const endView = k => {
+    endG.innerHTML = '';
+    const hf = halfFn(k);
+    circle(endG, ex, ey, ra, { stroke: 'var(--muted)', w: 0.2, dash: hf ? '0.8 0.6' : '' });
+    circle(endG, ex, ey, r1, { stroke: 'var(--accent)', w: 0.2, dash: '1 0.6' });
+    circle(endG, ex, ey, rf, { stroke: 'var(--muted)', w: 0.2, dash: hf ? '0.8 0.6' : '' });
+    cline(endG, ex - ra - 3, ey, ex + ra + 3, ey); cline(endG, ex, ey - ra - 3, ex, ey + ra + 3);
+    if (hf) {
+      const pts = [], N = 24, P = (r, a) => [ex + r * Math.cos(a), ey - r * Math.sin(a)];
+      for (let j = 0; j < z1; j++) {
+        const c = PI / 2 - 2 * PI * j / z1;
+        for (let i = 0; i <= N; i++) { const r = rf + (ra - rf) * i / N; pts.push(P(r, c + hf(r))); }
+        const aL = c + hf(ra), aR = c - hf(ra);
+        for (let i = 1; i < 8; i++) pts.push(P(ra, aL + (aR - aL) * i / 8));
+        for (let i = N; i >= 0; i--) { const r = rf + (ra - rf) * i / N; pts.push(P(r, c - hf(r))); }
+        const b1 = c - hf(rf), b2 = c - 2 * PI / z1 + hf(rf);
+        for (let i = 1; i < 10; i++) pts.push(P(rf, b1 + (b2 - b1) * i / 10));
+      }
+      el('path', { d: pathOf(pts.map(p => [p[0], p[1]])), fill: 'var(--gear)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, endG);
+      // 一个齿面描粗
+      let d = ''; for (let i = 0; i <= N; i++) { const r = rf + (ra - rf) * i / N, a = PI / 2 - hf(r); d += (i ? 'L' : 'M') + f3(ex + r * Math.cos(a)) + ' ' + f3(ey - r * Math.sin(a)); }
+      el('path', { d, fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.6 }, endG);
+      if (k === 'ZI') { circle(endG, ex, ey, hf.rb, { stroke: 'var(--violet)', w: 0.3, dash: '1 0.6' });
+        line(endG, ex - 22, ey - hf.rb, ex + 22, ey - hf.rb, { stroke: 'var(--violet)', w: 0.3 });
+        txt(endG, ex - 22, ey - hf.rb - 1.4, '切于基圆的平面', { fs: 1.9, fill: 'var(--violet)', anchor: 'start' });
+        txt(endG, ex + hf.rb * 0.7 + 1, ey + hf.rb * 0.7 + 1.6, '基圆', { fs: 1.9, fill: 'var(--violet)', anchor: 'start' }); }
+      else { line(endG, ex, ey, ex + ra + 5, ey, { stroke: 'var(--violet)', w: 0.4 }); txt(endG, ex + ra + 1, ey - 1.6, '刀刃对中心', { fs: 1.9, fill: 'var(--violet)', anchor: 'start' }); }
+      txt(endG, ex, ey + ra + 5.2, { ZA: '端面：阿基米德螺线', ZN: '端面：延伸渐开线', ZI: '端面：渐开线' }[k], { fs: 2.4, fill: 'var(--accent)' });
+    } else {
+      txt(endG, ex, ey + ra + 5.2, '端面：砂轮包络出的曲线', { fs: 2.4, fill: 'var(--accent)' });
+      txt(endG, ex, ey, k === 'ZK' ? '任何截面都不是直线' : '轴向截面是凹圆弧', { fs: 2.2, fill: 'var(--muted)' });
+    }
+    txt(endG, ex, -ra - 4.6, '端面（齿形）', { fs: 2.5, attr: { 'font-weight': 700 } });
+  };
+  const tool = (g, x, y, w, h, ang, round) => {   // 刀具（刀尖朝下），宽 w 为刀尖宽，绕刀尖转 ang
+    const t = Math.tan(al), H = h + 6;
+    const d = round ? `M${x - w / 2 - H * t} ${y - H}L${x - w / 2 - 0.3} ${y - 1.6}Q${x} ${y + 1.2} ${x + w / 2 + 0.3} ${y - 1.6}L${x + w / 2 + H * t} ${y - H}Z`
+      : `M${x - w / 2 - H * t} ${y - H}L${x - w / 2} ${y}L${x + w / 2} ${y}L${x + w / 2 + H * t} ${y - H}Z`;
+    el('path', { d, fill: 'var(--violet)', 'fill-opacity': 0.25, stroke: 'var(--violet)', 'stroke-width': 0.4, transform: `rotate(${ang} ${x} ${y})` }, g);
+  };
+  const say = {
+    ZA: '<b>ZA 阿基米德蜗杆</b>：把直线刃车刀放在<b>过蜗杆轴线的水平面</b>里（刀尖对准中心高）车出来，所以在<b>轴向截面</b>里齿形是直线（αₓ = 20°），端面里是阿基米德螺线。最好车、最常见，但不便磨削，导程角大时一侧刀刃后角不够，多用于不磨削、精度要求不太高的场合。',
+    ZN: '<b>ZN 法向直廓蜗杆</b>：车刀刀刃<b>转过导程角 γ</b>，放进与螺纹垂直的<b>法向截面</b>里，所以法向截面里齿形是直线（αₙ = 20°），端面是延伸渐开线。两侧刀刃的切削条件一样好，适合导程角大的多头蜗杆；可以分为齿厚法向直廓（ZN1）和齿槽法向直廓（ZN2）。',
+    ZI: '<b>ZI 渐开线蜗杆</b>：相当于一个<b>齿数很少（= z₁）、螺旋角很大的渐开线斜齿轮</b>，端面齿形是渐开线；在<b>与基圆柱相切的平面</b>里齿形是直线，所以可以用两把刀刃对准基圆切线的车刀车出，也可以用<b>平面砂轮</b>精磨，精度高，GB/T 10085 推荐采用。',
+    ZK: '<b>ZK 锥面包络蜗杆</b>：用两侧为直线（锥面）的<b>盘形铣刀或砂轮</b>，轴线倾斜一个导程角铣削、磨削出来，齿面是刀具锥面包络出的曲面，<b>任何截面里都不是直线</b>。容易磨削、精度高，GB/T 10085 推荐采用。',
+    ZC: '<b>ZC 圆弧圆柱蜗杆</b>：用<b>凸圆弧</b>截面的砂轮磨出，蜗杆齿面是<b>凹圆弧</b>，和凸齿面的蜗轮形成凹凸啮合，接触线形状好、油膜容易形成，承载能力和效率都比普通圆柱蜗杆高。它的齿形和其他几种不同，GB/T 10085 表中的齿顶圆、齿根圆不适用，要另行计算。',
+  };
+  const show = k => {
+    over.innerHTML = ''; $('say5').innerHTML = say[k];
+    const top = sil(pr, sOff, xL0, xL1);   // 顶部轮廓（轴向截面）
+    const xg = -28, wTool = px / 2 - 2 * 1.2 * m * Math.tan(al) + 0.15;
+    if (k === 'ZA') {
+      el('path', { d: 'M' + top.map(p => f3(p[0]) + ' ' + f3(cy - p[1])).join('L'), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.6 }, over);
+      tool(over, xg, cy - rf, wTool, 2.2 * m, 0);
+      txt(over, -28, -ra - 7.6, '刀刃在过轴线的平面内（对中心）', { fs: 2.2, fill: 'var(--violet)' });
+      txt(over, -28, ra + 3.4, '橙色：轴向截面里的直线齿形', { fs: 2.2, fill: 'var(--accent)' });
+    } else if (k === 'ZN') {
+      const L = ra + 4, dx = L * Math.tan(gam);
+      el('path', { d: `M${xg - 1.2 - dx} ${cy - L}L${xg + 1.2 - dx} ${cy - L}L${xg + 1.2 + dx} ${cy + L}L${xg - 1.2 + dx} ${cy + L}Z`, fill: 'var(--accent)', 'fill-opacity': 0.25, stroke: 'var(--accent)', 'stroke-width': 0.3 }, over);
+      tool(over, xg, cy - rf, wTool * Math.cos(gam), 2.2 * m, gam / D2R);
+      txt(over, -28, -ra - 7.6, '刀刃转过导程角 γ，放在法向截面内', { fs: 2.2, fill: 'var(--violet)' });
+      txt(over, -28, ra + 6.8, '橙色带：法向截面（与螺纹垂直）', { fs: 2.2, fill: 'var(--accent)' });
+    } else if (k === 'ZI') {
+      const at = Math.atan(Math.tan(al) / Math.sin(gam)), rb = r1 * Math.cos(at);
+      [-1, 1].forEach(sg => line(over, xL0, cy + sg * rb, xL1, cy + sg * rb, { stroke: 'var(--accent)', w: 0.5 }));
+      txt(over, -28, ra + 3.4, `橙线：与基圆柱（r_b = ${(rb / m).toFixed(2)}m）相切的平面`, { fs: 2.2, fill: 'var(--accent)' });
+      txt(over, -28, -ra - 7.6, '直线刀刃放在切于基圆柱的平面里（上下各一把）', { fs: 2.2, fill: 'var(--violet)' });
+    } else {
+      const g2 = el('g', { transform: `rotate(${gam / D2R} ${xg} ${cy - rf})` }, over), Rw = 9;
+      el('rect', { x: xg - 2.6, y: cy - rf - 2.2 * m - 14, width: 5.2, height: 14, fill: 'var(--violet)', 'fill-opacity': 0.18, stroke: 'var(--violet)', 'stroke-width': 0.3 }, g2);
+      tool(g2, xg, cy - rf, wTool, 2.2 * m, 0, k === 'ZC');
+      txt(over, -28, -ra - 7.6, k === 'ZK' ? '盘铣刀 / 锥面砂轮，倾斜 γ 安装' : '凸圆弧砂轮，倾斜 γ 安装', { fs: 2.2, fill: 'var(--violet)' });
+      txt(over, -28, ra + 3.4, k === 'ZK' ? '齿面是砂轮锥面包络出的曲面' : '磨出凹圆弧齿面，和凸齿面蜗轮啮合', { fs: 2.2, fill: 'var(--accent)' });
+    }
+    endView(k);
+  };
+  $('b5').querySelectorAll('button').forEach(b => b.onclick = () => { $('b5').querySelectorAll('button').forEach(c => c.classList.toggle('on', c === b)); show(b.dataset.k); });
+  show('ZA');
+}
+// ================= 06 基本齿廓 =================
+{
+  const svg = $('f6'); defsArrow(svg, 'a6', 'var(--accent)'); const H6 = hatch(svg, 'h6');
+  const m = 4, px = PI * m, r0 = 100, pr = wormProf(m, r0), tt = Math.tan(20 * D2R);
+  const s = -pr.uc;   // 牙顶中心在 x = 0
+  el('path', { d: profPath(pr, s, -24, 24, 0, r0, 1, 13), fill: 'var(--gear)', stroke: 'none' }, svg);
+  el('path', { d: profPath(pr, s, -24, 24, 0, r0, 1, 13), fill: H6, stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  line(svg, -24, 0, 24, 0, { stroke: 'var(--accent)', w: 0.2, dash: '1 0.6' }); txt(svg, 23.8, -0.9, '分度线（d₁）', { fs: 1.5, fill: 'var(--accent)', anchor: 'end' });
+  line(svg, -24, -m, 24, -m, { stroke: 'var(--muted)', w: 0.15, dash: '0.6 0.5' }); txt(svg, 23.8, -m - 0.8, '齿顶线（dₐ₁）', { fs: 1.4, fill: 'var(--muted)', anchor: 'end' });
+  line(svg, -24, 1.2 * m, 24, 1.2 * m, { stroke: 'var(--muted)', w: 0.15, dash: '0.6 0.5' }); txt(svg, -23.6, 1.2 * m + 1.8, '齿根线（d_f1）', { fs: 1.4, fill: 'var(--muted)', anchor: 'start' });
+  // 尺寸
+  const xs = -px / 2;   // 左侧齿槽中心
+  dimV(svg, -px - 1.6, -m, 0, 'a6', 'hₐ = m', { anchor: 'end', dx: -0.8, math: true, fs: 1.6 });
+  dimV(svg, -px - 1.6, 0, 1.2 * m, 'a6', 'h_f = 1.2m', { anchor: 'end', dx: -0.8, math: true, fs: 1.6 });
+  // 分度线上的齿厚、槽宽
+  const xT1 = -px / 4, xT2 = px / 4;
+  dimH(svg, xT1, xT2, -6.6, 'a6', 'sₓ', { math: true, fs: 1.8 });
+  dimH(svg, xT2, xT2 + px / 2, -6.6, 'a6', 'eₓ', { math: true, fs: 1.8, stroke: 'var(--blue)' });
+  dimH(svg, -px / 2, px / 2, -10.2, 'a6', 'pₓ = πm', { math: true, fs: 1.6 });
+  line(svg, xT1, -6.6, xT1, 0, { stroke: 'var(--accent)', w: 0.12, dash: '0.4 0.4' }); line(svg, xT2, -10.2, xT2, 0, { stroke: 'var(--accent)', w: 0.12, dash: '0.4 0.4' });
+  line(svg, -px / 2, -10.2, -px / 2, -m, { stroke: 'var(--accent)', w: 0.12, dash: '0.4 0.4' }); line(svg, px / 2, -10.2, px / 2, -m, { stroke: 'var(--accent)', w: 0.12, dash: '0.4 0.4' });
+  line(svg, xT2 + px / 2, -6.6, xT2 + px / 2, 0, { stroke: 'var(--blue)', w: 0.12, dash: '0.4 0.4' });
+  // 齿形角
+  const xf = px / 4; line(svg, xf, -m - 1, xf, 3, { stroke: 'var(--ink)', w: 0.12, dash: '0.5 0.4' });
+  // 右侧面从 (xf,0) 向下向右；角度从竖直线量
+  el('path', { d: `M${f3(xf)} 2.6A2.6 2.6 0 0 0 ${f3(xf + 2.6 * Math.sin(20 * D2R))} ${f3(2.6 * Math.cos(20 * D2R))}`, fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.2 }, svg);
+  txt(svg, xf - 0.5, 3.9, 'αₓ = 20°', { fs: 1.5, fill: 'var(--accent)', math: true, anchor: 'end' });
+  // ρf 标注
+  const xr = px / 2 + 0;   // 右侧齿槽中心
+  line(svg, -xr + 0.9, 1.2 * m - 0.2, -xr - 3, 1.2 * m + 3.6, { stroke: 'var(--accent)', w: 0.15 }); txt(svg, -xr - 3.2, 1.2 * m + 4.6, 'ρ_f = 0.3m', { fs: 1.5, fill: 'var(--accent)', math: true, anchor: 'end' });
+  // 蜗轮齿（虚线，插入右侧齿槽），动画：插入、退出
+  const wt = el('path', { fill: 'var(--gear2)', 'fill-opacity': 0.35, stroke: 'var(--blue)', 'stroke-width': 0.3, 'stroke-dasharray': '0.8 0.5' }, svg);
+  const cT = txt(svg, xr + 6.6, 0, '', { fs: 1.4, fill: 'var(--blue)', anchor: 'start' });
+  const cL = el('g', {}, svg);
+  scenes.push(t => {
+    const ph = (t % 6) / 6, k = ph < 0.35 ? ph / 0.35 : ph < 0.75 ? 1 : 1 - (ph - 0.75) / 0.25, dy = (1 - k) * -7;
+    // 蜗轮齿：齿根在上（y = -m - 0.2m），齿顶在 y = +m，槽中心 xr，齿厚在分度线 = πm/2
+    const yt = m + dy, yr = -m - 1.2 + dy, w0 = px / 4;
+    const xl = x => [xr - w0 - (x) * tt, xr + w0 + (x) * tt];   // x: 离分度线向上的距离
+    const [a1, b1] = xl(-(m)), [a2, b2] = xl(m + 1.2);
+    wt.setAttribute('d', `M${f3(a2)} ${f3(yr)}L${f3(a1)} ${f3(yt)}L${f3(b1)} ${f3(yt)}L${f3(b2)} ${f3(yr)}Z`.replace(/NaN/g, 0));
+    wt.setAttribute('transform', `translate(0 0)`);
+    cL.innerHTML = '';
+    if (k > 0.99) { line(cL, xr + 0.3, 1.1 * m, xr + 4.2, 1.1 * m + 3.6, { stroke: 'var(--blue)', w: 0.15 }); cT.setAttribute('x', xr + 4.4); cT.setAttribute('y', 1.1 * m + 3.8); cT.textContent = 'c = 0.2m 顶隙'; }
+    else cT.textContent = '';
+  });
+  txt(svg, xr + 4.2, -m - 3.2, '蜗轮的齿（虚线）', { fs: 1.5, fill: 'var(--blue)', anchor: 'start' });
+}
+// ================= 07 蜗轮变位、中心距、喉部 =================
+{
+  const svg = $('f7'); defsArrow(svg, 'a7', 'var(--accent)'); const H7 = hatch(svg, 'h7', 'var(--muted)', 1.1);
+  const m = 1.5, q = 10, r1 = q * m / 2, cyW = -14, z1 = 2;
+  const gL = el('g', {}, svg), gR = el('g', {}, svg);
+  let W = null;
+  const draw = () => {
+    const z2 = +$('i7z').value, x2 = +$('i7x').value;
+    $('v7z').textContent = z2; $('v7x').textContent = (x2 >= 0 ? '+' : '') + x2.toFixed(2);
+    gL.innerHTML = ''; gR.innerHTML = '';
+    W = wormPair(gL, { m, z2, r1, cyW, cx2: 0, x0: -44, x1: 44, x2, z1, colors: ['var(--ink)'] });
+    circle(gL, 0, W.cy2, W.r2, { dash: '1.2 0.8', stroke: 'var(--blue)', w: 0.3 });
+    line(gL, -44, cyW + r1, 44, cyW + r1, { stroke: 'var(--accent)', w: 0.3, dash: '1.2 0.8' });
+    if (Math.abs(x2) > 0.01) line(gL, -44, cyW + r1 + x2 * m, 44, cyW + r1 + x2 * m, { stroke: 'var(--blue)', w: 0.3, dash: '0.4 0.6' });
+    cline(gL, -47, cyW, 47, cyW);
+    txt(gL, -43, cyW + r1 - 1.3, '蜗杆分度线', { fs: 2, fill: 'var(--accent)', anchor: 'start' });
+    txt(gL, 43, cyW + r1 + x2 * m + (x2 >= 0 ? 2.2 : -1.3) + (Math.abs(x2) < 0.01 ? 1 : 0), Math.abs(x2) > 0.01 ? `节线（离分度线 ${(x2 >= 0 ? '+' : '')}${x2.toFixed(2)}m）` : '节线 = 分度线', { fs: 2, fill: 'var(--blue)', anchor: 'end' });
+    txt(gL, -43, 33, `蜗轮 z₂ = ${z2}（只画了上部）`, { fs: 2.2, anchor: 'start', fill: 'var(--muted)' });
+    // 右：侧视
+    const ra1 = r1 + m, rf1 = r1 - 1.2 * m, d2 = m * z2, a = (2 * r1 + d2 + 2 * x2 * m) / 2, da2 = d2 + 2 * m * (1 + x2), df2 = d2 - 2 * m * (1.2 - x2);
+    const rg = a - da2 / 2, de2 = da2 + 1.5 * m, b2 = 0.75 * 2 * ra1, X = 72, yc2 = cyW + a, yBot = 36;
+    const yArc = dx => cyW + Math.sqrt(Math.max(0, rg * rg - dx * dx)), yDe = yc2 - de2 / 2;
+    let d = '', N = 30;
+    for (let i = 0; i <= N; i++) { const dx = -b2 / 2 + b2 * i / N; d += (i ? 'L' : 'M') + f3(X + dx) + ' ' + f3(Math.max(yArc(dx), yDe)); }
+    d += `L${f3(X + b2 / 2)} ${yBot}L${f3(X - b2 / 2)} ${yBot}Z`;
+    el('path', { d, fill: 'var(--gear2)', stroke: 'none' }, gR); el('path', { d, fill: H7, stroke: 'var(--ink)', 'stroke-width': 0.3 }, gR);
+    line(gR, X - b2 / 2 - 4, yc2 - df2 / 2, X + b2 / 2 + 4, yc2 - df2 / 2, { stroke: 'var(--muted)', w: 0.2, dash: '0.6 0.5' });
+    line(gR, X - b2 / 2 - 4, yc2 - d2 / 2, X + b2 / 2 + 4, yc2 - d2 / 2, { stroke: 'var(--blue)', w: 0.25, dash: '1.2 0.8' });
+    el('circle', { cx: X, cy: cyW, r: ra1, fill: 'var(--steel)', 'fill-opacity': 0.55, stroke: 'var(--ink)', 'stroke-width': 0.3 }, gR);
+    circle(gR, X, cyW, r1, { stroke: 'var(--accent)', w: 0.25, dash: '1.2 0.8' }); circle(gR, X, cyW, rf1, { stroke: 'var(--muted)', w: 0.2, dash: '0.6 0.5' });
+    circle(gR, X, cyW, rg, { stroke: 'var(--red)', w: 0.2, dash: '0.5 0.5' });
+    cline(gR, X - 12, cyW, X + 12, cyW); cline(gR, X, cyW - 12, X, yBot);
+    arrow(gR, X, cyW, X - rg * Math.sin(0.35), cyW + rg * Math.cos(0.35), 'a7', { stroke: 'var(--red)', w: 0.25 });
+    txt(gR, X - 3.2, cyW + rg + 2.4, 'r_g2', { fs: 2, fill: 'var(--red)', math: true });
+    dimV(gR, X + b2 / 2 + 7, cyW, Math.min(yBot, yc2), 'a7', '', {}); txt(gR, X + b2 / 2 + 8.2, cyW + 12, 'a', { fs: 2.4, fill: 'var(--accent)', math: true, anchor: 'start' });
+    dimH(gR, X - b2 / 2, X + b2 / 2, yBot - 2, 'a7', 'b₂', { math: true, fs: 2, dy: -1.2 });
+    txt(gR, X - b2 / 2 - 4.4, yc2 - d2 / 2 - 1, 'd₂', { fs: 2, fill: 'var(--blue)', anchor: 'end', math: true });
+    txt(gR, X - b2 / 2 - 4.4, yc2 - df2 / 2 + 1.6, 'd_f2', { fs: 1.9, fill: 'var(--muted)', anchor: 'end', math: true });
+    txt(gR, X, -26, '侧视（剖面）：蜗轮喉部抱住蜗杆', { fs: 2.2, fill: 'var(--muted)' });
+    $('t7').innerHTML = [['d₂ = m z₂', d2], ['中心距 a', a], ['喉圆 dₐ₂', da2], ['齿根圆 d_f2', df2], ['喉母圆半径 r_g2', rg], ['外径 dₑ₂ ≤（双头）', de2], ['蜗轮宽 b₂ ≤', b2]].map(r => `<tr><td>${hs(r[0])}</td><td>${(r[1] / m).toFixed(2)}m</td></tr>`).join('') + `<tr><td colspan="2" class="hint" style="text-align:left">按 q = 10、z₁ = 2 计算，结果写成模数 m 的倍数</td></tr>`;
+  };
+  $('i7z').oninput = draw; $('i7x').oninput = draw; draw();
+  scenes.push(t => W && W.set(W.s0 + 2.5 * t));
+}
+// ================= 08 效率与自锁 =================
+{
+  const svg = $('f8'), X0 = 0, Y0 = 52, SX = 90 / 35, SY = 46;
+  const ax = el('g', {}, svg);
+  line(ax, X0, Y0, X0 + 92, Y0, { stroke: 'var(--ink)', w: 0.3 }); line(ax, X0, Y0, X0, Y0 - 48, { stroke: 'var(--ink)', w: 0.3 });
+  for (let g = 0; g <= 35; g += 5) { line(ax, X0 + g * SX, Y0, X0 + g * SX, Y0 + 1, { stroke: 'var(--ink)', w: 0.25 }); txt(ax, X0 + g * SX, Y0 + 3, g + '°', { fs: 2.2, fill: 'var(--muted)' }); }
+  for (let e = 0; e <= 1.001; e += 0.2) { line(ax, X0 - 1, Y0 - e * SY, X0 + 90, Y0 - e * SY, { stroke: 'var(--line)', w: 0.2 }); txt(ax, X0 - 2, Y0 - e * SY, (e * 100).toFixed(0) + '%', { fs: 2.1, fill: 'var(--muted)', anchor: 'end' }); }
+  txt(ax, X0 + 90, Y0 + 6.6, '导程角 γ', { fs: 2.3, anchor: 'end', fill: 'var(--muted)' });
+  const lock = el('rect', { x: X0, y: Y0 - SY, height: SY, fill: 'var(--red)', opacity: 0.1 }, svg);
+  const lockT = txt(svg, 0, Y0 - SY + 4, '自锁区', { fs: 2.3, fill: 'var(--red)', anchor: 'start' });
+  const c1 = el('path', { fill: 'none', stroke: 'var(--accent)', 'stroke-width': 0.6 }, svg), c2 = el('path', { fill: 'none', stroke: 'var(--blue)', 'stroke-width': 0.6, 'stroke-dasharray': '1.5 0.8' }, svg);
+  const vl = line(svg, 0, Y0, 0, Y0 - SY, { stroke: 'var(--ink)', w: 0.2, dash: '0.6 0.5' });
+  const p1 = el('circle', { r: 1, fill: 'var(--accent)' }, svg), p2 = el('circle', { r: 1, fill: 'var(--blue)' }, svg);
+  txt(svg, 58, 38, '蜗杆主动 η₁', { fs: 2.4, fill: 'var(--accent)', anchor: 'start' });
+  txt(svg, 58, 42.5, '蜗轮主动 η′（反推）', { fs: 2.4, fill: 'var(--blue)', anchor: 'start' });
+  const draw = () => {
+    const g = +$('i8g').value, f = +$('i8f').value, rho = Math.atan(f) / D2R;
+    $('v8g').textContent = g.toFixed(2) + '°'; $('v8f').textContent = f.toFixed(3);
+    let d1 = '', d2 = '';
+    for (let i = 1; i <= 140; i++) { const G = 35 * i / 140, e1 = Math.tan(G * D2R) / Math.tan((G + rho) * D2R), e2 = G > rho ? Math.tan((G - rho) * D2R) / Math.tan(G * D2R) : null;
+      d1 += (d1 ? 'L' : 'M') + f3(X0 + G * SX) + ' ' + f3(Y0 - e1 * SY); if (e2 !== null) d2 += (d2 ? 'L' : 'M') + f3(X0 + G * SX) + ' ' + f3(Y0 - e2 * SY); }
+    c1.setAttribute('d', d1); c2.setAttribute('d', d2);
+    lock.setAttribute('width', rho * SX); lockT.setAttribute('x', X0 + 0.6); lockT.textContent = rho * SX > 9 ? '自锁区' : '';
+    const e1 = Math.tan(g * D2R) / Math.tan((g + rho) * D2R), e2 = g > rho ? Math.tan((g - rho) * D2R) / Math.tan(g * D2R) : 0;
+    vl.setAttribute('x1', X0 + g * SX); vl.setAttribute('x2', X0 + g * SX);
+    p1.setAttribute('cx', X0 + g * SX); p1.setAttribute('cy', Y0 - e1 * SY); p2.setAttribute('cx', X0 + g * SX); p2.setAttribute('cy', Y0 - e2 * SY);
+    $('t8').innerHTML = [['当量摩擦角 ρᵥ = arctan f′', rho.toFixed(2) + '°'], ['蜗杆主动 η₁', (e1 * 100).toFixed(1) + '%'], ['蜗轮主动 η′', g > rho ? (e2 * 100).toFixed(1) + '%' : '0（推不动）'], ['能否自锁', g <= rho ? '<b style="color:var(--red)">自锁</b>' : '不自锁']].map(r => `<tr><td>${hs(r[0])}</td><td>${r[1]}</td></tr>`).join('');
+  };
+  $('i8g').oninput = draw; $('i8f').oninput = draw; draw();
+}
+// ================= 09 滑动速度 =================
+{
+  const svg = $('f9'); defsArrow(svg, 'a9r', 'var(--red)'); defsArrow(svg, 'a9b', 'var(--blue)'); defsArrow(svg, 'a9a', 'var(--accent)');
+  el('rect', { x: 0, y: 2, width: 100, height: 44 }, el('clipPath', { id: 'cp9' }, svg.querySelector('defs')));
+  const g = el('g', {}, svg), mv = el('g', {}, svg);
+  let G = 11.5;
+  const draw = () => {
+    G = +$('i9').value; $('v9').textContent = G.toFixed(1) + '°';
+    g.innerHTML = '';
+    const gr = G * D2R, O = [34, 30], v1 = 40;
+    // 展开的蜗杆分度圆柱面：横向为圆周方向，竖向为轴向
+    el('rect', { x: 0, y: 2, width: 100, height: 44, fill: 'var(--chip)', stroke: 'var(--line)', 'stroke-width': 0.3 }, g);
+    const cpg = el('g', { 'clip-path': 'url(#cp9)' }, g);
+    for (let k = -4; k <= 4; k++) { const y0 = O[1] + k * 12, t = Math.tan(gr); line(cpg, -10, y0 + (O[0] + 10) * t, 110, y0 - (110 - O[0]) * t, { stroke: 'var(--steel2)', w: 2.2, attr: { opacity: 0.55 } }); }
+    // 速度三角形
+    arrow(g, O[0], O[1], O[0] + v1, O[1], 'a9r', { stroke: 'var(--red)', w: 0.6 });
+    arrow(g, O[0] + v1, O[1], O[0] + v1, O[1] - v1 * Math.tan(gr), 'a9b', { stroke: 'var(--blue)', w: 0.6 });
+    arrow(g, O[0], O[1], O[0] + v1, O[1] - v1 * Math.tan(gr), 'a9a', { stroke: 'var(--accent)', w: 0.7 });
+    txt(g, O[0] + v1 / 2, O[1] + 3, 'v₁ 蜗杆圆周速度', { fs: 2.4, fill: 'var(--red)' });
+    txt(g, O[0] + v1 + 1.5, O[1] - v1 * Math.tan(gr) / 2, 'v₂ 蜗轮速度', { fs: 2.4, fill: 'var(--blue)', anchor: 'start' });
+    txt(g, O[0] + v1 / 2 - 2, O[1] - v1 * Math.tan(gr) / 2 - 3, 'vₛ 滑动速度', { fs: 2.4, fill: 'var(--accent)', anchor: 'end' });
+    arcMark(g, O[0], O[1], 9, -G, 0, { stroke: 'var(--ink)' }); txt(g, O[0] + 10.5, O[1] - 1.5, 'γ', { fs: 2.5, math: true, anchor: 'start' });
+    txt(g, 99, 5.5, `vₛ / v₁ = 1 / cos γ = ${(1 / Math.cos(gr)).toFixed(3)}`, { fs: 2.4, anchor: 'end' });
+    txt(g, 99, 9.2, `v₂ / v₁ = tan γ = ${Math.tan(gr).toFixed(3)}`, { fs: 2.4, anchor: 'end' });
+    txt(g, 2, 44, '展开的蜗杆分度圆柱面（灰条为螺纹方向，横向为圆周、竖向为轴向）', { fs: 2.1, fill: 'var(--muted)', anchor: 'start' });
+  };
+  $('i9').oninput = draw; draw();
+  const blk = el('rect', { width: 5, height: 2.6, x: -2.5, y: -1.3, rx: 0.5, fill: 'var(--gear2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, mv);
+  scenes.push(t => { const fr = (t % 3) / 3, gr = G * D2R, L = 40 / Math.cos(gr) * fr; mv.setAttribute('transform', `translate(${f3(34 + L * Math.cos(gr))} ${f3(30 - L * Math.sin(gr))}) rotate(${-G})`); });
+}
+// ================= 10 加工 =================
+{
+  const svg = $('f10a');
+  const m = 2.2, r1 = 11, pr = wormProf(m, r1), cy = 0, x0 = -52, x1 = 52;
+  shaft(svg, -60, x0, cy, 5); shaft(svg, x1, 60, cy, 5);
+  const S = makeScrew(svg, svg, { pr, x0, x1, cy, n: 1, hand: 1 });
+  const blank = el('rect', { y: cy - pr.ra, height: 2 * pr.ra, fill: steelGrad(svg), stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  const tl = el('path', { fill: 'var(--violet)', 'fill-opacity': 0.35, stroke: 'var(--violet)', 'stroke-width': 0.4 }, svg);
+  cline(svg, -62, cy, 62, cy);
+  const lab = txt(svg, 0, -17, '车刀', { fs: 2.4, fill: 'var(--violet)', anchor: 'start' });
+  const svg2 = $('f10b');
+  const z2 = 40, mh = 2.2, r1h = 11, r2 = mh * z2 / 2, cyH = r1h + r2;
+  const G = gearPts(mh, z2, 20, 0, { c: 0.2 });
+  const wh = el('path', { d: pathOf(G.pts), fill: 'var(--gear2)', stroke: 'var(--ink)', 'stroke-width': 0.35 }, svg2);
+  const prH = wormProf(mh, r1h);
+  const hobG = el('g', {}, svg2);
+  shaft(hobG, -50, -40, 0, 4.5); shaft(hobG, 40, 50, 0, 4.5);
+  const H = makeScrew(svg2, hobG, { pr: prH, x0: -40, x1: 40, cy: 0, n: 1, hand: 1, colors: ['var(--ink)'] });
+  const gash = el('g', { 'clip-path': 'url(#cp10)' }, hobG), gl = [];
+  el('rect', { x: -40, y: -prH.ra, width: 80, height: 2 * prH.ra }, el('clipPath', { id: 'cp10' }, svg2.querySelector('defs')));
+  for (let k = 0; k < 10; k++) gl.push(el('rect', { x: -40, width: 80, fill: 'var(--ink)', opacity: 0.35 }, gash));
+  cline(svg2, -53, 0, 53, 0);
+  const dl = txt(svg2, 46, 17, '', { fs: 2.4, fill: 'var(--accent)', anchor: 'end' });
+  const sH0 = -prH.ur - prH.P / 2;
+  scenes.push(t => {
+    // 车削：一个循环 8 s，车刀从左走到右；工件转一圈，车刀走一个导程
+    const T = 8, fr = (t % T) / T, xt = x0 + 4 + (x1 - x0 - 8) * Math.min(1, fr / 0.85);
+    S.update(xt - pr.ur);
+    const xb = xt + 1.6; blank.setAttribute('x', xb); blank.setAttribute('width', Math.max(0, x1 - xb));
+    const w = pr.P / 2 - 2 * 1.2 * m * Math.tan(20 * D2R), hh = 2.2 * m + 7, tt = Math.tan(20 * D2R), yb = cy - pr.rf;
+    tl.setAttribute('d', `M${f3(xt - w / 2 - hh * tt)} ${f3(yb - hh)}L${f3(xt - w / 2)} ${f3(yb)}L${f3(xt + w / 2)} ${f3(yb)}L${f3(xt + w / 2 + hh * tt)} ${f3(yb - hh)}Z`);
+    lab.setAttribute('x', f3(xt + 6));
+    // 滚齿：径向切入 6 s，之后保持
+    const T2 = 10, f2 = (t % T2) / T2, dIn = f2 < 0.6 ? (1 - f2 / 0.6) * 2.4 * mh : 0;
+    hobG.setAttribute('transform', `translate(0 ${f3(-dIn)})`);
+    const s = sH0 + 5 * t; H.update(s);
+    const om = 2 * PI * 5 / prH.P;
+    gl.forEach((r, k) => { const th = ((2 * PI * k / 10 - om * t) % (2 * PI) + 2 * PI) % (2 * PI), vis = th > 0.15 && th < PI - 0.15, hh2 = 0.7 * Math.sin(th);
+      r.setAttribute('y', f3(-prH.ra * Math.cos(th) - hh2 / 2)); r.setAttribute('height', vis ? f3(hh2) : 0); });
+    wh.setAttribute('transform', `translate(0 ${cyH}) rotate(${-90 + (5 * t / r2) / D2R})`);
+    dl.textContent = dIn > 0.01 ? `径向切入中，离中心距还差 ${(dIn / mh).toFixed(2)}m` : '已切到中心距 a，继续滚切';
+  });
+}
+// ================= 11 量棒测量 =================
+{
+  const svg = $('f11'); defsArrow(svg, 'a11', 'var(--accent)');
+  const m = 3.2, r1 = 12.8, pr = wormProf(m, r1), al = 20 * D2R, px = PI * m, cy = 0;
+  const S = makeScrew(svg, svg, { pr, x0: -30, x1: 30, cy, n: 1, hand: 1 });
+  const s = -pr.ur; S.update(s);   // 顶部齿槽中心在 x = 0 + kP
+  cline(svg, -34, cy, 34, cy);
+  const dp = px / (2 * Math.cos(al)), hc = dp / (2 * Math.sin(al)) - (px / 4) / Math.tan(al), rc = r1 + hc;
+  const wire = (x, y) => { el('circle', { cx: x, cy: y, r: dp / 2, fill: 'var(--gear2)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg); el('circle', { cx: x, cy: y, r: 0.25, fill: 'var(--ink)' }, svg); };
+  wire(0, cy - rc);                         // 上面一根：顶部齿槽
+  wire(-px / 2, cy + rc); wire(px / 2, cy + rc);   // 下面两根：底部轮廓相位差半个导程
+  const yT = cy - rc - dp / 2, yB = cy + rc + dp / 2;
+  el('rect', { x: -9, y: yT - 4, width: 18, height: 4, fill: 'var(--steel)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  el('rect', { x: -9, y: yB, width: 18, height: 4, fill: 'var(--steel)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  txt(svg, 0, yT - 5.6, '千分尺测砧', { fs: 2.2, fill: 'var(--muted)' });
+  dimV(svg, 14, yT, yB, 'a11', 'M', { math: true, fs: 2.8, dx: 1.2 });
+  line(svg, 9, yT, 15, yT, { stroke: 'var(--accent)', w: 0.15 }); line(svg, 9, yB, 15, yB, { stroke: 'var(--accent)', w: 0.15 });
+  line(svg, -30, cy - r1, 30, cy - r1, { stroke: 'var(--accent)', w: 0.2, dash: '1 0.6' }); line(svg, -30, cy + r1, 30, cy + r1, { stroke: 'var(--accent)', w: 0.2, dash: '1 0.6' });
+  txt(svg, -29.5, cy - r1 + 2, '分度线 d₁', { fs: 1.9, fill: 'var(--accent)', anchor: 'start' });
+  const M = 2 * r1 + 2 * hc + dp;
+  txt(svg, -38, 26.5, `例：m = 4、d₁ = 40、αₓ = 20°：最佳量棒 d_p = ${(1.6716 * 4).toFixed(3)}，M = ${(40 + 2.2430 * 4).toFixed(3)}`, { fs: 2.1, anchor: 'start', fill: 'var(--muted)' });
+}
+// ================= 12 计算器 =================
+{
+  const svg = $('f12');
+  const TAB = { 1: [[18, '1']], 1.25: [[20, '1'], [22.4, '1']], 1.6: [[20, '1,2,4'], [28, '1']], 2: [[22.4, '1,2,4,6'], [35.5, '1']], 2.5: [[28, '1,2,4,6'], [45, '1']], 3.15: [[35.5, '1,2,4,6'], [56, '1']],
+    4: [[40, '1,2,4,6'], [71, '1']], 5: [[50, '1,2,4,6'], [90, '1']], 6.3: [[63, '1,2,4,6'], [112, '1']], 8: [[80, '1,2,4,6'], [140, '1']], 10: [[90, '1,2,4,6'], [160, '1']],
+    12.5: [[112, '1,2,4'], [200, '1']], 16: [[140, '1,2,4'], [250, '1']], 20: [[160, '1,2,4'], [315, '1']], 25: [[200, '1,2,4'], [400, '1']] };
+  const ms = Object.keys(TAB).map(Number).sort((a, b) => a - b);
+  $('cm').innerHTML = ms.map(v => `<option${v === 4 ? ' selected' : ''}>${v}</option>`).join('');
+  const fillD = () => { const m = +$('cm').value; $('cd').innerHTML = TAB[m].map(([d, z]) => `<option value="${d}">${d}（q = ${(d / m).toFixed(3)}，z₁ 可取 ${z}）</option>`).join(''); };
+  const g = el('g', {}, svg);
+  let W = null, sc = 1;
+  const run = () => {
+    const m = +$('cm').value, d1 = +$('cd').value, z1 = +$('cz1').value, z2 = +$('cz2').value, x2 = +$('cx2').value, f = +$('cf').value, n1 = +$('cn').value || 0;
+    $('vz2').textContent = z2; $('vx2').textContent = (x2 >= 0 ? '+' : '') + x2.toFixed(2); $('vf').textContent = f.toFixed(3);
+    const q = d1 / m, px = PI * m, pz = z1 * px, gam = Math.atan(z1 / q), rho = Math.atan(f), al = 20 * D2R;
+    const da1 = d1 + 2 * m, df1 = d1 - 2.4 * m, d2 = m * z2, da2 = d2 + 2 * m * (1 + x2), df2 = d2 - 2 * m * (1.2 - x2), a = (d1 + d2 + 2 * x2 * m) / 2;
+    const rg2 = a - da2 / 2, de2 = da2 + (z1 === 1 ? 2 : z1 <= 3 ? 1.5 : 1) * m, b2 = (z1 <= 3 ? 0.75 : 0.67) * da1;
+    const e1 = Math.tan(gam) / Math.tan(gam + rho), e2 = gam > rho ? Math.tan(gam - rho) / Math.tan(gam) : 0;
+    const v1 = PI * d1 * n1 / 60000, vs = v1 / Math.cos(gam);
+    const dp = px / (2 * Math.cos(al)), M = d1 + dp * (1 + 1 / Math.sin(al)) - px / 2 / Math.tan(al);
+    const an = Math.atan(Math.tan(al) * Math.cos(gam));
+    const rows = [['直径系数 q = d₁/m', q.toFixed(3)], ['传动比 i = z₂/z₁', (z2 / z1).toFixed(3)], ['轴向齿距 pₓ', px.toFixed(3)], ['导程 p_z', pz.toFixed(3)],
+      ['导程角 γ', (gam / D2R).toFixed(3) + '°'], ['法向模数 mₙ（ZA）', (m * Math.cos(gam)).toFixed(4)], ['法向齿形角 αₙ（ZA）', (an / D2R).toFixed(3) + '°'],
+      ['蜗杆齿顶圆 dₐ₁', da1.toFixed(3)], ['蜗杆齿根圆 d_f1', df1.toFixed(3)], ['蜗轮分度圆 d₂', d2.toFixed(3)], ['蜗轮喉圆 dₐ₂', da2.toFixed(3)], ['蜗轮齿根圆 d_f2', df2.toFixed(3)],
+      ['中心距 a', a.toFixed(3)], ['喉母圆半径 r_g2', rg2.toFixed(3)], ['蜗轮外径 dₑ₂ ≤', de2.toFixed(3)], ['蜗轮宽度 b₂ ≤', b2.toFixed(3)],
+      ['蜗杆圆周速度 v₁', v1.toFixed(3) + ' m/s'], ['滑动速度 vₛ', vs.toFixed(3) + ' m/s'], ['蜗轮转速 n₂', (n1 * z1 / z2).toFixed(2) + ' r/min'],
+      ['当量摩擦角 ρᵥ', (rho / D2R).toFixed(3) + '°'], ['啮合效率 η₁（蜗杆主动）', (e1 * 100).toFixed(1) + '%'], ['反推效率 η′（蜗轮主动）', gam > rho ? (e2 * 100).toFixed(1) + '%' : '0，自锁'],
+      ['最佳量棒 d_p（ZA）', dp.toFixed(3)], ['量棒距 M（ZA，未修正）', M.toFixed(3)]];
+    $('tout').innerHTML = rows.map(r => `<tr><td>${hs(r[0])}</td><td>${r[1]}</td></tr>`).join('');
+    const W2 = [], zOK = TAB[m].find(r => r[0] === d1)[1].split(',').map(Number);
+    if (!zOK.includes(z1)) W2.push(`GB/T 10085 常用匹配里，m = ${m}、d₁ = ${d1} 的头数为 ${zOK.join('、')}，z₁ = ${z1} 不在其中。`);
+    if (z2 < 28) W2.push('z₂ 小于 28：啮合区小，容易根切，一般取 28～80。');
+    if (z2 > 80) W2.push('z₂ 大于 80：蜗轮直径大，蜗杆支承跨度长、刚度不够，要校核。');
+    if (gam <= rho) W2.push('γ ≤ ρᵥ：可能自锁；但振动、冲击时自锁不可靠，安全场合要另加制动。');
+    $('cw').innerHTML = W2.join('<br>');
+    // 图
+    g.innerHTML = '';
+    const ra2 = da2 / 2, ra1 = da1 / 2, H = a + ra1 + ra2, Lw = 2 * Math.sqrt(Math.max(0, ra2 * ra2 - (a - ra1) ** 2)) + 3 * pz;
+    sc = Math.min(110 / H, 110 / Math.max(2 * ra2, Lw));
+    const k = sc, cyW = -55 + ra1 * k + 1;
+    W = wormPair(g, { m: m * k, z2, r1: d1 / 2 * k, cyW, cx2: 0, x0: -Lw / 2 * k, x1: Lw / 2 * k, x2, z1, colors: ['var(--accent)', 'var(--blue)', 'var(--green)', 'var(--violet)', 'var(--red)', 'var(--ink)'], cw: 0.45 });
+    circle(g, 0, W.cy2, W.r2, { dash: '1.2 0.8', stroke: 'var(--blue)', w: 0.3 });
+    cline(g, -58, cyW, 58, cyW); cline(g, -8, W.cy2, 8, W.cy2); cline(g, 0, W.cy2 - 8, 0, W.cy2 + 8);
+    txt(g, -58, 57, `a = ${a.toFixed(2)}，i = ${(z2 / z1).toFixed(2)}，γ = ${(gam / D2R).toFixed(2)}°`, { fs: 3.4, anchor: 'start' });
+  };
+  $('cm').onchange = () => { fillD(); run(); };
+  ['cd', 'cz1'].forEach(id => $(id).onchange = run); ['cz2', 'cx2', 'cf', 'cn'].forEach(id => $(id).oninput = run);
+  fillD(); run();
+  scenes.push(t => W && W.set(W.s0 + 3 * t));
+}
+
+// ---------- 目录 ----------
+document.getElementById('toc').innerHTML = [...document.querySelectorAll('section.card')].map(s => `<a href="#${s.id}">${s.querySelector('h2').textContent.replace(/^\d\d/, '')}</a>`).join('');
+// ---------- 动画循环（可被外部按时间渲染，用于截图/录屏） ----------
+let paused = false;
+window.__render = t => { paused = true; scenes.forEach(s => s(t)); };
+const t0 = performance.now();
+const loop = now => { if (!paused) { const t = Math.max(0, (now - t0) / 1000); scenes.forEach(s => s(t)); } requestAnimationFrame(loop); };
+requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
