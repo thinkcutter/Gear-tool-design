@@ -185,8 +185,11 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
   <section class="card" id="accCard">
     <h2>精度等级换算 <span id="accStd">GB/T 10095.1 ≈ ISO 1328-1:1995</span></h2>
     <div class="grid" style="margin-top:0">
-      <div class="f"><label for="a_std">精度标准</label><select id="a_std"><option value="iso13">GB/T 10095.1-2022 = ISO 1328-1:2013（现行）</option><option value="iso95">GB/T 10095.1-2008 = ISO 1328-1:1995（旧版）</option><option value="agmaA">ANSI/AGMA ISO 1328-1-B14 / AGMA 2015（A 级）</option><option value="agmaQ">AGMA 2000（Q 级，已作废）</option></select></div>
+      <div class="f"><label for="a_std">精度标准</label><select id="a_std"><option value="iso13">GB/T 10095.1-2022 = ISO 1328-1:2013（现行）</option><option value="iso95">GB/T 10095.1-2008 = ISO 1328-1:1995（旧版）</option><option value="agmaA">ANSI/AGMA ISO 1328-1-B14 / AGMA 2015（A 级）</option><option value="agmaQ">AGMA 2000（Q 级，已作废）</option><option value="gb2363">GB/T 2363-2025 小模数（mn 0.1–0.5，4–11 级）</option></select></div>
       <div class="f"><label for="a_q">精度等级<b>0=不算</b></label><input id="a_q" type="number" step="1" inputmode="numeric" value="0"></div>
+      <div class="f" data-din hidden><label for="a_dA">偏差 A<sub>s</sub> / A<sub>e</sub><b>µm，带正负号</b></label><input id="a_dA" type="number" step="1" inputmode="decimal" value=""></div>
+      <div class="f" data-din hidden><label for="a_dTG">总公差 T<sub>G</sub><b>µm</b></label><input id="a_dTG" type="number" step="1" inputmode="decimal" value=""></div>
+      <div class="f" data-din hidden><label for="a_dTa">实际公差 T<sub>act</sub><b>µm</b></label><input id="a_dTa" type="number" step="1" inputmode="decimal" value=""></div>
     </div>
     <div id="accOut"></div>
   </section>
@@ -1688,10 +1691,12 @@ if (typeof module !== 'undefined') module.exports = HX;
     Object.assign(qaInfo, { fromThk: true, Vu, sMin: Math.min(s1, s2) * cb, sMax: Math.max(s1, s2) * cb, sUse: su * cb });
   }
   function lastPreset() { const e = $('p_spline_preset'); return e ? e.value : ''; }
+  // ISO 4156-1 公差单位：D ≤ 500 mm 时 0.45∛D + 0.001D，D > 500 mm 时 0.004D + 2.1
+  const splI = x => x <= 500 ? 0.45 * Math.cbrt(x) + 0.001 * x : 0.004 * x + 2.1;
   // GB/T 3478.1 / ISO 4156 花键公差（µm 与 mm）
   function splTol(P, c) {
     const m = P.mn, z = P.z, D = m * z, S0 = PI * m / 2, gL = P.b || 0;
-    const i1 = 0.45 * Math.cbrt(D) + 0.001 * D, i2 = 0.45 * Math.cbrt(S0) + 0.001 * S0;
+    const i1 = splI(D), i2 = splI(S0);
     const K = { 4: [10, 40, 2.5, 6.3, 1.6, 10, 0.8, 4], 5: [16, 64, 3.55, 9, 2.5, 16, 1, 5], 6: [25, 100, 5, 12.5, 4, 25, 1.25, 6.3], 7: [40, 160, 7.1, 18, 6.3, 40, 2, 10] }[c];
     const Tl = K[0] * i1 + K[1] * i2, Lh = PI * m * z / 2;
     const Fp = K[2] * Math.sqrt(Lh) + K[3], Fa = K[4] * m * (1 + 0.0125 * z) + K[5], Fb = K[6] * Math.sqrt(gL) + K[7];
@@ -1775,7 +1780,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     't_as': '侧刃另外磨出的侧后角：只在刃口后面向内收窄，刃口本身形状不变，所以不影响刀具廓形，一般 1°–3°。整体倾斜得到的侧刃后角只有 atan(tanα·sinψ)，侧壁越陡越小，矩形花键的平行侧壁几乎为 0，必须另磨侧后角。',
     't_Ds': '圆柄插刀的刀柄直径，只影响 3D 显示和刀杆干涉检查，不影响刀具廓形。0 = 自动：约为刀齿宽度的 3 倍取标准直径，内孔加工时不超过内孔的 0.6 倍。',
     't_Lh': '刀头（刃部）沿插削方向的长度，只影响 3D 显示。0 = 自动，约等于齿高。',
-    'a_std': '现行国标 GB/T 10095.1-2022 等同 ISO 1328-1:2013（1～11 级），公式和旧版 GB/T 10095.1-2008（ISO 1328-1:1995，0～12 级）不同，同一等级的公差数值也不同，图纸上没写年代号时请向客户确认。美国现行 ANSI/AGMA ISO 1328-1-B14 等同 ISO 1328-1:2013，A 级与 ISO 2013 版同号等级相同；AGMA 2000 用 Q 级，数字越大越精密，约为 ISO 17 − Q 级。',
+    'a_std': '现行国标 GB/T 10095.1-2022 等同 ISO 1328-1:2013（1～11 级），公式和旧版 GB/T 10095.1-2008（ISO 1328-1:1995，0～12 级）不同，同一等级的公差数值也不同，图纸上没写年代号时请向客户确认。美国现行 ANSI/AGMA ISO 1328-1-B14 等同 ISO 1328-1:2013，A 级与 ISO 2013 版同号等级相同；AGMA 2000 用 Q 级，数字越大越精密，约为 ISO 17 − Q 级。法向模数 0.1～0.5 mm 的小模数齿轮按 GB/T 2363-2025（4～11 级，2026-03-01 实施，代替 GB/T 2363-1990）。',
     'a_q': '图纸上的精度等级数字，例如 7/ISO 1328 填 7。精度等级不参与刀具廓形计算，只用来算零件公差和刀具廓形公差建议。',
     'omode': '等点距坐标点：按“点距”均匀取点，连起来都是直线段；廓形里的尖角（如齿面与倒角的交点）可能落在两点之间被削掉，最大可差约点距的 1/10。圆弧 + 直线拟合：按“拟合误差”自动分段，用最少的圆弧和直线逼近理论廓形，尖角保留为段的端点，DXF 里是真正的 ARC / LINE 图元，适合磨床、线切割编程。',
     'step': '等点距输出时相邻两点的距离。点距越小越准，点数越多。要求 1 µm 以内时一般要 0.01 左右（尖角处最不利）；需要高精度时建议改用“圆弧 + 直线拟合”。',
@@ -1822,6 +1827,47 @@ if (typeof module !== 'undefined') module.exports = HX;
     let i = 0; while (i < arr.length - 2 && v > arr[i + 1]) i++;
     return { g: Math.sqrt(arr[i] * arr[i + 1]), lo: arr[i], hi: arr[i + 1], out: v < arr[0] || v > arr[arr.length - 1] };
   }
+  // DIN 5480-1:2006 表 6 公差极限：Ae/As、TG、Tact 由用户按表 7 查得后填入（表 7 数值未能从公开资料取得）
+  function calcDin(isInt, out) {
+    const A = parseFloat($('a_dA').value), TG = parseFloat($('a_dTG').value), Ta = parseFloat($('a_dTa').value);
+    const cls = Math.round(parseFloat($('a_q').value) || 0);
+    const intro = 'DIN 5480 用公差等级（5–12）加偏差字母标注，如轴 8f、毂 9H。按 DIN 5480-1:2006 表 7 查出偏差 A<sub>s</sub>（轴）或 A<sub>e</sub>（毂）、总公差 T<sub>G</sub> 和实际公差 T<sub>act</sub>，填入上面三格，程序按表 6 算出作用和实际齿厚（齿槽宽）上下限及对应检测尺寸。表 7 的数值未能从公开资料取得，所以这三项需要手工查表填写。';
+    if (!(isFinite(A) && TG > 0 && Ta > 0)) { out.innerHTML = `<div class="accnote">${intro}</div>`; return null; }
+    if (Ta >= TG) { out.innerHTML = '<div class="accnote" style="color:var(--warn)">实际公差 T<sub>act</sub> 应小于总公差 T<sub>G</sub>（标准取 T<sub>G</sub>/T<sub>act</sub> ≈ 1.6）。</div>'; return null; }
+    const m = P.mn, Te = TG - Ta, sB = m * (PI / 2 + 2 * P.x * Math.tan(P.an)), Q = qaInfo ? qaInfo.Q : {};
+    const f4 = v => v.toFixed(4), r1 = v => (Math.round(v * 10) / 10).toFixed(1);
+    const ratio = TG / Ta, rows = [['偏差 ' + (isInt ? 'A<sub>e</sub>' : 'A<sub>s</sub>'), r1(A) + ' µm'], ['总公差 T<sub>G</sub>', r1(TG) + ' µm'], ['实际公差 T<sub>act</sub>', r1(Ta) + ' µm'], ['作用公差 T<sub>eff</sub> = T<sub>G</sub> − T<sub>act</sub>', r1(Te) + ' µm']];
+    let lo, hi, nameEff, nameAct, effLo, effHi;
+    if (isInt) {
+      const e2 = PI * m - sB, evmin = e2 + A / 1000, emin = evmin + Te / 1000, emax = evmin + TG / 1000;
+      lo = emin; hi = emax; effLo = evmin; effHi = emin;
+      nameEff = '作用公差带 T<sub>eff</sub>：e<sub>vmin</sub> ~ e<sub>min</sub>'; nameAct = '实际公差带 T<sub>act</sub>：e<sub>min</sub> ~ e<sub>max</sub>（检测尺寸控制）';
+      rows.push(['公称齿槽宽 e<sub>2</sub>', f4(e2) + ' mm']);
+    } else {
+      const svmax = sB + A / 1000, smax = svmax - Te / 1000, smin = svmax - TG / 1000;
+      lo = smin; hi = smax; effLo = smax; effHi = svmax;
+      nameEff = '作用公差带 T<sub>eff</sub>：s<sub>max</sub> ~ s<sub>vmax</sub>'; nameAct = '实际公差带 T<sub>act</sub>：s<sub>min</sub> ~ s<sub>max</sub>（检测尺寸控制）';
+      rows.push(['公称齿厚 s<sub>1</sub>', f4(sB) + ' mm']);
+    }
+    rows.push([nameEff, f4(effLo) + ' ~ ' + f4(effHi) + ' mm'], [nameAct, f4(lo) + ' ~ ' + f4(hi) + ' mm']);
+    const toS = v => isInt ? PI * m - v : v;
+    if (Q.src === 'pin' && Q.dp > 0) {
+      const a = G.MFromThickness(P, toS(lo), Q.dp), b = G.MFromThickness(P, toS(hi), Q.dp);
+      rows.push([(isInt ? '对应棒间距 M<sub>2</sub>' : '对应跨棒距 M<sub>1</sub>') + '（量棒 ' + Q.dp + '）', f4(Math.min(a, b)) + ' ~ ' + f4(Math.max(a, b)) + ' mm']);
+    } else if (!isInt && Q.src === 'span' && Q.k >= 2) {
+      rows.push(['对应公法线 W' + Q.k, f4(G.WFromThickness(P, lo, Q.k)) + ' ~ ' + f4(G.WFromThickness(P, hi, Q.k)) + ' mm']);
+    }
+    let note = '', bad = false;
+    if (qaInfo && qaInfo.fromThk) {
+      const dLo = isInt ? PI * m - qaInfo.sMax : qaInfo.sMin, dHi = isInt ? PI * m - qaInfo.sMin : qaInfo.sMax, tol = 0.002, w = isInt ? '齿槽宽' : '齿厚';
+      if (dLo >= lo - tol && dHi <= hi + tol) note = '图纸检测尺寸对应的实际' + w + ' ' + f4(dLo) + '~' + f4(dHi) + ' 在 DIN 5480 实际' + w + '范围内 ✓';
+      else { bad = true; note = '图纸检测尺寸对应的实际' + w + ' ' + f4(dLo) + '~' + f4(dHi) + ' 与按所填偏差、公差算出的 ' + f4(lo) + '~' + f4(hi) + ' 不一致，请核对所填数值或向客户确认。'; accWarn.push('DIN 5480 ' + w + '与所填公差带不一致，详见“精度等级换算”'); }
+    }
+    out.innerHTML = '<table class="acctbl"><thead><tr><th>项目</th><th>数值</th></tr></thead><tbody>' + rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('') + '</tbody></table>' +
+      (note ? `<div class="accnote" style="color:${bad ? 'var(--warn)' : 'var(--ok)'}">${note}</div>` : '') +
+      `<div class="accnote">${cls ? '公差等级 ' + cls + (cls < 5 || cls > 12 ? '（DIN 5480 只有 5–12 级）' : '') + '。' : ''}按 DIN 5480-1:2006 表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸（跨棒距、公法线）控制的是实际值。${Math.abs(ratio - 1.6) > 0.25 ? '所填 T<sub>G</sub>/T<sub>act</sub> = ' + ratio.toFixed(2) + '，标准取约 1.6，请核对。' : ''}</div>`;
+    return null;
+  }
   function calcAcc() {
     const card = $('accCard'), out = $('accOut'), grid = card.querySelector('.grid');
     if (type === 'rect') { card.hidden = true; return null; }
@@ -1831,17 +1877,20 @@ if (typeof module !== 'undefined') module.exports = HX;
       grid.hidden = false; $('a_std').closest('.f').hidden = true;
       const isIntS = P.type === 'internal';
       keepHint(qLab, '花键公差等级<b>4–7，配合 ' + (isIntS ? 'H' : 'h') + '</b>');
+      const dinF = card.querySelectorAll('[data-din]');
       if (lastFV.preset === 'din') {
-        $('accStd').textContent = 'DIN 5480';
-        out.innerHTML = '<div class="accnote">DIN 5480 的齿厚公差按 DIN 5480-15/16 的公差带（如 9g、8f）查表，程序暂不计算。请直接把图纸给出的公法线或跨棒距填在“图纸检测数据”里。</div>';
-        return null;
+        dinF.forEach(e => e.hidden = false);
+        $('accStd').textContent = 'DIN 5480-1:2006';
+        keepHint(qLab, '公差等级<b>5–12，只作标注</b>');
+        return calcDin(isIntS, out);
       }
+      dinF.forEach(e => e.hidden = true);
       $('accStd').textContent = 'GB/T 3478.1 ≈ ISO 4156';
       const c = Math.round(parseFloat($('a_q').value) || 0);
       if (!c) { out.innerHTML = '<div class="accnote">填写公差等级（如图纸 6h 填 6）后，按 GB/T 3478.1（ISO 4156）的公式算出总公差 T+λ、综合公差 λ，以及实际齿厚、作用齿厚的上下限，并和图纸检测数据核对。</div>'; return null; }
       if (c < 4 || c > 7) { out.innerHTML = '<div class="accnote">花键公差等级只有 4、5、6、7 级。</div>'; return null; }
       const m = P.mn, z = P.z, D = m * z, S0 = PI * m / 2, gL = P.b || 0;
-      const i1 = 0.45 * Math.cbrt(D) + 0.001 * D, i2 = 0.45 * Math.cbrt(S0) + 0.001 * S0;
+      const i1 = splI(D), i2 = splI(S0);
       const K = { 4: [10, 40, 2.5, 6.3, 1.6, 10, 0.8, 4], 5: [16, 64, 3.55, 9, 2.5, 16, 1, 5], 6: [25, 100, 5, 12.5, 4, 25, 1.25, 6.3], 7: [40, 160, 7.1, 18, 6.3, 40, 2, 10] }[c];
       const Tl = K[0] * i1 + K[1] * i2, Lh = PI * m * z / 2;
       const Fp = K[2] * Math.sqrt(Lh) + K[3], Fa = K[4] * m * (1 + 0.0125 * z) + K[5], Fb = K[6] * Math.sqrt(gL) + K[7];
@@ -1887,29 +1936,34 @@ if (typeof module !== 'undefined') module.exports = HX;
       out.innerHTML = '<table class="acctbl"><thead><tr><th>项目</th><th>数值</th></tr></thead><tbody>' +
         rowsH.map(r => `<tr><td>${r[0]}</td><td>${r[2]}${r[1] === 'µm' ? ' µm' : ''}</td></tr>`).join('') + '</tbody></table>' +
         (note ? `<div class="accnote" style="color:${bad ? 'var(--warn)' : 'var(--ok)'}">${note}</div>` : '') +
-        `<div class="accnote">按 ISO 4156-1:2005（GB/T 3478.1-2008 以它为基础）公式计算：T+λ = ${K[0]}i* + ${K[1]}i**，i* = 0.45∛D + 0.001D，i** = 0.45∛(πm/2) + 0.001(πm/2)，λ = 0.6√(Fp² + Fα² + Fβ²)，配合 h：作用齿厚上限 = 理论齿厚。Fβ 按“花键长度”计算。T+λ 的系数（4～7 级：10/40、16/64、25/100、40/160）已与 ISO 4156-1 公开资料核对；Fp、Fα、Fβ 公式来自公开资料。ISO 4156-1 已有 2021 版，基本齿廓与 2005 版相同。</div>`;
+        `<div class="accnote">按 ISO 4156-1:2005（GB/T 3478.1-2008 以它为基础）公式计算：T+λ = ${K[0]}i* + ${K[1]}i**，i* = 0.45∛D + 0.001D（D > 500 mm 时 0.004D + 2.1），i** = 0.45∛(πm/2) + 0.001(πm/2)，λ = 0.6√(Fp² + Fα² + Fβ²)，配合 h：作用齿厚上限 = 理论齿厚。Fβ 按“花键长度”计算。T+λ 的系数（4～7 级：10/40、16/64、25/100、40/160）已与 ISO 4156-1 公开资料核对；Fp、Fα、Fβ 公式来自公开资料。ISO 4156-1 已有 2021 版，基本齿廓与 2005 版相同。</div>`;
       return { Fa };
     }
+    card.querySelectorAll('[data-din]').forEach(e => e.hidden = true);
     $('a_std').closest('.f').hidden = false; keepHint(qLab, '精度等级<b>0=不算</b>');
     const std = $('a_std').value, g = parseFloat($('a_q').value) || 0, ed13 = std !== 'iso95';
-    grid.hidden = false; $('accStd').textContent = ed13 ? 'GB/T 10095.1-2022 = ISO 1328-1:2013' : 'GB/T 10095.1-2008 = ISO 1328-1:1995';
+    const gb2363 = std === 'gb2363';
+    grid.hidden = false; $('accStd').textContent = gb2363 ? 'GB/T 2363-2025（小模数）' : ed13 ? 'GB/T 10095.1-2022 = ISO 1328-1:2013' : 'GB/T 10095.1-2008 = ISO 1328-1:1995';
     if (!(g > 0)) { out.innerHTML = '<div class="accnote">填写精度等级后，按所选标准的公式算出齿距、齿廓、螺旋线和径向跳动公差，并据此给出刀具廓形公差建议。现行国标为 GB/T 10095.1-2022（等同 ISO 1328-1:2013）。</div>'; return null; }
     let Q = g, note = '';
     if (std === 'agmaA') note = 'ANSI/AGMA ISO 1328-1-B14 等同 ISO 1328-1:2013，A 级与 ISO 同号等级相同；早先的 AGMA 2015-1-A01 公式也与它一致。';
     if (std === 'agmaQ') { Q = 17 - g; note = 'AGMA 2000 的 Q 级数字越大越精密，按经验 ISO ≈ 17 − Q，这里按 ISO 1328-1:2013 的 ' + Q + ' 级计算，只作参考，请向客户确认。'; }
-    const qMin = ed13 ? 1 : 0, qMax = ed13 ? 11 : 12;
-    if (!(Q >= qMin && Q <= qMax)) { out.innerHTML = '<div class="accnote">等级超出范围：' + (ed13 ? 'ISO 1328-1:2013 / GB/T 10095.1-2022 为 1–11 级。' : 'ISO 1328-1:1995 / GB/T 10095.1-2008 为 0–12 级。') + '</div>'; return null; }
+    if (gb2363) note = 'GB/T 2363-2025 第 5 章公式 (1)～(9) 的原文未能取得。公开解读给出的 f<sub>pT</sub>、F<sub>pT</sub>、F<sub>rT</sub> 公式与 GB/T 10095.1-2022 相同，标准正文又规定标注、评价按 GB/T 10095.1-2022 第 4.5、4.6 节执行，所以这里各项都按 GB/T 10095.1-2022 公式（4～11 级）计算。齿廓、螺旋线两项的系数未与原文核对，结果仅供参考，以标准原文为准。GB/T 2363-2025 不给切向、径向综合偏差的公差值。';
+    const qMin = gb2363 ? 4 : ed13 ? 1 : 0, qMax = ed13 ? 11 : 12;
+    if (!(Q >= qMin && Q <= qMax)) { out.innerHTML = '<div class="accnote">等级超出范围：' + (gb2363 ? 'GB/T 2363-2025 为 4–11 级。' : ed13 ? 'ISO 1328-1:2013 / GB/T 10095.1-2022 为 1–11 级。' : 'ISO 1328-1:1995 / GB/T 10095.1-2008 为 0–12 级。') + '</div>'; return null; }
     const d = 2 * geo.r, m = P.mn, b = P.b || 0, f = Math.pow(2, (Q - 5) / 2);
     const rd = v => v > 10 ? Math.round(v) : v >= 5 ? Math.round(v * 2) / 2 : Math.round(v * 10) / 10;
     let items, rangeTxt;
     if (ed13) {
       // ISO 1328-1:2013 第 5.3 节公式，直接用实际 d、mn、b（不再分段取几何平均）；FαT、FβT 用未圆整的分量合成；FrT 按附录推荐 0.9FpT
-      const sd = Math.sqrt(d), sb = Math.sqrt(Math.max(b, 4));
+      const sd = Math.sqrt(d), sb = Math.sqrt(gb2363 ? Math.max(b, 0.2) : Math.max(b, 4));
       const fH = (0.4 * m + 0.001 * d + 4) * f, ff = (0.55 * m + 5) * f, fHb = (0.05 * sd + 0.35 * sb + 4) * f, ffb = (0.07 * sd + 0.45 * sb + 4) * f, Fp = (0.002 * d + 0.55 * sd + 0.7 * m + 12) * f;
       items = [['单个齿距公差', '±fpT', (0.001 * d + 0.4 * m + 5) * f], ['齿距累积总公差', 'FpT', Fp], ['齿廓总公差', 'FαT', Math.hypot(fH, ff)], ['齿廓形状公差', 'ffαT', ff], ['齿廓倾斜公差', '±fHαT', fH],
         ['螺旋线总公差', 'FβT', Math.hypot(fHb, ffb)], ['螺旋线形状公差', 'ffβT', ffb], ['螺旋线倾斜公差', '±fHβT', fHb], ['径向跳动公差（附录推荐）', 'FrT', 0.9 * Fp]].map(r => [r[0], r[1], rd(r[2])]);
-      const out_ = P.z < 5 || P.z > 1000 || d < 5 || d > 15000 || m < 0.5 || m > 70 || (b > 0 && (b < 4 || b > 1200)) || Math.abs(P.beta || 0) > 45 * D2R;
-      rangeTxt = `按 ${Q} 级，分度圆 d = ${d.toFixed(1)}、法向模数 ${m}、齿宽 ${b} 直接计算（2013 版不再分段）。${out_ ? '<br>有参数超出标准适用范围（z 5–1000、d 5–15000、mn 0.5–70、b 4–1200、β ≤ 45°），结果仅供参考。' : ''}`;
+      const out_ = gb2363 ? P.z < 5 || P.z > 200 || d < 0.5 || d > 100 || m < 0.1 || m >= 0.5 || (b > 0 && (b < 0.2 || b > 10)) || Math.abs(P.beta || 0) > 45 * D2R
+        : P.z < 5 || P.z > 1000 || d < 5 || d > 15000 || m < 0.5 || m > 70 || (b > 0 && (b < 4 || b > 1200)) || Math.abs(P.beta || 0) > 45 * D2R;
+      const rng = gb2363 ? 'z 5–200、d 0.5–100、mn 0.1–<0.5、b 0.2–10、β ≤ 45°' : 'z 5–1000、d 5–15000、mn 0.5–70、b 4–1200、β ≤ 45°';
+      rangeTxt = `按 ${Q} 级，分度圆 d = ${d.toFixed(1)}、法向模数 ${m}、齿宽 ${b} 直接计算（不分段）。${out_ ? '<br>有参数超出标准适用范围（' + rng + '），结果仅供参考。' : ''}${!gb2363 && m < 0.5 && m >= 0.1 ? '<br>法向模数小于 0.5，属于小模数齿轮，国标为 GB/T 2363-2025，可在“精度标准”里改选。' : ''}`;
     } else {
       const D = gmean(AD, d), Mi = gmean(AM, m), B = gmean(AB, Math.max(b, 4));
       const sd = Math.sqrt(D.g), sm = Math.sqrt(Mi.g), sb = Math.sqrt(B.g);
@@ -1928,6 +1982,7 @@ if (typeof module !== 'undefined') module.exports = HX;
   }
   $('a_std').addEventListener('change', schedule);
   $('a_q').addEventListener('input', schedule);
+  ['a_dA', 'a_dTG', 'a_dTa'].forEach(id => $(id).addEventListener('input', schedule));
 
   // ---------- 齿形修正参数 ----------
   function readMod() {
