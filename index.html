@@ -1899,6 +1899,8 @@ if (typeof module !== 'undefined') module.exports = HX;
         rows.push(['单个齿距偏差 f<sub>p</sub>（推荐值）', gd[0] + ' µm'], ['齿廓总偏差 F<sub>α</sub>（推荐值）', gd[1] + ' µm'], ['螺旋线总偏差 F<sub>β</sub>（推荐值，长度 ' + (b <= 50 ? '≤50' : b <= 100 ? '≤100' : '≤200') + '）', fb + ' µm' + (b > 200 ? '（长度超过 200，取 200 栏）' : '')]);
       } else rows.push(['f<sub>p</sub>、F<sub>α</sub>、F<sub>β</sub> 推荐值', '本行原文未取得']);
     }
+    { const dP = m * P.z, fr = dP < 18 ? 20 : dP < 30 ? 30 : dP < 50 ? 40 : dP < 100 ? 50 : dP < 200 ? 60 : dP < 500 ? 80 : NaN;
+      rows.push(['径向跳动 F<sub>r</sub>（表 8 推荐值，分度圆 d = ' + dP.toFixed(1) + '）', isNaN(fr) ? '表 8 只到 d < 500' : fr + ' µm']); }
     let note = '', bad = false;
     if (qaInfo && qaInfo.fromThk) {
       const dLo = isInt ? PI * m - qaInfo.sMax : qaInfo.sMin, dHi = isInt ? PI * m - qaInfo.sMin : qaInfo.sMax, tol = 0.002, w = isInt ? '齿槽宽' : '齿厚';
@@ -1908,7 +1910,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     const warnTab = T && !T.inTable ? '<br><span style="color:var(--warn)">该模数和基准直径的组合不在 DIN 5480 表中（表 4、表 7 此格为空），按相邻档外推，请向客户确认。</span>' : '';
     out.innerHTML = '<table class="acctbl"><thead><tr><th>项目</th><th>数值</th></tr></thead><tbody>' + rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('') + '</tbody></table>' +
       (note ? `<div class="accnote" style="color:${bad ? 'var(--warn)' : 'var(--ok)'}">${note}</div>` : '') +
-      `<div class="accnote">按 DIN 5480-1:2006 表 7 查偏差和公差（尺寸档由基准直径段和模数段决定；每升一级 T<sub>G</sub> 在优先数系 R20 上升三档，T<sub>act</sub> 比 T<sub>G</sub> 低四档，T<sub>G</sub>/T<sub>act</sub> ≈ 1.6），再按表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸控制的是实际值。表 7 由公开的标准译本片段重建，已用标准示例 120×3×38（9H/8f）、KISSsoft 报告 70×3×22（7H/6f）、DIN 5480-2 根径偏差（45×4、m1.25、m0.5）和实测 200×5×38 8g 跨棒距核对一致。${warnTab}</div>`;
+      `<div class="accnote">按 DIN 5480-1:2006 表 7 查偏差和公差（尺寸档由基准直径段和模数段决定；每升一级 T<sub>G</sub> 在优先数系 R20 上升三档，T<sub>act</sub> 比 T<sub>G</sub> 低四档，T<sub>G</sub>/T<sub>act</sub> ≈ 1.6），再按表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸控制的是实际值。表 7 由公开的标准译本片段重建，已用标准示例 120×3×38（9H/8f）、KISSsoft 报告 70×3×22（7H/6f）、DIN 5480-2 根径偏差（45×4、m1.25、m0.5）和实测 200×5×38 8g 跨棒距核对一致。径向跳动推荐值取自表 8（按分度圆直径分档，是推荐值不是公差）。${warnTab}</div>`;
     return null;
   }
   function calcAcc() {
@@ -1991,7 +1993,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     let Q = g, note = '';
     if (std === 'agmaA') note = 'ANSI/AGMA ISO 1328-1-B14 等同 ISO 1328-1:2013，A 级与 ISO 同号等级相同；早先的 AGMA 2015-1-A01 公式也与它一致。';
     if (std === 'agmaQ') { Q = 17 - g; note = 'AGMA 2000 的 Q 级数字越大越精密，按经验 ISO ≈ 17 − Q，这里按 ISO 1328-1:2013 的 ' + Q + ' 级计算，只作参考，请向客户确认。'; }
-    if (gb2363) note = 'GB/T 2363-2025 第 5.1 条公式 (1)～(9)：已从标准原文核对 (1) f<sub>pT</sub>、(2) F<sub>pT</sub>、(3) f<sub>HαT</sub>、(5) F<sub>αT</sub>（用未圆整值合成）、(7) f<sub>fβT</sub>、(8) F<sub>βT</sub>，系数和级间公比 √2 与 GB/T 10095.1-2022 完全相同；(4) f<sub>fαT</sub>、(6) f<sub>HβT</sub>、(9) F<sub>rT</sub> 和 5.2 圆整规则未取得原文，按 GB/T 10095.1-2022 计算（公开解读给出 F<sub>rT</sub> = 0.9F<sub>pT</sub>）。GB/T 2363-2025 不给切向、径向综合偏差的公差值；法向模数小于 0.1 mm 时可参考本标准，但仅限供需双方协商使用。';
+    if (gb2363) note = 'GB/T 2363-2025 第 5.1 条公式 (1)～(9)：已从标准原文核对 (1) f<sub>pT</sub>、(2) F<sub>pT</sub>、(3) f<sub>HαT</sub>、(5) F<sub>αT</sub>（用未圆整值合成）、(6) f<sub>HβT</sub>、(7) f<sub>fβT</sub>、(8) F<sub>βT</sub>，系数和级间公比 √2 与 GB/T 10095.1-2022 完全相同；(4) f<sub>fαT</sub>、(9) F<sub>rT</sub> 和 5.2 圆整规则未取得原文，按 GB/T 10095.1-2022 计算（公开解读给出 F<sub>rT</sub> = 0.9F<sub>pT</sub>）。GB/T 2363-2025 不给切向、径向综合偏差的公差值；法向模数小于 0.1 mm 时可参考本标准，但仅限供需双方协商使用。';
     const qMin = gb2363 ? 4 : ed13 ? 1 : 0, qMax = ed13 ? 11 : 12;
     if (!(Q >= qMin && Q <= qMax)) { out.innerHTML = '<div class="accnote">等级超出范围：' + (gb2363 ? 'GB/T 2363-2025 为 4–11 级。' : ed13 ? 'ISO 1328-1:2013 / GB/T 10095.1-2022 为 1–11 级。' : 'ISO 1328-1:1995 / GB/T 10095.1-2008 为 0–12 级。') + '</div>'; return null; }
     const d = 2 * geo.r, m = P.mn, b = P.b || 0, f = Math.pow(2, (Q - 5) / 2);
