@@ -185,11 +185,12 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
   <section class="card" id="accCard">
     <h2>精度等级换算 <span id="accStd">GB/T 10095.1 ≈ ISO 1328-1:1995</span></h2>
     <div class="grid" style="margin-top:0">
-      <div class="f"><label for="a_std">精度标准</label><select id="a_std"><option value="iso13">GB/T 10095.1-2022 = ISO 1328-1:2013（现行）</option><option value="iso95">GB/T 10095.1-2008 = ISO 1328-1:1995（旧版）</option><option value="agmaA">ANSI/AGMA ISO 1328-1-B14 / AGMA 2015（A 级）</option><option value="agmaQ">AGMA 2000（Q 级，已作废）</option><option value="gb2363">GB/T 2363-2025 小模数（mn 0.1–0.5，4–11 级）</option></select></div>
+      <div class="f"><label for="a_std">精度标准</label><select id="a_std"><option value="iso13">GB/T 10095.1-2022 = ISO 1328-1:2013（现行）</option><option value="iso95">GB/T 10095.1-2008 = ISO 1328-1:1995（旧版）</option><option value="agmaA">ANSI/AGMA ISO 1328-1-B14 / AGMA 2015（A 级）</option><option value="agmaQ">AGMA 2000（Q 级，已作废）</option><option value="gb2363">GB/T 2363-2025 小模数（mn 0.1–<0.5，4–11 级）</option></select></div>
       <div class="f"><label for="a_q">精度等级<b>0=不算</b></label><input id="a_q" type="number" step="1" inputmode="numeric" value="0"></div>
-      <div class="f" data-din hidden><label for="a_dA">偏差 A<sub>s</sub> / A<sub>e</sub><b>µm，带正负号</b></label><input id="a_dA" type="number" step="1" inputmode="decimal" value=""></div>
-      <div class="f" data-din hidden><label for="a_dTG">总公差 T<sub>G</sub><b>µm</b></label><input id="a_dTG" type="number" step="1" inputmode="decimal" value=""></div>
-      <div class="f" data-din hidden><label for="a_dTa">实际公差 T<sub>act</sub><b>µm</b></label><input id="a_dTa" type="number" step="1" inputmode="decimal" value=""></div>
+      <div class="f" data-din hidden><label for="a_dL">偏差字母</label><select id="a_dL"></select></div>
+      <div class="f" data-din hidden><label for="a_dA">手工覆盖 A<sub>s</sub>/A<sub>e</sub><b>µm，可空</b></label><input id="a_dA" type="number" step="1" inputmode="decimal" value=""></div>
+      <div class="f" data-din hidden><label for="a_dTG">手工覆盖 T<sub>G</sub><b>µm，可空</b></label><input id="a_dTG" type="number" step="1" inputmode="decimal" value=""></div>
+      <div class="f" data-din hidden><label for="a_dTa">手工覆盖 T<sub>act</sub><b>µm，可空</b></label><input id="a_dTa" type="number" step="1" inputmode="decimal" value=""></div>
     </div>
     <div id="accOut"></div>
   </section>
@@ -1827,16 +1828,49 @@ if (typeof module !== 'undefined') module.exports = HX;
     let i = 0; while (i < arr.length - 2 && v > arr[i + 1]) i++;
     return { g: Math.sqrt(arr[i] * arr[i + 1]), lo: arr[i], hi: arr[i + 1], out: v < arr[0] || v > arr[arr.length - 1] };
   }
-  // DIN 5480-1:2006 表 6 公差极限：Ae/As、TG、Tact 由用户按表 7 查得后填入（表 7 数值未能从公开资料取得）
+  // DIN 5480-1:2006 表 7（由标准中文译本公开文本、标准数据框示例、KISSsoft 报告、DIN 5480-2 根径偏差和实测跨棒距反推并交叉核对）
+  // 9 个尺寸档：档号 = 基准直径段号（≤12,≤25,≤50,≤100,≤200,≤400,>400 → 0–6）+ 模数段号（0.5–1.5,1.75–4,5–10 → 0–2）
+  const DIN_B = [80, 90, 100, 110, 125, 140, 160, 180, 200];
+  const DIN_R = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 25, 28, 32, 36, 40, 45, 50, 56, 63, 71, 80, 90, 100, 112, 125, 140, 160, 180, 200, 224, 250, 280, 315, 355, 400];
+  // 偏差系列（表 7 偏差栏，按尺寸档 0–8 排列，µm）；轴 v…a，毂 F…M（同一行数值相同）
+  const DIN_DEV = {
+    v: [80, 90, 100, 110, 125, 140, 160, 180, 200], u: [72, 81, 90, 99, 112, 126, 144, 162, 180], t: [64, 72, 80, 88, 100, 112, 128, 144, 160],
+    s: [56, 63, 70, 77, 88, 98, 112, 126, 140], r: [48, 54, 60, 66, 75, 84, 96, 108, 120], p: [40, 45, 50, 55, 62, 70, 80, 90, 100],
+    n: [32, 36, 40, 44, 50, 56, 64, 72, 80], m: [24, 27, 30, 33, 37, 42, 48, 54, 60], k: [16, 18, 20, 22, 25, 28, 32, 36, 40],
+    j: [8, 9, 10, 11, 12, 14, 16, 18, 20], h: [0, 0, 0, 0, 0, 0, 0, 0, 0], g: [-8, -9, -10, -11, -12, -14, -16, -18, -20],
+    f: [-16, -18, -20, -22, -25, -28, -32, -36, -40], e: [-24, -27, -30, -33, -37, -42, -48, -54, -60], d: [-32, -36, -40, -44, -50, -56, -64, -72, -80],
+    c: [-48, -54, -60, -66, -75, -84, -96, -108, -120], b: [-64, -72, -80, -88, -100, -112, -128, -144, -160], a: [-80, -90, -100, -110, -125, -140, -160, -180, -200],
+  };
+  ['F', 'G', 'H', 'J', 'K', 'M'].forEach((L, i) => DIN_DEV[L] = DIN_DEV['kjhgfe'[i]]);
+  // 单项偏差推荐值（表 7 右栏）：TG → [fp, Fα, Fβ≤50, Fβ≤100, Fβ≤200]，Fp = Tact；只收已取得原文的行
+  const DIN_GUIDE = { 12: [3.5, 5, 5, 8, 10], 14: [4, 5.5, 5, 8, 10], 16: [4.5, 6, 5, 8, 11], 18: [5, 6, 6, 9, 11], 20: [5.5, 7, 6, 9, 12], 22: [6, 8, 6, 9, 13],
+    25: [7, 9, 7, 10, 13], 28: [8, 10, 7, 10, 14], 32: [9, 11, 8, 11, 14], 36: [10, 12, 8, 11, 15], 40: [11, 13, 9, 12, 16], 45: [12, 15, 9, 12, 17],
+    50: [13, 17, 10, 13, 18], 56: [15, 19, 10, 13, 19], 90: [24, 28, 14, 17, 23], 100: [27, 31, 15, 18, 24] };
+  function dinTable(dB, m, cls, L) {
+    const r = dB <= 12 ? 0 : dB <= 25 ? 1 : dB <= 50 ? 2 : dB <= 100 ? 3 : dB <= 200 ? 4 : dB <= 400 ? 5 : 6;
+    const g = m <= 1.5 ? 0 : m <= 4 ? 1 : 2, col = Math.min(8, r + g);
+    const inTable = g === 0 ? r <= 4 : g === 1 ? r >= 1 && r <= 5 : r >= 2;
+    const iTG = 4 + col + 3 * (cls - 5), TG = DIN_R[iTG], Ta = DIN_R[iTG - 4];
+    return { col, inTable, B: DIN_B[col], TG, Ta, Te: TG - Ta, A: DIN_DEV[L] ? DIN_DEV[L][col] : NaN, guide: DIN_GUIDE[TG] };
+  }
   function calcDin(isInt, out) {
-    const A = parseFloat($('a_dA').value), TG = parseFloat($('a_dTG').value), Ta = parseFloat($('a_dTa').value);
-    const cls = Math.round(parseFloat($('a_q').value) || 0);
-    const intro = 'DIN 5480 用公差等级（5–12）加偏差字母标注，如轴 8f、毂 9H。按 DIN 5480-1:2006 表 7 查出偏差 A<sub>s</sub>（轴）或 A<sub>e</sub>（毂）、总公差 T<sub>G</sub> 和实际公差 T<sub>act</sub>，填入上面三格，程序按表 6 算出作用和实际齿厚（齿槽宽）上下限及对应检测尺寸。表 7 全表未能从公开资料取得，所以这三项需要手工查表填写。可核对的例子（DIN 5480-1 第 9 章数据框示例 120×3×38）：毂 9H 为 A<sub>e</sub> 0、T<sub>G</sub> 90、T<sub>act</sub> 56 µm；轴 8f 为 A<sub>s</sub> −28、T<sub>G</sub> 63、T<sub>act</sub> 40 µm。';
-    if (!(isFinite(A) && TG > 0 && Ta > 0)) { out.innerHTML = `<div class="accnote">${intro}</div>`; return null; }
+    const m = P.mn, cls = Math.round(parseFloat($('a_q').value) || 0), selL = $('a_dL');
+    const letters = isInt ? ['H', 'F', 'G', 'J', 'K', 'M'] : ['h', 'f', 'e', 'd', 'g', 'c', 'b', 'a', 'j', 'k', 'm', 'n', 'p', 'r', 's', 't', 'u', 'v'];
+    if (selL.dataset.side !== (isInt ? 'i' : 'e')) { selL.innerHTML = letters.map(l => `<option>${l}</option>`).join(''); selL.dataset.side = isInt ? 'i' : 'e'; }
+    const L = selL.value;
+    const xs = isInt ? -P.x : P.x, dB = m * P.z + 2 * xs * m + 1.1 * m;
+    const mA = parseFloat($('a_dA').value), mTG = parseFloat($('a_dTG').value), mTa = parseFloat($('a_dTa').value);
+    const manual = isFinite(mA) || mTG > 0 || mTa > 0;
+    if (!cls && !manual) { out.innerHTML = '<div class="accnote">填写公差等级（5–12）并选偏差字母（图纸 8f 填 8、选 f；9H 填 9、选 H），程序按 DIN 5480-1:2006 表 7 查出偏差和公差，再按表 6 算出作用、实际齿厚（齿槽宽）上下限和对应检测尺寸。图纸另有数值时可在“手工覆盖”三格里填写。</div>'; return null; }
+    if (cls && (cls < 5 || cls > 12)) { out.innerHTML = '<div class="accnote" style="color:var(--warn)">DIN 5480 公差等级只有 5–12 级。</div>'; return null; }
+    const T = cls ? dinTable(dB, m, cls, L) : null;
+    const A = isFinite(mA) ? mA : T ? T.A : NaN, TG = mTG > 0 ? mTG : T ? T.TG : NaN, Ta = mTa > 0 ? mTa : T ? T.Ta : NaN;
+    if (!(isFinite(A) && TG > 0 && Ta > 0)) { out.innerHTML = '<div class="accnote">手工覆盖时请把偏差、T<sub>G</sub>、T<sub>act</sub> 填全，或填写公差等级由程序查表。</div>'; return null; }
     if (Ta >= TG) { out.innerHTML = '<div class="accnote" style="color:var(--warn)">实际公差 T<sub>act</sub> 应小于总公差 T<sub>G</sub>（标准取 T<sub>G</sub>/T<sub>act</sub> ≈ 1.6）。</div>'; return null; }
-    const m = P.mn, Te = TG - Ta, sB = m * (PI / 2 + 2 * P.x * Math.tan(P.an)), Q = qaInfo ? qaInfo.Q : {};
-    const f4 = v => v.toFixed(4), r1 = v => (Math.round(v * 10) / 10).toFixed(1);
-    const ratio = TG / Ta, rows = [['偏差 ' + (isInt ? 'A<sub>e</sub>' : 'A<sub>s</sub>'), r1(A) + ' µm'], ['总公差 T<sub>G</sub>', r1(TG) + ' µm'], ['实际公差 T<sub>act</sub>', r1(Ta) + ' µm'], ['作用公差 T<sub>eff</sub> = T<sub>G</sub> − T<sub>act</sub>', r1(Te) + ' µm']];
+    const Te = TG - Ta, sB = m * (PI / 2 + 2 * P.x * Math.tan(P.an)), Q = qaInfo ? qaInfo.Q : {};
+    const f4 = v => v.toFixed(4), r1 = v => (Math.round(v * 10) / 10).toFixed(1), src = v => v ? '（手工）' : '';
+    const rows = [['基准直径 d<sub>B</sub> / 尺寸档', dB.toFixed(1) + (T ? ' mm / 第 ' + (T.col + 1) + ' 档' : ' mm')],
+      ['偏差 ' + (isInt ? 'A<sub>e</sub>' : 'A<sub>s</sub>') + (cls ? '（' + cls + L + '）' : '') + src(isFinite(mA)), r1(A) + ' µm'], ['总公差 T<sub>G</sub>' + src(mTG > 0), r1(TG) + ' µm'], ['实际公差 T<sub>act</sub>' + src(mTa > 0), r1(Ta) + ' µm'], ['作用公差 T<sub>eff</sub> = T<sub>G</sub> − T<sub>act</sub>', r1(Te) + ' µm']];
     let lo, hi, nameEff, nameAct, effLo, effHi;
     if (isInt) {
       const e2 = PI * m - sB, evmin = e2 + A / 1000, emin = evmin + Te / 1000, emax = evmin + TG / 1000;
@@ -1857,15 +1891,24 @@ if (typeof module !== 'undefined') module.exports = HX;
     } else if (!isInt && Q.src === 'span' && Q.k >= 2) {
       rows.push(['对应公法线 W' + Q.k, f4(G.WFromThickness(P, lo, Q.k)) + ' ~ ' + f4(G.WFromThickness(P, hi, Q.k)) + ' mm']);
     }
+    if (T && !mTG && !mTa) {
+      const gd = T.guide, b = P.b || 0;
+      rows.push(['齿距累积偏差 F<sub>p</sub>（推荐值，= T<sub>act</sub>）', Ta + ' µm']);
+      if (gd) {
+        const fb = b <= 50 ? gd[2] : b <= 100 ? gd[3] : gd[4];
+        rows.push(['单个齿距偏差 f<sub>p</sub>（推荐值）', gd[0] + ' µm'], ['齿廓总偏差 F<sub>α</sub>（推荐值）', gd[1] + ' µm'], ['螺旋线总偏差 F<sub>β</sub>（推荐值，长度 ' + (b <= 50 ? '≤50' : b <= 100 ? '≤100' : '≤200') + '）', fb + ' µm' + (b > 200 ? '（长度超过 200，取 200 栏）' : '')]);
+      } else rows.push(['f<sub>p</sub>、F<sub>α</sub>、F<sub>β</sub> 推荐值', '本行原文未取得']);
+    }
     let note = '', bad = false;
     if (qaInfo && qaInfo.fromThk) {
       const dLo = isInt ? PI * m - qaInfo.sMax : qaInfo.sMin, dHi = isInt ? PI * m - qaInfo.sMin : qaInfo.sMax, tol = 0.002, w = isInt ? '齿槽宽' : '齿厚';
       if (dLo >= lo - tol && dHi <= hi + tol) note = '图纸检测尺寸对应的实际' + w + ' ' + f4(dLo) + '~' + f4(dHi) + ' 在 DIN 5480 实际' + w + '范围内 ✓';
-      else { bad = true; note = '图纸检测尺寸对应的实际' + w + ' ' + f4(dLo) + '~' + f4(dHi) + ' 与按所填偏差、公差算出的 ' + f4(lo) + '~' + f4(hi) + ' 不一致，请核对所填数值或向客户确认。'; accWarn.push('DIN 5480 ' + w + '与所填公差带不一致，详见“精度等级换算”'); }
+      else { bad = true; note = '图纸检测尺寸对应的实际' + w + ' ' + f4(dLo) + '~' + f4(dHi) + ' 与 DIN 5480 ' + (cls ? cls + L : '') + ' 的实际' + w + ' ' + f4(lo) + '~' + f4(hi) + ' 不一致，请向客户确认。'; accWarn.push('DIN 5480 ' + w + '与 ' + (cls ? cls + L : '所填公差带') + ' 不一致，详见“精度等级换算”'); }
     }
+    const warnTab = T && !T.inTable ? '<br><span style="color:var(--warn)">该模数和基准直径的组合不在 DIN 5480 表中（表 4、表 7 此格为空），按相邻档外推，请向客户确认。</span>' : '';
     out.innerHTML = '<table class="acctbl"><thead><tr><th>项目</th><th>数值</th></tr></thead><tbody>' + rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('') + '</tbody></table>' +
       (note ? `<div class="accnote" style="color:${bad ? 'var(--warn)' : 'var(--ok)'}">${note}</div>` : '') +
-      `<div class="accnote">${cls ? '公差等级 ' + cls + (cls < 5 || cls > 12 ? '（DIN 5480 只有 5–12 级）' : '') + '。' : ''}按 DIN 5480-1:2006 表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸（跨棒距、公法线）控制的是实际值。${Math.abs(ratio - 1.6) > 0.25 ? '所填 T<sub>G</sub>/T<sub>act</sub> = ' + ratio.toFixed(2) + '，标准取约 1.6，请核对。' : ''}</div>`;
+      `<div class="accnote">按 DIN 5480-1:2006 表 7 查偏差和公差（尺寸档由基准直径段和模数段决定；每升一级 T<sub>G</sub> 在优先数系 R20 上升三档，T<sub>act</sub> 比 T<sub>G</sub> 低四档，T<sub>G</sub>/T<sub>act</sub> ≈ 1.6），再按表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸控制的是实际值。表 7 由公开的标准译本片段重建，已用标准示例 120×3×38（9H/8f）、KISSsoft 报告 70×3×22（7H/6f）、DIN 5480-2 根径偏差（45×4、m1.25、m0.5）和实测 200×5×38 8g 跨棒距核对一致。${warnTab}</div>`;
     return null;
   }
   function calcAcc() {
@@ -1881,7 +1924,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       if (lastFV.preset === 'din') {
         dinF.forEach(e => e.hidden = false);
         $('accStd').textContent = 'DIN 5480-1:2006';
-        keepHint(qLab, '公差等级<b>5–12，只作标注</b>');
+        keepHint(qLab, '公差等级<b>5–12</b>');
         return calcDin(isIntS, out);
       }
       dinF.forEach(e => e.hidden = true);
@@ -1948,7 +1991,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     let Q = g, note = '';
     if (std === 'agmaA') note = 'ANSI/AGMA ISO 1328-1-B14 等同 ISO 1328-1:2013，A 级与 ISO 同号等级相同；早先的 AGMA 2015-1-A01 公式也与它一致。';
     if (std === 'agmaQ') { Q = 17 - g; note = 'AGMA 2000 的 Q 级数字越大越精密，按经验 ISO ≈ 17 − Q，这里按 ISO 1328-1:2013 的 ' + Q + ' 级计算，只作参考，请向客户确认。'; }
-    if (gb2363) note = 'GB/T 2363-2025 第 5 章公式 (1)～(9) 的原文未能取得。公开解读给出的 f<sub>pT</sub>、F<sub>pT</sub>、F<sub>rT</sub> 公式与 GB/T 10095.1-2022 相同，标准正文又规定标注、评价按 GB/T 10095.1-2022 第 4.5、4.6 节执行，所以这里各项都按 GB/T 10095.1-2022 公式（4～11 级）计算。齿廓、螺旋线两项的系数未与原文核对，结果仅供参考，以标准原文为准。GB/T 2363-2025 不给切向、径向综合偏差的公差值；法向模数小于 0.1 mm 时可参考本标准，但仅限供需双方协商使用。';
+    if (gb2363) note = 'GB/T 2363-2025 第 5.1 条公式 (1)～(9)：已从标准原文核对 (1) f<sub>pT</sub>、(2) F<sub>pT</sub>、(3) f<sub>HαT</sub>、(5) F<sub>αT</sub>（用未圆整值合成）、(7) f<sub>fβT</sub>、(8) F<sub>βT</sub>，系数和级间公比 √2 与 GB/T 10095.1-2022 完全相同；(4) f<sub>fαT</sub>、(6) f<sub>HβT</sub>、(9) F<sub>rT</sub> 和 5.2 圆整规则未取得原文，按 GB/T 10095.1-2022 计算（公开解读给出 F<sub>rT</sub> = 0.9F<sub>pT</sub>）。GB/T 2363-2025 不给切向、径向综合偏差的公差值；法向模数小于 0.1 mm 时可参考本标准，但仅限供需双方协商使用。';
     const qMin = gb2363 ? 4 : ed13 ? 1 : 0, qMax = ed13 ? 11 : 12;
     if (!(Q >= qMin && Q <= qMax)) { out.innerHTML = '<div class="accnote">等级超出范围：' + (gb2363 ? 'GB/T 2363-2025 为 4–11 级。' : ed13 ? 'ISO 1328-1:2013 / GB/T 10095.1-2022 为 1–11 级。' : 'ISO 1328-1:1995 / GB/T 10095.1-2008 为 0–12 级。') + '</div>'; return null; }
     const d = 2 * geo.r, m = P.mn, b = P.b || 0, f = Math.pow(2, (Q - 5) / 2);
@@ -1983,6 +2026,7 @@ if (typeof module !== 'undefined') module.exports = HX;
   $('a_std').addEventListener('change', schedule);
   $('a_q').addEventListener('input', schedule);
   ['a_dA', 'a_dTG', 'a_dTa'].forEach(id => $(id).addEventListener('input', schedule));
+  $('a_dL').addEventListener('change', schedule);
 
   // ---------- 齿形修正参数 ----------
   function readMod() {
