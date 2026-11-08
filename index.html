@@ -2288,10 +2288,13 @@ if (typeof module !== 'undefined') module.exports = HX;
     const mx = Rmax * 1.0 + Hmax * 0.12, top0 = Hmax + shank + Hmax * 0.06, bot = -Hmax * 0.16;
     const TT = toolTol || {}, top = top0 + (TT.prof > 0 ? Hmax * 0.2 : 0);     // 轮廓度框放在刀柄上方
     let W = Math.max(2 * mx, Hmax * 0.75) + Hmax * 0.5;
-    const bot2 = -Hmax * 0.34;
+    let bot2 = -Hmax * 0.34;
     let fs = Math.max(W, top - bot2) * 0.038;
     // 轮廓度框约 7 个字宽，右对齐放在刀柄上方；画布太窄才加宽
     if (TT.prof > 0) for (let k = 0; k < 3; k++) { const need = 2 * (fs * 7.6); if (need <= W) break; W = need; fs = Math.max(W, top - bot2) * 0.038; }
+    // 刀齿顶下方有两行标注（弦宽 + 圆弧半径）时，底边留够两行字
+    const arc2 = cut.formTool && !cut.flat && cut.arcHalfW > 1e-3 && cut.arcDepth > 1e-6 && !geo.k;
+    if (arc2) bot2 = Math.min(bot2, -Hmax * 0.07 - fs * 3.0);
     const vb = [-W / 2, -top, W, top - bot2];
     svg.setAttribute('viewBox', vb.map(v => v.toFixed(3)).join(' '));
     const sw = 'vector-effect="non-scaling-stroke"';
@@ -2306,14 +2309,17 @@ if (typeof module !== 'undefined') module.exports = HX;
     const txt = (x, y, t, anc, rot) => `<text x="${x}" y="${-y}" font-size="${fs}" fill="var(--accent)" text-anchor="${anc || 'middle'}" ${rot ? `transform="rotate(-90 ${x} ${-y})"` : ''} style="font-family:var(--f-num)">${t}</text>`;
     s = `<defs><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 2 L10 5 L0 8 Z" fill="var(--accent)"/></marker></defs>` + s;
     // 直径标注
-    const dims = [], tipRd = cut.flat && !cut.formTool ? cut.flat.w / 2 : cp[1][1];
-    if (!cut.formTool && tipRd > 1e-3) dims.push([0, tipRd, 'below']);
+    // 刀尖 / 刀齿顶宽度：指型铣刀标刀尖平台直径；盘铣刀、插刀标刀齿顶直线段宽，圆弧刀齿顶标两端（弦）宽和圆弧半径
+    const arcTip = cut.formTool && !cut.flat && cut.arcHalfW > 1e-3 && cut.arcDepth > 1e-6;
+    const tipRd = cut.flat ? cut.flat.w / 2 : arcTip ? cut.arcHalfW : cp[1][1];
+    const dims = [];
+    if (tipRd > 1e-3) dims.push([0, tipRd, 'below', cut.formTool ? (cut.flat ? '直线 ' : arcTip ? '弦宽 ' : '') : '', arcTip && !cut.isExt ? cut.arcDepth : 0]);
     if (isFinite(cut.hP)) dims.push([cut.hP, cut.RP, 'side']);
     const e = cp[cp.length - 2]; dims.push([e[0], e[1], 'side']);
-    for (const [h, r, pos] of dims) {
-      const y = pos === 'below' ? -Hmax * 0.07 : h;
-      if (pos === 'below') s += `<line x1="${r}" y1="0" x2="${r}" y2="${-y}" stroke="var(--accent)" stroke-width="0.6" ${sw}/><line x1="${-r}" y1="0" x2="${-r}" y2="${-y}" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
-      const lab = (cut.formTool ? '' : 'Ø') + (2 * r).toFixed(3), ty = pos === 'below' ? y - fs * 1.05 : y + fs * 0.3;
+    for (const [h, r, pos, pre, h1] of dims) {
+      const y = pos === 'below' ? -Hmax * 0.07 : h, yE = -(h1 || 0);
+      if (pos === 'below') s += `<line x1="${r}" y1="${yE}" x2="${r}" y2="${-y}" stroke="var(--accent)" stroke-width="0.6" ${sw}/><line x1="${-r}" y1="${yE}" x2="${-r}" y2="${-y}" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
+      const lab = (pre || '') + (cut.formTool ? '' : 'Ø') + (2 * r).toFixed(3), ty = pos === 'below' ? y - fs * 1.05 : y + fs * 0.3;
       const isP = isFinite(cut.hP) && h === cut.hP && TT.lo;
       if (!isP) { s += arrow(-r, y, r, y) + txt(0, ty, lab); continue; }
       // 分度圆处直径（刀齿宽）带上下偏差：上偏差在上、下偏差在下，紧跟在尺寸数字后面
@@ -2322,6 +2328,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       const sm = (yy, t) => `<text x="${x0 + wMain + fs * 0.15}" y="${-yy}" font-size="${fs * 0.72}" fill="var(--accent)" text-anchor="start" style="font-family:var(--f-num)">${t}</text>`;
       s += sm(ty + fs * 0.62, TT.up) + sm(ty - fs * 0.12, TT.lo);
     }
+    if (arcTip && !geo.k) { const yR = -Hmax * 0.07 - fs * 2.2; s += txt(0, yR, `圆弧 R${geo.rf.toFixed(3)}（${cut.isExt ? '凹' : '凸'} ${cut.arcDepth.toFixed(3)}）`); }
     // 高度
     const xh = -mx * 0.98 - Hmax * 0.04;
     s += `<line x1="${xh - fs * 0.3}" y1="0" x2="${-tipRd}" y2="0" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
