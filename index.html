@@ -1867,9 +1867,9 @@ if (typeof module !== 'undefined') module.exports = HX;
   }
   $('t_kind').addEventListener('change', () => { syncTool(); schedule(); });
   ['t_D', 't_g', 't_a', 't_as', 't_Ds', 't_Lh'].forEach(id => $(id).addEventListener('input', schedule));
-  $('t_sec').addEventListener('change', () => { if (cut) { fillTable(); } });
+  $('t_sec').addEventListener('change', () => { if (cut) { drawCutter(); fillTable(); } });   // 刀具廓形图和坐标表用同一个截面
   $('t_rel').addEventListener('change', () => { syncSecOpts(); syncTool(); schedule(); });
-  $('t_base').addEventListener('change', () => { if (cut) fillTable(); });
+  $('t_base').addEventListener('change', () => { if (cut) { drawCutter(); fillTable(); } });
   $('t_tip').addEventListener('change', schedule);
   // 成形插刀：截面换算系数（齿高方向）与侧后角
   const SEC_OPTS = {
@@ -1955,6 +1955,8 @@ if (typeof module !== 'undefined') module.exports = HX;
     $('f_cang').hidden = t !== 'chamfer';
     $('lab_c').innerHTML = t === 'round' ? '圆角半径<b>mm</b>' : '倒角高度<b>mm 径向</b>';
     document.querySelectorAll('.rel').forEach(el => el.hidden = type === 'rect');
+    // 修缘高度、修缘曲线只在修缘量 Ca > 0 时起作用，Ca = 0 时不显示，免得以为选了有效果
+    if (type !== 'rect') { const ca = parseFloat($('m_Ca').value) > 0; $('m_hr').closest('.f').hidden = !ca; $('m_rshape').closest('.f').hidden = !ca; }
     $('qa').hidden = type === 'rect';
     syncQA();
   }
@@ -2028,7 +2030,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     }
     if ($('t_kind').value !== 'slot') stool = null;
     if (cut.flatFail) W.push('刀齿顶做成直线时圆角放不下（齿槽太窄或圆角太大），已按圆弧刀齿顶计算');
-    if (cut.flat && geo.k) W.push(cut.formTool ? '斜齿时刀齿顶直线在法向截面内，端面图和 3D 按换算到端面的槽形显示' : '斜齿时端面图仍显示原齿槽，3D 按刀具实际扫出的形状显示');
+    if (cut.flat && geo.k) W.push(cut.formTool ? '斜齿时刀齿顶直线在法向截面内，端面图和 3D 按换算到端面的槽形显示' : '斜齿时端面图中橙色虚线为刀具实际铣出的端面槽形，3D 也按它显示');
     accWarn = []; accRes = calcAcc();
     if (qaInfo && qaInfo.err) W.push(qaInfo.err);
     if (!cut.mono) W.push('刀具廓形高度方向不单调，已做单调化处理，请复核');
@@ -2264,6 +2266,9 @@ if (typeof module !== 'undefined') module.exports = HX;
     if (geo.k && cut.formTool) cr = G.fromNormal(cr, geo.k, geo.r);   // 斜齿：法向截面刀齿换算到端面再画
     const cl = cr.slice().reverse().map(q => [-q[0], q[1]]);
     s += `<path d="${pathD(cl.concat(cr), true)}" fill="var(--tin-soft)" stroke="var(--tin)" stroke-width="1.6" ${sw}/>`;
+    // 斜齿指型铣刀：刀具轴截面不等于端面槽形，另画刀具实际扫出的端面槽形（与 3D 一致）
+    let mhOn = false;
+    if (geo.k && !cut.formTool) { const mh = machinedHalf(geo.k); if (mh) { mhOn = true; const ml = mh.slice().reverse().map(q => [-q[0], q[1]]); s += `<path d="${pathD(ml.concat(mh.slice(1)))}" fill="none" stroke="var(--accent)" stroke-width="1.3" stroke-dasharray="2 2" ${sw}/>`; } }
     // 法向截面
     if (geo.k) {
       const src = geo.cutPts || geo.pts, hc = G.resample(src, Math.max(1e-3, polyLen(src) / 140));
@@ -2274,7 +2279,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     s += `<line x1="0" y1="${vb[1]}" x2="0" y2="${vb[1] + vb[3]}" stroke="var(--muted)" stroke-width="0.8" stroke-dasharray="10 3 2 3" ${sw}/>`;
     s += '</g>';
     svg.innerHTML = s;
-    $('lgT').innerHTML = `<span><i style="border-color:var(--ink)"></i>${geo.k ? '端面齿廓' : '齿廓'}</span><span><i style="border-color:var(--tin)"></i>${cut.slot ? '成形插刀端面' : cut.disc ? '盘形铣刀刀齿' : '指型铣刀轴截面'}${geo.k && cut.formTool ? '（换算到端面）' : ''}${geo.M && (geo.M.q || geo.M.pr) ? '（含留磨量）' : ''}</span>` + (geo.k ? `<span><i style="border-color:var(--warn);border-top-style:dashed"></i>法向截面</span>` : '');
+    $('lgT').innerHTML = `<span><i style="border-color:var(--ink)"></i>${geo.k ? '端面齿廓' : '齿廓'}</span><span><i style="border-color:var(--tin)"></i>${cut.slot ? '成形插刀端面' : cut.disc ? '盘形铣刀刀齿' : '指型铣刀轴截面'}${geo.k && cut.formTool ? '（换算到端面）' : ''}${geo.M && (geo.M.q || geo.M.pr) ? '（含留磨量）' : ''}</span>` + (mhOn ? `<span><i style="border-color:var(--accent);border-top-style:dashed"></i>铣出的端面槽形</span>` : '') + (geo.k ? `<span><i style="border-color:var(--warn);border-top-style:dashed"></i>法向截面</span>` : '');
     $('sc1').textContent = geo.kind === 'int' ? '内齿（刀尖朝外）' : '';
     svg.previousElementSibling.firstChild.textContent = '端面齿槽与刀具 ';   // 从蜗杆 / 转子页切回来时恢复标题
   }
@@ -2282,7 +2287,10 @@ if (typeof module !== 'undefined') module.exports = HX;
   // ---------- 2D：刀具图 ----------
   let toolTol = null;   // 刀具公差建议（renderResults 里算，drawCutter 里标到图上）：{ up, lo, prof }
   function drawCutter() {
-    const svg = $('svgC'), cp = cut.prof;
+    // 成形插刀 / 盘形铣刀：图按坐标表所选截面和齿高基准画，图上尺寸和坐标表一致
+    const cp = cut.formTool ? profOut() : cut.prof, svg = $('svgC');
+    const mapP = hh => { const P0 = cut.prof; for (let i = 1; i < P0.length; i++) { const a = P0[i - 1][0], b = P0[i][0]; if ((hh - a) * (hh - b) <= 0 && a !== b) { const t = (hh - a) / (b - a); return [cp[i - 1][0] + (cp[i][0] - cp[i - 1][0]) * t, cp[i - 1][1] + (cp[i][1] - cp[i - 1][1]) * t]; } } return [hh, NaN]; };
+    const hEdge = cut.formTool ? cp[cp.length - 2][0] : cut.hEdge, hPm = cut.formTool && isFinite(cut.hP) ? mapP(cut.hP) : [cut.hP, cut.RP], H0 = Math.min(0, ...cp.map(q => q[0]));
     const Hmax = cp[cp.length - 1][0], Rmax = Math.max(...cp.map(q => q[1]));
     const shank = Hmax * 0.18;
     const mx = Rmax * 1.0 + Hmax * 0.12, top0 = Hmax + shank + Hmax * 0.06, bot = -Hmax * 0.16;
@@ -2294,7 +2302,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     if (TT.prof > 0) for (let k = 0; k < 3; k++) { const need = 2 * (fs * 7.6); if (need <= W) break; W = need; fs = Math.max(W, top - bot2) * 0.038; }
     // 刀齿顶下方有两行标注（弦宽 + 圆弧半径）时，底边留够两行字
     const arc2 = cut.formTool && !cut.flat && cut.arcHalfW > 1e-3 && cut.arcDepth > 1e-6 && !geo.k;
-    if (arc2) bot2 = Math.min(bot2, -Hmax * 0.07 - fs * 3.0);
+    if (arc2 || cut.flatFail) bot2 = Math.min(bot2, -Hmax * 0.07 - fs * (arc2 && cut.flatFail ? 4.2 : 3.0));
     const vb = [-W / 2, -top, W, top - bot2];
     svg.setAttribute('viewBox', vb.map(v => v.toFixed(3)).join(' '));
     const sw = 'vector-effect="non-scaling-stroke"';
@@ -2304,7 +2312,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     let s = `<path d="${pathD(body, true)}" fill="var(--tin-soft)" stroke="var(--ink)" stroke-width="1.5" ${sw}/>`;
     s += `<line x1="0" y1="${-top}" x2="0" y2="${-bot}" stroke="var(--muted)" stroke-width="0.8" stroke-dasharray="10 3 2 3" ${sw}/>`;
     // 刃区上限线
-    s += `<line x1="${-mx}" y1="${-cut.hEdge}" x2="${mx}" y2="${-cut.hEdge}" stroke="var(--steel)" stroke-width="0.8" stroke-dasharray="3 3" ${sw}/>`;
+    s += `<line x1="${-mx}" y1="${-hEdge}" x2="${mx}" y2="${-hEdge}" stroke="var(--steel)" stroke-width="0.8" stroke-dasharray="3 3" ${sw}/>`;
     const arrow = (x1, y1, x2, y2) => `<line x1="${x1}" y1="${-y1}" x2="${x2}" y2="${-y2}" stroke="var(--accent)" stroke-width="1" ${sw} marker-start="url(#ar)" marker-end="url(#ar)"/>`;
     const txt = (x, y, t, anc, rot) => `<text x="${x}" y="${-y}" font-size="${fs}" fill="var(--accent)" text-anchor="${anc || 'middle'}" ${rot ? `transform="rotate(-90 ${x} ${-y})"` : ''} style="font-family:var(--f-num)">${t}</text>`;
     s = `<defs><marker id="ar" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 2 L10 5 L0 8 Z" fill="var(--accent)"/></marker></defs>` + s;
@@ -2314,13 +2322,13 @@ if (typeof module !== 'undefined') module.exports = HX;
     const tipRd = cut.flat ? cut.flat.w / 2 : arcTip ? cut.arcHalfW : cp[1][1];
     const dims = [];
     if (tipRd > 1e-3) dims.push([0, tipRd, 'below', cut.formTool ? (cut.flat ? '直线 ' : arcTip ? '弦宽 ' : '') : '', arcTip && !cut.isExt ? cut.arcDepth : 0]);
-    if (isFinite(cut.hP)) dims.push([cut.hP, cut.RP, 'side']);
+    if (isFinite(hPm[0])) dims.push([hPm[0], hPm[1], 'side']);
     const e = cp[cp.length - 2]; dims.push([e[0], e[1], 'side']);
     for (const [h, r, pos, pre, h1] of dims) {
       const y = pos === 'below' ? -Hmax * 0.07 : h, yE = -(h1 || 0);
       if (pos === 'below') s += `<line x1="${r}" y1="${yE}" x2="${r}" y2="${-y}" stroke="var(--accent)" stroke-width="0.6" ${sw}/><line x1="${-r}" y1="${yE}" x2="${-r}" y2="${-y}" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
       const lab = (pre || '') + (cut.formTool ? '' : 'Ø') + (2 * r).toFixed(3), ty = pos === 'below' ? y - fs * 1.05 : y + fs * 0.3;
-      const isP = isFinite(cut.hP) && h === cut.hP && TT.lo;
+      const isP = isFinite(hPm[0]) && h === hPm[0] && TT.lo;
       if (!isP) { s += arrow(-r, y, r, y) + txt(0, ty, lab); continue; }
       // 分度圆处直径（刀齿宽）带上下偏差：上偏差在上、下偏差在下，紧跟在尺寸数字后面
       const wMain = lab.length * fs * 0.6, wDev = Math.max(TT.up.length, TT.lo.length) * fs * 0.72 * 0.6, x0 = -(wMain + wDev) / 2;
@@ -2328,16 +2336,17 @@ if (typeof module !== 'undefined') module.exports = HX;
       const sm = (yy, t) => `<text x="${x0 + wMain + fs * 0.15}" y="${-yy}" font-size="${fs * 0.72}" fill="var(--accent)" text-anchor="start" style="font-family:var(--f-num)">${t}</text>`;
       s += sm(ty + fs * 0.62, TT.up) + sm(ty - fs * 0.12, TT.lo);
     }
-    if (arcTip && !geo.k) { const yR = -Hmax * 0.07 - fs * 2.2; s += txt(0, yR, `圆弧 R${geo.rf.toFixed(3)}（${cut.isExt ? '凹' : '凸'} ${cut.arcDepth.toFixed(3)}）`); }
+    if (cut.flatFail) s += `<text x="0" y="${-(-Hmax * 0.07 - fs * (arcTip && !geo.k ? 3.4 : 2.2))}" font-size="${fs}" fill="var(--warn)" text-anchor="middle">选了直线刀齿顶，但圆角放不下，已按圆弧</text>`;
+    if (arcTip && !geo.k) { const yR = -Hmax * 0.07 - fs * 2.2; const kS = cut.slot && slotSec().sec !== 'ref' ? slotSec().k : 1; s += txt(0, yR, `圆弧 R${geo.rf.toFixed(3)}（${cut.isExt ? '凹' : '凸'} ${(cut.arcDepth * kS).toFixed(3)}）`); }
     // 高度
     const xh = -mx * 0.98 - Hmax * 0.04;
     s += `<line x1="${xh - fs * 0.3}" y1="0" x2="${-tipRd}" y2="0" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
-    s += `<line x1="${xh - fs * 0.3}" y1="${-cut.hEdge}" x2="${-e[1]}" y2="${-cut.hEdge}" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
-    s += arrow(xh, 0, xh, cut.hEdge) + txt(xh - fs * 0.35, cut.hEdge / 2, cut.hEdge.toFixed(3), 'middle', true);
-    if (isFinite(cut.hP)) s += `<line x1="${-mx}" y1="${-cut.hP}" x2="${mx}" y2="${-cut.hP}" stroke="var(--muted)" stroke-width="0.7" stroke-dasharray="6 3 1.5 3" ${sw}/>` + `<text x="${mx}" y="${-cut.hP + (TT.lo ? fs * 1.0 : -fs * 0.25)}" font-size="${fs * 0.85}" fill="var(--muted)" text-anchor="end">分度圆 H=${cut.hP.toFixed(3)}</text>`;
+    s += `<line x1="${xh - fs * 0.3}" y1="${-hEdge}" x2="${-e[1]}" y2="${-hEdge}" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
+    s += arrow(xh, 0, xh, hEdge) + txt(xh - fs * 0.35, hEdge / 2, hEdge.toFixed(3), 'middle', true);
+    if (isFinite(hPm[0])) s += `<line x1="${-mx}" y1="${-hPm[0]}" x2="${mx}" y2="${-hPm[0]}" stroke="var(--muted)" stroke-width="0.7" stroke-dasharray="6 3 1.5 3" ${sw}/>` + `<text x="${mx}" y="${-hPm[0] + (TT.lo ? fs * 1.0 : -fs * 0.25)}" font-size="${fs * 0.85}" fill="var(--muted)" text-anchor="end">分度圆 H=${hPm[0].toFixed(3)}</text>`;
     if (TT.prof > 0) {
       // 引线：从右侧齿面（分度圆与刃区上限之间）引到右上方的轮廓度框 [⌒ | 公差 | A]
-      const hq = isFinite(cut.hP) ? (cut.hP + cut.hEdge) / 2 : cut.hEdge * 0.6, rq = G.xAtY(cp.map(q => [q[1], q[0]]), hq);
+      const hq = isFinite(hPm[0]) ? (hPm[0] + hEdge) / 2 : hEdge * 0.6, rq = G.xAtY(cp.map(q => [q[1], q[0]]), hq);
       const bw = [fs * 1.5, fs * 4.1, fs * 1.4], bh = fs * 1.45, bx = W / 2 - fs * 0.4 - bw[0] - bw[1] - bw[2], by = Hmax + shank + bh + fs * 0.6;
       const st = 'stroke="var(--accent)" stroke-width="1" fill="none" ' + sw;
       if (isFinite(rq)) s += `<path d="M${rq} ${-hq} L${bx - fs * 0.6} ${-(by - bh / 2)} L${bx} ${-(by - bh / 2)}" ${st}/><circle cx="${rq}" cy="${-hq}" r="${fs * 0.12}" fill="var(--accent)"/>`;
@@ -2353,7 +2362,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     }
     svg.innerHTML = s;
     $('hC').firstChild.textContent = cut.slot ? '成形插刀刀齿廓形 ' : cut.disc ? '盘形铣刀刀齿廓形 ' : '刀具轴向廓形 ';
-    $('capC').textContent = cut.slot ? '成形插刀刀齿端面形状（切削刃投影，等于齿槽形状），刀齿顶在下，标注值为刀齿宽度。坐标表可切换为前刀面或后刀面法向截面。' : cut.disc ? '盘形铣刀刀齿廓形，刀齿顶在下，横向是齿宽方向，标注值为刀齿宽度。点划线为分度圆位置，虚线以上为外延段。' : `刀尖在下。点划线为分度圆位置，虚线为${geo.kind === 'int' ? '内径' : '齿顶圆'}对应高度，以上为外延段。`;
+    $('capC').textContent = cut.slot ? `成形插刀刀齿廓形，按坐标表所选截面（${$('t_sec').selectedOptions[0] ? $('t_sec').selectedOptions[0].text : ''}）绘制，图上尺寸与坐标表一致；刀齿顶在下，标注值为刀齿宽度。` : cut.disc ? '盘形铣刀刀齿廓形，刀齿顶在下，横向是齿宽方向，标注值为刀齿宽度。点划线为分度圆位置，虚线以上为外延段。' : `刀尖在下。点划线为分度圆位置，虚线为${geo.kind === 'int' ? '内径' : '齿顶圆'}对应高度，以上为外延段。`;
     if (TT.prof > 0 || TT.lo) $('capC').textContent += (TT.lo ? `分度圆处${cut.formTool ? '刀齿宽' : '刀径'}的上下偏差按齿厚公差的 1/4 给出；` : '') + (TT.prof > 0 ? `轮廓度 ${TT.prof.toFixed(3)} 为刃区廓形的线轮廓度，以${cut.formTool ? '刀齿对称中心线' : '刀具轴线'} A 为基准（按 Fα/4）。` : '');
   }
 
@@ -2815,8 +2824,10 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     gl.uniformMatrix4fv(prog.uVP, false, VP); gl.uniform3fv(prog.uE, eye);
     // 齿轮随刀具轴向位置转动，使齿槽始终对准刀具
     const hm = scene.hx ? hxMatrices(dt) : null;
-    const gM = hm ? hm.gM : scene.slot ? M4.rz(idxA) : M4.rz(-scene.k * Math.min(Math.max(zc, 0), b));
-    const cM = hm ? hm.cM : scene.slot ? M4.tr(0, liftY, zc) : scene.disc ? M4.mul(M4.tr(0, cut.yTip + (geo.kind === 'ext' ? 1 : -1) * scene.Rd, zc), M4.rx(-anim.spin * 0.4)) : geo.kind === 'ext' ? M4.mul(M4.tr(0, cut.yTip, zc), M4.ry(anim.spin)) : M4.mul(M4.tr(0, cut.yTip, zc), M4.mul(M4.rx(PI), M4.ry(anim.spin)));
+    // 斜齿：工件随刀具行程转动，齿槽始终对准刀具（插削按螺旋导轨）
+    const gM = hm ? hm.gM : scene.slot ? M4.rz(idxA - scene.k * Math.min(Math.max(zc, 0), b)) : M4.rz(-scene.k * Math.min(Math.max(zc, 0), b));
+    const tiltB = -Math.atan(geo.r * scene.k);   // 斜齿时盘形铣刀按分度圆螺旋角倾斜安装，刀盘平面顺着齿槽方向（插刀刀杆仍平行于工件轴线，靠工件转动走螺旋）
+    const cM = hm ? hm.cM : scene.slot ? M4.tr(0, liftY, zc) : scene.disc ? M4.mul(M4.tr(0, cut.yTip + (geo.kind === 'ext' ? 1 : -1) * scene.Rd, zc), M4.mul(M4.ry(tiltB), M4.rx(-anim.spin * 0.4))) : geo.kind === 'ext' ? M4.mul(M4.tr(0, cut.yTip, zc), M4.ry(anim.spin)) : M4.mul(M4.tr(0, cut.yTip, zc), M4.mul(M4.rx(PI), M4.ry(anim.spin)));
     meshes.forEach((m, i) => {
       if (scene.hideGear && i < scene.nGear) return;
       gl.uniformMatrix4fv(prog.uM, false, i < scene.nGear ? gM : cM);
