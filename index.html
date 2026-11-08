@@ -148,7 +148,7 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
     <div class="grid" id="gtool">
       <div class="sep">刀具设置</div>
       <div class="f"><label for="ext">刀刃外延量<b>mm</b></label><input id="ext" type="number" step="0.1" value="1.5"></div>
-      <div class="f"><label for="t_kind">刀具类型</label><select id="t_kind"><option value="finger">指型铣刀</option><option value="disc">盘形铣刀（直齿外齿/花键）</option><option value="slot">成形插刀（单齿）</option></select></div>
+      <div class="f"><label for="t_kind">刀具类型</label><select id="t_kind"><option value="finger">指型铣刀</option><option value="disc">盘形铣刀</option><option value="slot">成形插刀（单齿）</option></select></div>
       <div class="f t-disc"><label for="t_D">盘形铣刀外径<b>mm</b></label><input id="t_D" type="number" step="any" inputmode="decimal" value="100"></div>
       <div class="f t-slot"><label for="t_g">插刀前角 γ<b>°</b></label><input id="t_g" type="number" step="any" inputmode="decimal" value="0"></div>
       <div class="f t-slot"><label for="t_a">插刀后角 α<b>°</b></label><input id="t_a" type="number" step="any" inputmode="decimal" value="6"></div>
@@ -932,7 +932,7 @@ var G = (function () {
   }
   function makeCutter(geo, ext, mode, tool, tip) {
     const src = geo.cutPts || geo.pts;
-    if (tool === 'disc' && geo.kind === 'ext') return makeDisc(geo, src, ext, 'disc', tip);
+    if (tool === 'disc') return makeDisc(geo, src, ext, 'disc', tip);      // 内齿也可用（需要内齿铣头，刀盘在内孔里）
     if (tool === 'slot') return makeDisc(geo, src, ext, 'slot', tip);
     const cc = cutterContact(src, geo.k);
     const pts = cc.pts;
@@ -1689,9 +1689,9 @@ if (typeof module !== 'undefined') module.exports = HX;
     'm.q': '铣齿后还要磨齿时，每侧齿面留给磨削的余量（法向）。只影响刀具，成品齿形不变。直接精铣成品填 0。',
     'm.pr': '挖根量：刀具在齿根过渡区比成品多铣的深度，磨齿时砂轮不碰齿根、不留台阶。只在留磨量大于 0 时使用。',
     'ext': '刀刃在齿顶圆以外再延长的长度，保证齿顶处切削完整并覆盖齿顶圆公差，一般 1–2 mm。',
-    't_kind': '指型铣刀沿齿向进给，适用于外齿、内齿、斜齿。盘形铣刀的刀齿廓形与齿槽端面形状相同，槽底可以铣成圆弧，只适用于直齿外齿轮、外花键和矩形外花键。成形插刀（单齿）在插床或数控插削上一个槽一个槽地插，外齿、内齿都可以，只适用于直齿。成形插刀按圆柄单齿插刀考虑：刀具轴线平行于工件轴线，沿轴向往复插削，每插完一个槽工件分度一次。',
+    't_kind': '指型铣刀沿齿向进给，适用于外齿、内齿、斜齿。盘形铣刀的刀齿廓形与齿槽端面形状相同，槽底可以铣成圆弧，适用于直齿（外齿、花键、矩形花键）；内齿要用内齿铣头，刀盘外径必须放得进内孔（程序会检查），斜齿时刀齿廓形只是法向截面近似值。成形插刀（单齿）在插床或数控插削上一个槽一个槽地插，外齿、内齿都可以，只适用于直齿。成形插刀按圆柄单齿插刀考虑：刀具轴线平行于工件轴线，沿轴向往复插削，每插完一个槽工件分度一次。',
     't_tip': '盘形铣刀、成形插刀的刀齿顶就是槽底的形状。圆弧：按齿根圆做成圆弧（外齿刀齿顶略凹，内齿略凸），槽底处处在根圆上。直线 · 两角到位：直线过两侧圆角的位置，齿面和圆角不变；外齿槽底中心比根圆略深，内齿槽底中心比根圆略浅。直线 · 中心到根圆：槽底中心正好在根圆上，圆角按原半径重新与直线、齿面相切；外齿两角略浅、渐开线起点略升高，内齿两角略深。结果里给出槽底中心和两角的直径，供与图纸小径/大径公差对照。指型铣刀端面本身是平的，对应的是“槽底处理”的两个选项。',
-    't_D': '盘形铣刀外径，不影响刀齿廓形，只用于 3D 显示和刃数建议。',
+    't_D': '盘形铣刀外径。直齿时不影响刀齿廓形，用于 3D 显示、刃数建议，内齿时还用来检查刀盘能否放进内孔。',
     't_as': '侧刃另外磨出的侧后角：只在刃口后面向内收窄，刃口本身形状不变，所以不影响刀具廓形，一般 1°–3°。整体倾斜得到的侧刃后角只有 atan(tanα·sinψ)，侧壁越陡越小，矩形花键的平行侧壁几乎为 0，必须另磨侧后角。',
     't_Ds': '圆柄插刀的刀柄直径，只影响 3D 显示和刀杆干涉检查，不影响刀具廓形。0 = 自动：约为刀齿宽度的 3 倍取标准直径，内孔加工时不超过内孔的 0.6 倍。',
     't_Lh': '刀头（刃部）沿插削方向的长度，只影响 3D 显示。0 = 自动，约等于齿高。',
@@ -1985,7 +1985,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     const FV = readForm(); lastFV = FV; P = toP(FV); applyQA(P); syncLocks(FV, P);
     const warnEl = $('warn');
     const bad = validate(P);
-    if (bad.length) { warnEl.textContent = bad.join('；'); return; }
+    if (bad.length) { warnEl.textContent = bad.join('；'); clearOut(); return; }
     const M = readMod();
     let mod;
     try {
@@ -1997,12 +1997,18 @@ if (typeof module !== 'undefined') module.exports = HX;
       cut = G.makeCutter(geo, parseFloat($('ext').value) || 0, $('mode').value, $('t_kind').value, $('t_tip').value);
       // 刀齿顶做成直线：零件齿槽按刀具实际加工出的形状更新（端面图、3D、渐开线起始圆都随之改变）
       if (cut.flat && cut.slotPts && !geo.k) { if (geo.cutPts && geo.cutPts !== geo.pts) geo.cutPts = cut.slotPts; else { geo.pts = cut.slotPts; geo.Rinv = cut.flat.Rinv; } }
-    } catch (err) { warnEl.textContent = err.message; return; }
+    } catch (err) { warnEl.textContent = err.message; clearOut(); return; }
     geo.M = M;
     const W = geo.W.concat(mod.W);
     if ($('t_kind').value === 'disc') {
-      if (geo.kind === 'int') W.push('内齿轮不能用盘形铣刀，已按指型铣刀计算');
-      else if (geo.k) W.push('斜齿用盘形铣刀需要按刀轴倾斜另行计算，当前刀齿廓形只是法向截面近似值，不能直接用于制刀');
+      if (geo.k) W.push('斜齿用盘形铣刀需要按刀轴倾斜另行计算，当前刀齿廓形只是法向截面近似值，不能直接用于制刀');
+      const Dd = parseFloat($('t_D').value) || 0, Hd = cut.prof[cut.prof.length - 1][0];
+      if (!(Dd / 2 >= Hd + 5)) W.push('盘形铣刀外径 ' + f2(Dd) + ' 太小：刀齿高（含外延）' + f2(Hd) + '，外径至少要大于 ' + f2(2 * (Hd + 5)) + '，还要放得下刀体和内孔；3D 图暂按最小外径显示');
+      if (geo.kind === 'int') {
+        const Dmax = Math.abs(cut.yTip) + geo.ra;            // 刀盘从槽底伸向圆心，不能碰到对面的齿顶
+        if (Dd >= Dmax) W.push('内齿：盘形铣刀外径 ' + f2(Dd) + ' 放不进内孔（从槽底量到对面齿顶只有 ' + f2(Dmax) + '），请减小刀盘外径');
+        else W.push('内齿用盘形铣刀需要内齿铣头（刀轴沿切向伸进内孔）：刀盘外径要小于 ' + f2(Dmax) + '，还要给铣头和刀轴留出空间，请核对内孔（内径 ' + f2(geo.ra * 2) + ' mm）');
+      }
     }
     if ($('t_kind').value === 'slot') {
       if (geo.k) W.push('斜齿不能用单齿成形插刀直接插削（需要螺旋导轨），当前刀具廓形只是法向截面近似值');
@@ -2016,7 +2022,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     accWarn = []; accRes = calcAcc();
     if (qaInfo && qaInfo.err) W.push(qaInfo.err);
     if (!cut.mono) W.push('刀具廓形高度方向不单调，已做单调化处理，请复核');
-    if (geo.kind === 'int' && $('t_kind').value !== 'slot') W.push('内齿：铣刀由齿圈内侧伸入，请核对主轴头在内孔中的空间（内径 ' + f2(geo.ra * 2) + ' mm）');
+    if (geo.kind === 'int' && $('t_kind').value === 'finger') W.push('内齿：铣刀由齿圈内侧伸入，请核对主轴头在内孔中的空间（内径 ' + f2(geo.ra * 2) + ' mm）');
     warnEl.textContent = W.join('；');
     renderResults(); drawTransverse(); drawCutter(); fillTable(); build3D();
   }
@@ -2471,6 +2477,8 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     const buf = (data, target) => { const b = gl.createBuffer(); gl.bindBuffer(target, b); gl.bufferData(target, data, gl.STATIC_DRAW); return b; };
     return { p: buf(pos, gl.ARRAY_BUFFER), n: buf(nor, gl.ARRAY_BUFFER), c: buf(col, gl.ARRAY_BUFFER), i: buf(idx, gl.ELEMENT_ARRAY_BUFFER), count: idx.length };
   }
+  // 输入有误、算不出结果时，清掉上一次的图、表和 3D，避免显示的是别的零件或别的刀具
+  function clearOut() { for (const id of ['svgT', 'svgC', 'lgT', 'res', 'tb']) if ($(id)) $(id).innerHTML = ''; $('hC').firstChild.textContent = '刀具廓形 '; if (gl) { freeMeshes(); requestDraw(); } }
   function freeMeshes() { for (const m of meshes) for (const b of ['p', 'n', 'c', 'i']) gl.deleteBuffer(m[b]); meshes = []; }
   const col3 = (n, d) => hexRGB(css(n) || d);
   const hexRGB = h => { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
@@ -2717,7 +2725,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     scene.k = k; scene.b = b;
     scene.Rc = gearMeshes(k, b);
     scene.nGear = meshes.length;
-    scene.disc = !!cut.disc; scene.slot = !!cut.slot; scene.Rd = Math.max(10, (parseFloat($('t_D').value) || 100) / 2, cut.prof[cut.prof.length - 1][0] * 3);
+    scene.disc = !!cut.disc; scene.slot = !!cut.slot; scene.Rd = Math.max((parseFloat($('t_D').value) || 100) / 2, cut.prof[cut.prof.length - 1][0] + 5);   // 按输入外径显示（太小时已在提示里说明）
     scene.nCut0 = meshes.length;
     if (scene.slot) scene.st = slotMesh(); else meshes.push(scene.disc ? discMesh(scene.Rd) : cutterMesh());
     scene.Hc = scene.disc ? scene.Rd : cut.prof[cut.prof.length - 1][0];
@@ -2759,7 +2767,8 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   if (reduce) { anim.playing = false; $('play').textContent = '播放'; }
   function frame(ts) {
     rafId = 0;
-    if (!geo || !meshes.length) return;
+    if (!meshes.length) { if (gl) { const bg0 = hexRGB(css('--v3d') || '#dde3e9'); gl.clearColor(bg0[0], bg0[1], bg0[2], 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); } return; }
+    if (!geo) return;
     const dt = anim.last ? Math.min(0.05, (ts - anim.last) / 1000) : 0; anim.last = ts;
     const b = scene.b, z0 = -scene.Hc * 1.2, z1 = b + scene.Hc * 1.2;
     if (anim.playing) { anim.ph = ((anim.ph || 0.35) + dt / 7) % 2; anim.spin += dt * 7; }
@@ -2788,7 +2797,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     // 齿轮随刀具轴向位置转动，使齿槽始终对准刀具
     const hm = scene.hx ? hxMatrices(dt) : null;
     const gM = hm ? hm.gM : scene.slot ? M4.rz(idxA) : M4.rz(-scene.k * Math.min(Math.max(zc, 0), b));
-    const cM = hm ? hm.cM : scene.slot ? M4.tr(0, liftY, zc) : scene.disc ? M4.mul(M4.tr(0, cut.yTip + scene.Rd, zc), M4.rx(-anim.spin * 0.4)) : geo.kind === 'ext' ? M4.mul(M4.tr(0, cut.yTip, zc), M4.ry(anim.spin)) : M4.mul(M4.tr(0, cut.yTip, zc), M4.mul(M4.rx(PI), M4.ry(anim.spin)));
+    const cM = hm ? hm.cM : scene.slot ? M4.tr(0, liftY, zc) : scene.disc ? M4.mul(M4.tr(0, cut.yTip + (geo.kind === 'ext' ? 1 : -1) * scene.Rd, zc), M4.rx(-anim.spin * 0.4)) : geo.kind === 'ext' ? M4.mul(M4.tr(0, cut.yTip, zc), M4.ry(anim.spin)) : M4.mul(M4.tr(0, cut.yTip, zc), M4.mul(M4.rx(PI), M4.ry(anim.spin)));
     meshes.forEach((m, i) => {
       if (scene.hideGear && i < scene.nGear) return;
       gl.uniformMatrix4fv(prog.uM, false, i < scene.nGear ? gM : cM);
@@ -3020,7 +3029,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
         const part = type === 'worm' ? hxWorm(W) : hxRotor(W);
         hxR = Object.assign(part, hxTool(part, W));
       }
-    } catch (err) { warnEl.textContent = err.message; $('res').innerHTML = ''; return; }
+    } catch (err) { warnEl.textContent = err.message; clearOut(); return; }
     warnEl.textContent = W.join('；');
     hxResults(); hxDrawPart(); hxDrawTool(); fillTable(); hxBuild3D();
   }
@@ -3385,7 +3394,9 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       // 刀：沿 +y 方向贴在零件上，前刀面在 x=0 平面附近
       const tp = R.res.map(q => [q.z, R.rmin + (q.r - R.rmin)]), top = R.rmax + (R.rmax - R.rmin) * 0.8 + 2;
       const sec = tp.map(q => [q[0], q[1]]).concat([[tp[tp.length - 1][0], top], [tp[0][0], top]]);
-      hxPrism(sec.map(q => [q[0], q[1]]), 0, (R.rmax - R.rmin) * 1.5 + 4, tin, sh, 'yz');
+      scene.hxR0 = R.ftype === 'round' ? R.R0 : 0;
+      if (R.ftype === 'round') hxRoundTool(R, tin, sh);
+      else hxPrism(sec.map(q => [q[0], q[1]]), 0, (R.rmax - R.rmin) * 1.5 + 4, tin, sh, 'yz');
       scene.nCut0 = scene.nGear; hxView('tool'); requestDraw(); return;
     }
     // 螺旋面零件
@@ -3429,6 +3440,24 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     for (let j = 0; j < seg; j++) for (let i = 0; i < np - 1; i++) { const a0 = j * np + i, b = a0 + 1, c = a0 + np, d = c + 1; idx.push(a0, c, d, a0, d, b); }
     meshes.push(mkMesh(new Float32Array(pos), new Uint32Array(idx), new Float32Array(col)));
   }
+  // 圆体成形车刀：轴线平行于工件轴线，刀具中心比工件中心“高”R0·sinα（这里沿 +x 偏置），刀尖（R0 处）对准零件最小半径；
+  // 各点刀具半径 Rx 由 formTurning 算出。留一个缺口作容屑槽，缺口一侧的平面就是前刀面（与棱体刀一样朝 −x）
+  function hxRoundTool(R, cEdge, cBody) {
+    const R0 = R.R0, al = R.al, C = [R0 * Math.sin(al), R.rmin + R0 * Math.cos(al), 0];
+    const pr = R.res.map(q => [q.z, q.R]), rb = Math.min(...pr.map(q => q[1])) * 0.38;
+    const z0 = pr[0][0], z1 = pr[pr.length - 1][0], sec = pr.concat([[z1, rb], [z0, rb]]), ne = pr.length;
+    const tT = Math.atan2(R.rmin - C[1], -C[0]), gap = 50 * PI / 180, span = 2 * PI - gap, seg = 90, np = sec.length;
+    const P = (q, t) => [C[0] + q[1] * Math.cos(t), C[1] + q[1] * Math.sin(t), q[0]];
+    const pos = [], col = [], idx = [];
+    for (let j = 0; j <= seg; j++) { const t = tT + span * j / seg; for (let i = 0; i < np; i++) { pos.push(...P(sec[i], t)); const e = i < ne && i + 1 < ne + 1; col.push(...(i < ne ? ((j % 10) < 1 ? cEdge.map(v => v * 0.5) : cEdge) : cBody)); } }
+    for (let j = 0; j < seg; j++) for (let i = 0; i < np; i++) { const a0 = j * np + i, b0 = j * np + (i + 1) % np, c0 = a0 + np, d0 = b0 + np; idx.push(a0, c0, d0, a0, d0, b0); }
+    meshes.push(mkMesh(new Float32Array(pos), new Uint32Array(idx), new Float32Array(col)));
+    const tri = earClip(sec);
+    for (const [t, c] of [[tT, cEdge.map(v => Math.min(1, v * 1.15))], [tT + span, cBody]]) {
+      const p2 = new Float32Array(np * 3), c2 = new Float32Array(np * 3); sec.forEach((q, i) => { p2.set(P(q, t), i * 3); c2.set(c, i * 3); });
+      meshes.push(mkMesh(p2, new Uint32Array(tri), c2, [-Math.sin(t), Math.cos(t), 0]));
+    }
+  }
   // 在给定平面内的截面多边形挤出（plane 'yz'：截面坐标 (z, y)，沿 x 挤出）
   function hxPrism(sec, x0, x1, cEdge, cBody, plane) {
     const n = sec.length, pos = [], col = [], idx = [];
@@ -3456,10 +3485,10 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   }
   function hxView(v) {
     scene.view = v; document.querySelectorAll('[data-v]').forEach(b => b.classList.toggle('on', b.dataset.v === v));
-    const R = scene.hxR || 20, L = scene.hxL || 60;
-    if (v === 'tool') { cam.tgt = [0, R * 0.95, 0]; cam.dist = R * 4.2; }
+    const R = scene.hxR || 20, L = scene.hxL || 60, R0 = scene.hx && hxR && hxR.kind === 'form' ? scene.hxR0 || 0 : 0;
+    if (v === 'tool') { cam.tgt = [0, R * 0.95 + R0 * 0.6, 0]; cam.dist = Math.max(R * 4.2, R0 * 5); }
     else if (v === 'face') { cam.tgt = [0, 0, 0]; cam.dist = Math.max(L * 1.1, R * 5); }
-    else { cam.tgt = [0, R * 0.5, 0]; cam.dist = Math.max(L * 1.6, R * 7); }
+    else { cam.tgt = [0, R * 0.5 + R0 * 0.5, 0]; cam.dist = Math.max(L * 1.6, R * 7, R0 * 7); }
     cam.follow = false; cam.th = 0.9; cam.ph = 0.42; requestDraw();
   }
   // 每帧：工件沿自身螺旋面做螺旋运动（转 φ、移 p·φ），齿槽始终对准刀具；回转刀具自转
