@@ -847,6 +847,12 @@ var G = (function () {
     });
   }
 
+  // 法向截面 → 端面（normalSection 的逆运算）：法向截面内的点 (u, Y) 沿螺旋线回到端面
+  function fromNormal(pts, k, r) {
+    if (!k) return pts.map(p => [p[0], p[1]]);
+    const sc = Math.sqrt(1 + r * r * k * k);
+    return pts.map(([u, Y]) => { const X = u / sc, th = -k * (r * k * X); return [X * Math.cos(th) - Y * Math.sin(th), X * Math.sin(th) + Y * Math.cos(th)]; });
+  }
   // ---------- 刀具廓形：从刀尖开始的 (H, R) ----------
   // 刀齿顶做成直线：直线 H = h0，半径 rho 的圆角同时与直线和齿面折线 fl（[H, X]，H 递增）相切。
   // 返回新的半边廓形（从刀尖中心起，不含外延）、直线半宽 Xc、圆角与齿面的切点 foot；圆角放不下返回 null
@@ -988,7 +994,7 @@ var G = (function () {
     return { prof, hEdge: b[0], yTip, sag, residual, mono, contact: pts, hP, RP, isExt, flat, flatFail, slotPts };
   }
 
-  return { arcFit, build, modify, makeCutter, thicknessFromM, MFromThickness, WFromThickness, thicknessFromW, spanK, normalSection, cutterContact, resample, xAtY, rot, inv, hyp, D2R };
+  return { arcFit, build, modify, makeCutter, thicknessFromM, MFromThickness, WFromThickness, thicknessFromW, spanK, normalSection, fromNormal, cutterContact, resample, xAtY, rot, inv, hyp, D2R };
 })();
 if (typeof module !== 'undefined') module.exports = G;
 
@@ -1996,7 +2002,11 @@ if (typeof module !== 'undefined') module.exports = HX;
         o[0].text = isI ? '中心到根圆（两角略深）' : '角部到位（中心略深）'; o[1].text = isI ? '两角到位（中心略浅）' : '中心到根圆（角部残留）'; }
       cut = G.makeCutter(geo, parseFloat($('ext').value) || 0, $('mode').value, $('t_kind').value, $('t_tip').value);
       // 刀齿顶做成直线：零件齿槽按刀具实际加工出的形状更新（端面图、3D、渐开线起始圆都随之改变）
-      if (cut.flat && cut.slotPts && !geo.k) { if (geo.cutPts && geo.cutPts !== geo.pts) geo.cutPts = cut.slotPts; else { geo.pts = cut.slotPts; geo.Rinv = cut.flat.Rinv; } }
+      // 斜齿的成形插刀 / 盘形铣刀：刀齿廓形在法向截面内，换算回端面再更新齿槽
+      if (cut.flat && cut.slotPts && (!geo.k || cut.formTool)) {
+        const sp = geo.k ? G.fromNormal(cut.slotPts, geo.k, geo.r) : cut.slotPts;
+        if (geo.cutPts && geo.cutPts !== geo.pts) geo.cutPts = sp; else { geo.pts = sp; if (!geo.k) geo.Rinv = cut.flat.Rinv; }
+      }
     } catch (err) { warnEl.textContent = err.message; clearOut(); return; }
     geo.M = M;
     const W = geo.W.concat(mod.W);
@@ -2018,7 +2028,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     }
     if ($('t_kind').value !== 'slot') stool = null;
     if (cut.flatFail) W.push('刀齿顶做成直线时圆角放不下（齿槽太窄或圆角太大），已按圆弧刀齿顶计算');
-    if (cut.flat && geo.k) W.push('斜齿时刀齿顶直线按法向截面处理，端面图仍显示原齿槽');
+    if (cut.flat && geo.k) W.push(cut.formTool ? '斜齿时刀齿顶直线在法向截面内，端面图和 3D 按换算到端面的槽形显示' : '斜齿时端面图仍显示原齿槽，3D 按刀具实际扫出的形状显示');
     accWarn = []; accRes = calcAcc();
     if (qaInfo && qaInfo.err) W.push(qaInfo.err);
     if (!cut.mono) W.push('刀具廓形高度方向不单调，已做单调化处理，请复核');
@@ -2250,7 +2260,9 @@ if (typeof module !== 'undefined') module.exports = HX;
     s += circ(geo.rf, 'var(--steel)', '5 3', lab(isExt ? 'df' : 'df', geo.rf));
     // 刀具（轴向截面，投到端面图中）
     const cp = cut.prof, sgn = isExt ? 1 : -1;
-    const cr = cp.map(q => [q[1], cut.yTip + sgn * q[0]]), cl = cr.slice().reverse().map(q => [-q[0], q[1]]);
+    let cr = cp.map(q => [q[1], cut.yTip + sgn * q[0]]);
+    if (geo.k && cut.formTool) cr = G.fromNormal(cr, geo.k, geo.r);   // 斜齿：法向截面刀齿换算到端面再画
+    const cl = cr.slice().reverse().map(q => [-q[0], q[1]]);
     s += `<path d="${pathD(cl.concat(cr), true)}" fill="var(--tin-soft)" stroke="var(--tin)" stroke-width="1.6" ${sw}/>`;
     // 法向截面
     if (geo.k) {
@@ -2262,7 +2274,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     s += `<line x1="0" y1="${vb[1]}" x2="0" y2="${vb[1] + vb[3]}" stroke="var(--muted)" stroke-width="0.8" stroke-dasharray="10 3 2 3" ${sw}/>`;
     s += '</g>';
     svg.innerHTML = s;
-    $('lgT').innerHTML = `<span><i style="border-color:var(--ink)"></i>${geo.k ? '端面齿廓' : '齿廓'}</span><span><i style="border-color:var(--tin)"></i>${cut.slot ? '成形插刀端面' : cut.disc ? '盘形铣刀刀齿' : '指型铣刀轴截面'}${geo.M && (geo.M.q || geo.M.pr) ? '（含留磨量）' : ''}</span>` + (geo.k ? `<span><i style="border-color:var(--warn);border-top-style:dashed"></i>法向截面</span>` : '');
+    $('lgT').innerHTML = `<span><i style="border-color:var(--ink)"></i>${geo.k ? '端面齿廓' : '齿廓'}</span><span><i style="border-color:var(--tin)"></i>${cut.slot ? '成形插刀端面' : cut.disc ? '盘形铣刀刀齿' : '指型铣刀轴截面'}${geo.k && cut.formTool ? '（换算到端面）' : ''}${geo.M && (geo.M.q || geo.M.pr) ? '（含留磨量）' : ''}</span>` + (geo.k ? `<span><i style="border-color:var(--warn);border-top-style:dashed"></i>法向截面</span>` : '');
     $('sc1').textContent = geo.kind === 'int' ? '内齿（刀尖朝外）' : '';
     svg.previousElementSibling.firstChild.textContent = '端面齿槽与刀具 ';   // 从蜗杆 / 转子页切回来时恢复标题
   }
