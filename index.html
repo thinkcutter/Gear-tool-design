@@ -1831,7 +1831,6 @@ if (typeof module !== 'undefined') module.exports = HX;
   // DIN 5480-1:2006 表 7（由标准中文译本公开文本、标准数据框示例、KISSsoft 报告、DIN 5480-2 根径偏差和实测跨棒距反推并交叉核对）
   // 9 个尺寸档：档号 = 基准直径段号（≤12,≤25,≤50,≤100,≤200,≤400,>400 → 0–6）+ 模数段号（0.5–1.5,1.75–4,5–10 → 0–2）
   const DIN_B = [80, 90, 100, 110, 125, 140, 160, 180, 200];
-  const DIN_R = [8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 25, 28, 32, 36, 40, 45, 50, 56, 63, 71, 80, 90, 100, 112, 125, 140, 160, 180, 200, 224, 250, 280, 315, 355, 400];
   // 偏差系列（表 7 偏差栏，按尺寸档 0–8 排列，µm）；轴 v…a，毂 F…M（同一行数值相同）
   const DIN_DEV = {
     v: [80, 90, 100, 110, 125, 140, 160, 180, 200], u: [72, 81, 90, 99, 112, 126, 144, 162, 180], t: [64, 72, 80, 88, 100, 112, 128, 144, 160],
@@ -1842,16 +1841,15 @@ if (typeof module !== 'undefined') module.exports = HX;
     c: [-48, -54, -60, -66, -75, -84, -96, -108, -120], b: [-64, -72, -80, -88, -100, -112, -128, -144, -160], a: [-80, -90, -100, -110, -125, -140, -160, -180, -200],
   };
   ['F', 'G', 'H', 'J', 'K', 'M'].forEach((L, i) => DIN_DEV[L] = DIN_DEV['kjhgfe'[i]]);
-  // 单项偏差推荐值（表 7 右栏）：TG → [fp, Fα, Fβ≤50, Fβ≤100, Fβ≤200]，Fp = Tact；只收已取得原文的行
-  const DIN_GUIDE = { 12: [3.5, 5, 5, 8, 10], 14: [4, 5.5, 5, 8, 10], 16: [4.5, 6, 5, 8, 11], 18: [5, 6, 6, 9, 11], 20: [5.5, 7, 6, 9, 12], 22: [6, 8, 6, 9, 13],
-    25: [7, 9, 7, 10, 13], 28: [8, 10, 7, 10, 14], 32: [9, 11, 8, 11, 14], 36: [10, 12, 8, 11, 15], 40: [11, 13, 9, 12, 16], 45: [12, 15, 9, 12, 17],
-    50: [13, 17, 10, 13, 18], 56: [15, 19, 10, 13, 19], 80: [21, 25, null, 16, null], 90: [24, 28, 14, 17, 23], 100: [27, 31, 15, 18, 24] };
+  // DIN 5480-1:2006 表 7 下半部（按原表逐格录入，0 起算的行号 = 尺寸档 + 3×(等级−5)）：[TG, Tact, Teff, fp, Fα, Fβ≤50, Fβ≤100, Fβ≤200]，Fp = Tact
+  const DIN_ROWS = [[12, 8, 4, 3.5, 5, 5, 8, 10], [14, 9, 5, 4, 5.5, 5, 8, 10], [16, 10, 6, 4.5, 6, 5, 8, 11], [18, 11, 7, 5, 6, 6, 9, 11], [20, 12, 8, 5.5, 7, 6, 9, 12], [22, 14, 8, 6, 8, 6, 9, 13], [25, 16, 9, 7, 9, 7, 10, 13], [28, 18, 10, 8, 10, 7, 10, 14], [32, 20, 12, 9, 11, 8, 11, 14], [36, 22, 14, 10, 12, 8, 11, 15], [40, 25, 15, 11, 13, 9, 12, 16], [45, 28, 17, 12, 15, 9, 12, 17], [50, 32, 18, 13, 17, 10, 13, 18], [56, 36, 20, 15, 19, 10, 13, 19], [63, 40, 23, 17, 21, 11, 14, 20], [71, 45, 26, 19, 23, 12, 15, 21], [80, 50, 30, 21, 25, 13, 16, 22], [90, 56, 34, 24, 28, 14, 17, 23], [100, 63, 37, 27, 31, 15, 18, 24], [112, 71, 41, 30, 34, 16, 19, 25], [125, 80, 45, 34, 37, 17, 20, 26], [140, 90, 50, 38, 41, 18, 21, 27], [160, 100, 60, 43, 45, 19, 22, 28], [180, 112, 68, 48, 49, 20, 23, 29], [200, 125, 75, 53, 53, 21, 24, 30], [224, 140, 84, 60, 58, 22, 25, 31], [250, 160, 90, 68, 63, 23, 26, 32], [280, 175, 105, 75, 68, 24, 27, 33], [320, 200, 120, 85, 73, 25, 28, 34], [360, 225, 135, 96, 78, 26, 29, 35]];
   function dinTable(dB, m, cls, L) {
     const r = dB <= 12 ? 0 : dB <= 25 ? 1 : dB <= 50 ? 2 : dB <= 100 ? 3 : dB <= 200 ? 4 : dB <= 400 ? 5 : 6;
     const g = m <= 1.5 ? 0 : m <= 4 ? 1 : 2, col = Math.min(8, r + g);
     const inTable = g === 0 ? r <= 4 : g === 1 ? r >= 1 && r <= 5 : r >= 2;
-    const iTG = 4 + col + 3 * (cls - 5), TG = DIN_R[iTG], Ta = DIN_R[iTG - 4];
-    return { col, inTable, B: DIN_B[col], TG, Ta, Te: TG - Ta, A: DIN_DEV[L] ? DIN_DEV[L][col] : NaN, guide: DIN_GUIDE[TG] };
+    const row = DIN_ROWS[col + 3 * (cls - 5)];
+    if (!row) return null;
+    return { col, inTable, B: DIN_B[col], TG: row[0], Ta: row[1], Te: row[2], A: DIN_DEV[L] ? DIN_DEV[L][col] : NaN, guide: row.slice(3) };
   }
   function calcDin(isInt, out) {
     const m = P.mn, cls = Math.round(parseFloat($('a_q').value) || 0), selL = $('a_dL');
@@ -1910,7 +1908,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     const warnTab = T && !T.inTable ? '<br><span style="color:var(--warn)">该模数和基准直径的组合不在 DIN 5480 表中（表 4、表 7 此格为空），按相邻档外推，请向客户确认。</span>' : '';
     out.innerHTML = '<table class="acctbl"><thead><tr><th>项目</th><th>数值</th></tr></thead><tbody>' + rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('') + '</tbody></table>' +
       (note ? `<div class="accnote" style="color:${bad ? 'var(--warn)' : 'var(--ok)'}">${note}</div>` : '') +
-      `<div class="accnote">按 DIN 5480-1:2006 表 7（2025-10/2026-05 版改为图 8“Abmaße und Toleranzen”）查偏差和公差（尺寸档由基准直径段和模数段决定；每升一级 T<sub>G</sub> 在优先数系 R20 上升三档，T<sub>act</sub> 比 T<sub>G</sub> 低四档，T<sub>G</sub>/T<sub>act</sub> ≈ 1.6），再按表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸控制的是实际值。表 7 由公开的标准译本片段重建，已用标准示例 120×3×38（9H/8f）、KISSsoft 报告 70×3×22（7H/6f）、DIN 5480-2 根径偏差（45×4、m1.25、m0.5）和实测 200×5×38 8g 跨棒距核对一致。径向跳动推荐值取自 2006 版表 8（新版为表 7“Anhaltswerte für die Rundlaufabweichung”，按分度圆直径分档，是推荐值不是公差）。T<sub>G</sub> 80 一行的 f<sub>p</sub> 21、F<sub>α</sub> 25、F<sub>β</sub> 16 µm 取自 HEXAGON WN2 按 DIN 5480:2006 输出的 9 级示例（F<sub>β</sub> 只能落在 ≤100 栏，其余两栏未取得）。DIN 5480-1 已出 2025-10 版和 2026-05 更正版，官方变更说明只列表 1、表 2、新增附录 A 和编辑性修改，未提偏差和公差数值的改动。${warnTab}</div>`;
+      `<div class="accnote">按 DIN 5480-1:2006 表 7（2025-10/2026-05 版改为图 8“Abmaße und Toleranzen”）查偏差和公差（尺寸档由基准直径段和模数段决定；公差等级每升一级在公差栏下移三行，T<sub>G</sub>/T<sub>act</sub> ≈ 1.6），再按表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸控制的是实际值。表 7 的偏差栏、公差栏（T<sub>G</sub> 12～360 共 30 行）和单项偏差推荐值已按标准原表逐格录入，并与标准示例 120×3×38（9H/8f）、KISSsoft 报告 70×3×22（7H/6f）、HEXAGON WN2 9 级输出、DIN 5480-2 根径偏差和实测 200×5×38 8g 跨棒距核对一致。径向跳动推荐值取自 2006 版表 8（新版为表 7“Anhaltswerte für die Rundlaufabweichung”，按分度圆直径分档，是推荐值不是公差）。DIN 5480-1 已出 2025-10 版和 2026-05 更正版，官方变更说明只列表 1、表 2、新增附录 A 和编辑性修改，未提偏差和公差数值的改动。${warnTab}</div>`;
     return null;
   }
   function calcAcc() {
