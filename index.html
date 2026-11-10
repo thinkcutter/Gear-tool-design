@@ -1845,7 +1845,7 @@ if (typeof module !== 'undefined') module.exports = HX;
   // 单项偏差推荐值（表 7 右栏）：TG → [fp, Fα, Fβ≤50, Fβ≤100, Fβ≤200]，Fp = Tact；只收已取得原文的行
   const DIN_GUIDE = { 12: [3.5, 5, 5, 8, 10], 14: [4, 5.5, 5, 8, 10], 16: [4.5, 6, 5, 8, 11], 18: [5, 6, 6, 9, 11], 20: [5.5, 7, 6, 9, 12], 22: [6, 8, 6, 9, 13],
     25: [7, 9, 7, 10, 13], 28: [8, 10, 7, 10, 14], 32: [9, 11, 8, 11, 14], 36: [10, 12, 8, 11, 15], 40: [11, 13, 9, 12, 16], 45: [12, 15, 9, 12, 17],
-    50: [13, 17, 10, 13, 18], 56: [15, 19, 10, 13, 19], 90: [24, 28, 14, 17, 23], 100: [27, 31, 15, 18, 24] };
+    50: [13, 17, 10, 13, 18], 56: [15, 19, 10, 13, 19], 80: [21, 25, null, 16, null], 90: [24, 28, 14, 17, 23], 100: [27, 31, 15, 18, 24] };
   function dinTable(dB, m, cls, L) {
     const r = dB <= 12 ? 0 : dB <= 25 ? 1 : dB <= 50 ? 2 : dB <= 100 ? 3 : dB <= 200 ? 4 : dB <= 400 ? 5 : 6;
     const g = m <= 1.5 ? 0 : m <= 4 ? 1 : 2, col = Math.min(8, r + g);
@@ -1896,7 +1896,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       rows.push(['齿距累积偏差 F<sub>p</sub>（推荐值，= T<sub>act</sub>）', Ta + ' µm']);
       if (gd) {
         const fb = b <= 50 ? gd[2] : b <= 100 ? gd[3] : gd[4];
-        rows.push(['单个齿距偏差 f<sub>p</sub>（推荐值）', gd[0] + ' µm'], ['齿廓总偏差 F<sub>α</sub>（推荐值）', gd[1] + ' µm'], ['螺旋线总偏差 F<sub>β</sub>（推荐值，长度 ' + (b <= 50 ? '≤50' : b <= 100 ? '≤100' : '≤200') + '）', fb + ' µm' + (b > 200 ? '（长度超过 200，取 200 栏）' : '')]);
+        rows.push(['单个齿距偏差 f<sub>p</sub>（推荐值）', gd[0] + ' µm'], ['齿廓总偏差 F<sub>α</sub>（推荐值）', gd[1] + ' µm'], ['螺旋线总偏差 F<sub>β</sub>（推荐值，长度 ' + (b <= 50 ? '≤50' : b <= 100 ? '≤100' : '≤200') + '）', fb == null ? '本栏原文未取得' : fb + ' µm' + (b > 200 ? '（长度超过 200，取 200 栏）' : '')]);
       } else rows.push(['f<sub>p</sub>、F<sub>α</sub>、F<sub>β</sub> 推荐值', '本行原文未取得']);
     }
     { const dP = m * P.z, fr = dP < 18 ? 20 : dP < 30 ? 30 : dP < 50 ? 40 : dP < 100 ? 50 : dP < 200 ? 60 : dP < 500 ? 80 : NaN;
@@ -1910,7 +1910,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     const warnTab = T && !T.inTable ? '<br><span style="color:var(--warn)">该模数和基准直径的组合不在 DIN 5480 表中（表 4、表 7 此格为空），按相邻档外推，请向客户确认。</span>' : '';
     out.innerHTML = '<table class="acctbl"><thead><tr><th>项目</th><th>数值</th></tr></thead><tbody>' + rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('') + '</tbody></table>' +
       (note ? `<div class="accnote" style="color:${bad ? 'var(--warn)' : 'var(--ok)'}">${note}</div>` : '') +
-      `<div class="accnote">按 DIN 5480-1:2006 表 7 查偏差和公差（尺寸档由基准直径段和模数段决定；每升一级 T<sub>G</sub> 在优先数系 R20 上升三档，T<sub>act</sub> 比 T<sub>G</sub> 低四档，T<sub>G</sub>/T<sub>act</sub> ≈ 1.6），再按表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸控制的是实际值。表 7 由公开的标准译本片段重建，已用标准示例 120×3×38（9H/8f）、KISSsoft 报告 70×3×22（7H/6f）、DIN 5480-2 根径偏差（45×4、m1.25、m0.5）和实测 200×5×38 8g 跨棒距核对一致。径向跳动推荐值取自表 8（按分度圆直径分档，是推荐值不是公差）。${warnTab}</div>`;
+      `<div class="accnote">按 DIN 5480-1:2006 表 7 查偏差和公差（尺寸档由基准直径段和模数段决定；每升一级 T<sub>G</sub> 在优先数系 R20 上升三档，T<sub>act</sub> 比 T<sub>G</sub> 低四档，T<sub>G</sub>/T<sub>act</sub> ≈ 1.6），再按表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸控制的是实际值。表 7 由公开的标准译本片段重建，已用标准示例 120×3×38（9H/8f）、KISSsoft 报告 70×3×22（7H/6f）、DIN 5480-2 根径偏差（45×4、m1.25、m0.5）和实测 200×5×38 8g 跨棒距核对一致。径向跳动推荐值取自表 8（按分度圆直径分档，是推荐值不是公差）。T<sub>G</sub> 80 一行的 f<sub>p</sub> 21、F<sub>α</sub> 25、F<sub>β</sub> 16 µm 取自 HEXAGON WN2 按 DIN 5480:2006 输出的 9 级示例（F<sub>β</sub> 只能落在 ≤100 栏，其余两栏未取得）。DIN 5480-1 已出 2025-10 版和 2026-05 更正版，官方变更说明只列表 1、表 2、新增附录 A 和编辑性修改，未提表 7。${warnTab}</div>`;
     return null;
   }
   function calcAcc() {
