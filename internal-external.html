@@ -189,7 +189,8 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 <section class="card" id="rev">
   <h2>修订记录</h2>
   <div class="meta">本页于 2026-11-03 经过两轮全面复核（含独立复核和标准、资料查证），改正和完善了以下内容：</div>
-  <ul><li><b>01 节（完善）</b>：补充：DIN 3960 / ISO 21771-1 写法中内齿轮直径带负号，要按绝对值比较；第 10 节判断工具同步支持负值输入</li><li><b>04 节（完善）</b>：补充德标 DIN 5480 花键的标记：W（轴）为外花键、N（毂）为内花键；判断工具可识别</li><li><b>05 节（完善）</b>：ISO 21771 更新为现行的 ISO 21771-1</li></ul>
+  <ul><li><b>01 节（完善）</b>：补充：DIN 3960 / ISO 21771-1 写法中内齿轮直径带负号，要按绝对值比较；第 10 节判断工具同步支持负值输入</li><li><b>04 节（完善）</b>：补充德标 DIN 5480 花键的标记：W（轴）为外花键、N（毂）为内花键；判断工具可识别</li><li><b>05 节（完善）</b>：ISO 21771 更新为现行的 ISO 21771-1</li>    <li><b>2026-11-11 实测</b>：用 18 种真实图纸标记（GB/T 3478.1、ISO 4156、DIN 5480、GB/T 1144）测试判断功能。发现并修正：内外花键一起标注的配合标记（如 INT/EXT…5H/5h、9H/8f、6×23H7/f7×26H10/a11×6H11/d10）原来被误判为“内齿”，现在识别为配合标记，提示看零件自己的标记或按直径判断。</li>
+  </ul>
 </section>
 <footer>图中齿形均按渐开线公式实时计算绘制。</footer>
 </div>
@@ -430,7 +431,9 @@ const pulse = (t, k = 2) => 0.5 + 0.5 * Math.sin(t * k);
     else if (da > 0 && df > 0 && da !== df) { byDia = da < df ? 'int' : 'ext'; why.push(`齿顶圆 ${da} ${da < df ? '＜' : '＞'} 齿根圆 ${df}`); }
     if (mk) {
       const M = mk.toUpperCase();
-      if (/^\s*INT\b/.test(M)) { byMk = 'int'; why.push('标记以 INT 开头'); }
+      // 配合标记（内外一起标）：INT/EXT…、9H/8f、H7/f7、5H/5h —— 分子大写是内花键（毂），分母小写是外花键（轴），不能用来判断单个零件
+      if (/\bINT\s*\/\s*EXT\b/.test(M) || /[A-Z]{1,2}\d{0,2}\s*\/\s*\d{0,2}[a-z]{1,2}\d{0,2}/.test(mk)) { byMk = 'pair'; why.push('这是内外花键一起标注的配合标记：分子大写为内花键（毂），分母小写为外花键（轴）'); }
+      else if (/^\s*INT\b/.test(M)) { byMk = 'int'; why.push('标记以 INT 开头'); }
       else if (/^\s*EXT\b/.test(M)) { byMk = 'ext'; why.push('标记以 EXT 开头'); }
       else if (/DIN\s*5480\s*[-–]?\s*W\b|^\s*W\s*\d/.test(M)) { byMk = 'ext'; why.push('DIN 5480 标记里的 W（轴）'); }
       else if (/DIN\s*5480\s*[-–]?\s*N\b|^\s*N\s*\d/.test(M)) { byMk = 'int'; why.push('DIN 5480 标记里的 N（毂）'); }
@@ -440,6 +443,8 @@ const pulse = (t, k = 2) => 0.5 + 0.5 * Math.sin(t * k);
           if (up) { byMk = 'int'; why.push(`公差代号 ${letters.join('、')} 全是大写`); } else if (lo) { byMk = 'ext'; why.push(`公差代号 ${letters.join('、')} 全是小写`); } }
         const tail = mk.match(/\d([A-Za-z])\s*$/); if (!byMk && tail) { byMk = tail[1] === tail[1].toUpperCase() ? 'int' : 'ext'; why.push(`末尾公差代号 ${tail[1]} 为${byMk === 'int' ? '大写' : '小写'}`); } }
     }
+    if (byMk === 'pair' && byDia) byMk = null;   // 配合标记分不出单个零件，有直径就按直径判断
+    if (byMk === 'pair') { isInt = false; g.innerHTML = ''; res.innerHTML = `<b style="color:var(--accent);font-size:18px">配合标记（内外花键一起标注）</b><br><span style="color:var(--muted)">${why.join('；')}。要判断手上这个零件，请看它自己的图纸标记（只有分子或只有分母），或输入它的齿顶圆、齿根圆。</span>`; return; }
     const v = byMk || byDia, clash = byMk && byDia && byMk !== byDia;
     isInt = v === 'int';
     g.innerHTML = '';
