@@ -1900,7 +1900,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       } else rows.push(['f<sub>p</sub>、F<sub>α</sub>、F<sub>β</sub> 推荐值', '本行原文未取得']);
     }
     { const dP = m * P.z, fr = dP < 18 ? 20 : dP < 30 ? 30 : dP < 50 ? 40 : dP < 100 ? 50 : dP < 200 ? 60 : dP < 500 ? 80 : NaN;
-      rows.push(['径向跳动 F<sub>r</sub>（表 8 推荐值，分度圆 d = ' + dP.toFixed(1) + '）', isNaN(fr) ? '表 8 只到 d < 500' : fr + ' µm']); }
+      rows.push(['径向跳动 F<sub>r</sub>（2006 版表 8 / 新版表 7 推荐值，分度圆 d = ' + dP.toFixed(1) + '）', isNaN(fr) ? '表 8 只到 d < 500' : fr + ' µm']); }
     let note = '', bad = false;
     if (qaInfo && qaInfo.fromThk) {
       const dLo = isInt ? PI * m - qaInfo.sMax : qaInfo.sMin, dHi = isInt ? PI * m - qaInfo.sMin : qaInfo.sMax, tol = 0.002, w = isInt ? '齿槽宽' : '齿厚';
@@ -1910,7 +1910,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     const warnTab = T && !T.inTable ? '<br><span style="color:var(--warn)">该模数和基准直径的组合不在 DIN 5480 表中（表 4、表 7 此格为空），按相邻档外推，请向客户确认。</span>' : '';
     out.innerHTML = '<table class="acctbl"><thead><tr><th>项目</th><th>数值</th></tr></thead><tbody>' + rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('') + '</tbody></table>' +
       (note ? `<div class="accnote" style="color:${bad ? 'var(--warn)' : 'var(--ok)'}">${note}</div>` : '') +
-      `<div class="accnote">按 DIN 5480-1:2006 表 7 查偏差和公差（尺寸档由基准直径段和模数段决定；每升一级 T<sub>G</sub> 在优先数系 R20 上升三档，T<sub>act</sub> 比 T<sub>G</sub> 低四档，T<sub>G</sub>/T<sub>act</sub> ≈ 1.6），再按表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸控制的是实际值。表 7 由公开的标准译本片段重建，已用标准示例 120×3×38（9H/8f）、KISSsoft 报告 70×3×22（7H/6f）、DIN 5480-2 根径偏差（45×4、m1.25、m0.5）和实测 200×5×38 8g 跨棒距核对一致。径向跳动推荐值取自表 8（按分度圆直径分档，是推荐值不是公差）。T<sub>G</sub> 80 一行的 f<sub>p</sub> 21、F<sub>α</sub> 25、F<sub>β</sub> 16 µm 取自 HEXAGON WN2 按 DIN 5480:2006 输出的 9 级示例（F<sub>β</sub> 只能落在 ≤100 栏，其余两栏未取得）。DIN 5480-1 已出 2025-10 版和 2026-05 更正版，官方变更说明只列表 1、表 2、新增附录 A 和编辑性修改，未提表 7。${warnTab}</div>`;
+      `<div class="accnote">按 DIN 5480-1:2006 表 7（2025-10/2026-05 版改为图 8“Abmaße und Toleranzen”）查偏差和公差（尺寸档由基准直径段和模数段决定；每升一级 T<sub>G</sub> 在优先数系 R20 上升三档，T<sub>act</sub> 比 T<sub>G</sub> 低四档，T<sub>G</sub>/T<sub>act</sub> ≈ 1.6），再按表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸控制的是实际值。表 7 由公开的标准译本片段重建，已用标准示例 120×3×38（9H/8f）、KISSsoft 报告 70×3×22（7H/6f）、DIN 5480-2 根径偏差（45×4、m1.25、m0.5）和实测 200×5×38 8g 跨棒距核对一致。径向跳动推荐值取自 2006 版表 8（新版为表 7“Anhaltswerte für die Rundlaufabweichung”，按分度圆直径分档，是推荐值不是公差）。T<sub>G</sub> 80 一行的 f<sub>p</sub> 21、F<sub>α</sub> 25、F<sub>β</sub> 16 µm 取自 HEXAGON WN2 按 DIN 5480:2006 输出的 9 级示例（F<sub>β</sub> 只能落在 ≤100 栏，其余两栏未取得）。DIN 5480-1 已出 2025-10 版和 2026-05 更正版，官方变更说明只列表 1、表 2、新增附录 A 和编辑性修改，未提偏差和公差数值的改动。${warnTab}</div>`;
     return null;
   }
   function calcAcc() {
