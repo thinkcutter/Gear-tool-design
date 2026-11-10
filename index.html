@@ -538,10 +538,10 @@ var G = (function () {
     let ac = w0 - (hf - rho) * ta - rho / ca;
     if (ac < 0) { rho = wTip / (1 / ca - ta); ac = 0; W.push('齿根圆角系数过大，已按全圆弧齿根取 ρf = ' + (rho / P.mn).toFixed(3) + '·m'); }
     const rk = [];
-    const nTip = 24, nArc = 60, nFl = 360;
+    const nTip = 24, nArc = 240, nFl = 360;   // 圆角段点要密：根切时圆角展成的过渡曲线靠近渐开线的一端变化很快，点稀会漏判根切交点
     if (ac > 0) for (let i = 0; i <= nTip; i++) rk.push([ac * i / nTip, hf, 0, 1]);
     for (let i = (ac > 0 ? 1 : 0); i <= nArc; i++) {
-      const ph = PI / 2 - (PI / 2 - P.an) * i / nArc;
+      const u = i / nArc, ph = PI / 2 - (PI / 2 - P.an) * (1 - (1 - u) * (1 - u));   // 靠近与齿条直线段相切的一端加密
       rk.push([ac + rho * Math.cos(ph), hf - rho + rho * Math.sin(ph), Math.cos(ph), Math.sin(ph)]);
     }
     const d0 = hf - rho + rho * sa, dTop = -(ra - r - P.x * P.mn) - 1.2 * P.mn;
@@ -676,11 +676,24 @@ var G = (function () {
     }
     W.push(...res.W);
     if (res.trimmed) W.push('存在根切：齿根过渡曲线已切入渐开线（已按实际展成齿形处理）');
+    // 齿顶变尖：两侧齿面在齿顶圆以内就相交了，齿形只算到齿的对称线（极角 π/z）为止，后面的点已越过对称线、不是实体
+    if (res.z > 0) {
+      const lim = PI / res.z, P_ = res.pts;
+      for (let i = 1; i < P_.length; i++) {
+        const a1 = Math.atan2(P_[i - 1][0], P_[i - 1][1]), a2 = Math.atan2(P_[i][0], P_[i][1]);
+        if (a2 >= lim && a1 < lim) {
+          const t = (lim - a1) / (a2 - a1), q = [P_[i - 1][0] + (P_[i][0] - P_[i - 1][0]) * t, P_[i - 1][1] + (P_[i][1] - P_[i - 1][1]) * t];
+          res.pts = P_.slice(0, i).concat([q]); if (P_.Rinv !== undefined) res.pts.Rinv = P_.Rinv;
+          res.tipCut = hyp(q[0], q[1]); break;
+        }
+      }
+    }
     // 齿顶厚度检查
     const last = res.pts[res.pts.length - 1];
     const psiTip = Math.atan2(last[0], last[1]);
     res.tipThick = (2 * PI / res.z - 2 * psiTip) * res.ra;
-    if (res.tipThick <= 0.02) W.push('齿顶变尖（齿顶厚 ≈ 0），请减小外径或变位');
+    if (res.tipCut) { res.tipThick = 0; W.push('齿顶变尖：两侧齿面在直径 ' + (2 * res.tipCut).toFixed(3) + ' 处已相交，小于齿顶圆 ' + (2 * res.ra).toFixed(3) + '，廓形只算到尖点；请减小外径或变位'); }
+    else if (res.tipThick <= 0.02) W.push('齿顶变尖（齿顶厚 ≈ 0），请减小外径或变位');
     res.W = W;
     return res;
   }
@@ -1738,7 +1751,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     'spline.mn': '花键模数，按图纸填写。',
     'spline.z': '齿数，按图纸填写。',
     'spline.preset': '渐开线花键的齿形标准。GB/T 3478.1 选压力角和齿根类型；DIN 5480 选“DIN 5480”。选择后自动填好标准的齿顶高、齿根高和圆角系数。',
-    'spline.x': '变位系数，GB/T 3478.1 花键一般为 0。DIN 5480 图纸给的“移距量”是 x·m（毫米），x = 移距量 ÷ 模数，例如 0.675 ÷ 1.5 = 0.45。已填齿顶圆、齿根圆和检测数据时，x 不影响结果。',
+    'spline.x': '变位系数，GB/T 3478.1 花键一般为 0。DIN 5480 图纸给的“移距量”是 x·m（毫米），x = 移距量 ÷ 模数，例如 0.675 ÷ 1.5 = 0.45；内花键（毂）按 DIN 3960 取 x2 = −x1，要输负值，例如 −0.45。已填齿顶圆、齿根圆和检测数据时，x 不影响结果。',
     'internal.x': '内齿轮变位系数，照图纸填写，并在“内齿变位符号”里选图纸用的约定。没有就填 0。已填齿顶圆、齿根圆和棒间距时，x 不影响刀具廓形。',
     'internal.xconv': '内齿变位的正负号有两种约定，结果相反：GB / 机械设计手册：da = d − 2(ha* − x)m，正变位时内孔变大、内齿变薄，国内图纸多用这种。ISO 21771 / DIN 3960：齿数取负值计算，正变位时内孔变小、内齿变厚。看不出来时，用图纸齿顶圆反推：哪种约定算出的齿顶圆和图纸一致就选哪种。',
     'spline.ha': '外花键齿顶高系数，30° 标准为 0.5。填了齿顶圆 da 后自动推算。',
@@ -2278,6 +2291,18 @@ if (typeof module !== 'undefined') module.exports = HX;
       }
       if (qaInfo.fromStd) hl.push([(isInt ? '按 ' + qaInfo.fromStd + 'H 取齿槽宽' : '按 ' + qaInfo.fromStd + 'h 取齿厚'), f3(isInt ? PI * P.mn - qaInfo.sUse : qaInfo.sUse) + '（公差' + ({ min: '下限', max: '上限' }[qaInfo.Q.pick] || '中值') + '）']);
       if (Q.src === 'pin' && Q.dp > 0) hl.push([(isInt ? '棒间距' : '跨棒距') + ' M（核算）', f3(G.MFromThickness(P, geo.st, Q.dp))]);
+      if (Q.src === 'pin' && Q.dp > 0 && P.z > 0 && P.mn > 0) {   // 量棒与齿面的接触点要落在渐开线上（基圆/渐开线起点以上、齿顶以内）
+        const cb = Math.cos(P.beta), mt = P.mn / cb, at = Math.atan(Math.tan(P.an) / cb), d = P.z * mt, db = d * Math.cos(at), q = 1 / (P.mn * P.z * Math.cos(P.an));
+        const inv = a => Math.tan(a) - a, v = isInt ? (PI * mt - geo.st) / d + inv(at) - Q.dp * q : geo.st / d + inv(at) + Q.dp * q - PI / P.z;
+        if (v > 0) {
+          let aM = Math.cbrt(3 * v); for (let i = 0; i < 40; i++) { const t = Math.tan(aM); aM -= (t - aM - v) / (t * t); }
+          const bb = Math.asin(Math.sin(P.beta) * Math.cos(P.an)), u = db / 2 * Math.tan(aM) + (isInt ? 1 : -1) * Q.dp / (2 * Math.cos(bb)), dc = 2 * Math.hypot(db / 2, u);
+          const Ri = geo.Rinv > 0 ? 2 * geo.Rinv : NaN;
+          const bad = isInt ? (dc < 2 * geo.ra ? '超出内齿齿顶' : dc > Ri + 1e-6 ? '落到齿根过渡曲线上' : '') : (u <= 0 ? '低于基圆' : dc > 2 * geo.ra ? '超出齿顶圆' : dc < Ri - 1e-6 ? '落到齿根过渡曲线上' : '');
+          rows.push([bad ? 'bad' : '', '量棒接触点直径' + (P.beta ? '（斜齿近似）' : ''), f3(dc) + (bad ? '（' + bad + '）' : '')].slice(1));
+          if (bad) stdWarn.push('量棒 dp ' + Q.dp + ' 与齿面的接触点' + bad + '（接触点直径 ' + f3(dc) + '），这个量棒测不出正确的齿厚，请核对量棒直径');
+        }
+      }
       if (!isInt && qaInfo.kRec) {
         const k = Q.src === 'span' ? Q.k : qaInfo.kRec;
         hl.push(['公法线 W' + k + '（核算）', f3(G.WFromThickness(P, geo.st, k))]);
@@ -2301,6 +2326,12 @@ if (typeof module !== 'undefined') module.exports = HX;
         if (isInt) { daS = st ? st.Dii - 2 * P.x * m : d - 2 * (sp[1] + P.x) * m; dfS = st ? st.Dei - 2 * P.x * m : d - 2 * P.x * m + 2 * sp[2] * m; }
         else { daS = d + 2 * (sp[1] + P.x) * m; dfS = d + 2 * (P.x - sp[2]) * m; }
         why = FV.preset === 'din' ? 'DIN 5480' : 'GB/T 3478.1';
+        // DIN 5480-1 表 3：轴 x1 = −0.05～+0.45（个别到 +0.879）；毂按 DIN 3960 取 x2 = −x1 = +0.05～−0.45（个别到 −0.879），符号相反
+        if (FV.preset === 'din' && Math.abs(P.x) > 1e-9) {
+          const xs = P.x, okX = isInt ? xs <= 0.05 + 1e-6 && xs >= -0.879 - 1e-6 : xs >= -0.05 - 1e-6 && xs <= 0.879 + 1e-6;
+          if (!okX) { rowsQA.push(['bad', 'DIN 5480 变位系数', (isInt ? '毂 x2 应为 +0.05～−0.45（个别到 −0.879），' : '轴 x1 应为 −0.05～+0.45（个别到 +0.879），') + '现为 ' + xs]);
+            stdWarn.push(isInt ? 'DIN 5480 毂（内花键）的变位系数按 DIN 3960 是 x2 = −x1，一般为负值（如 −0.45）；图纸若写 +x·m 是轴的数值，请改为负值输入' : 'DIN 5480 轴的变位系数应在 −0.05～+0.45（个别到 +0.879）之间，请核对符号'); }
+        }
       } else {
         const ha = fieldOrig('ha'), c = fieldOrig('cc'), xE = P.x - P.ds / (2 * m * tanA);
         if (isInt) { daS = d - 2 * (ha + P.x) * m; dfS = d - 2 * P.x * m + 2 * (ha + c) * m; why = 'ha*=' + ha + '、c*=' + c; }

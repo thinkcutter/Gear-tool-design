@@ -341,6 +341,7 @@ ol.steps li{margin:4px 0}
   <div class="meta">本页于 2026-11-03 发布后，经过两轮全面复核（含独立复核和标准、资料查证），改正和完善了以下内容：</div>
   <ul><li><b>12 节、计算器（改正）</b>：原写内花键小径 D<sub>ii</sub> = m(z − 1)，<b>错误</b>。标准为 D<sub>ii min</sub> = D<sub>Fe max</sub> + 2c<sub>F</sub>，例题由 46 改为 46.189；同时补充 D<sub>Fe max</sub> 公式、37.5° / 45° 系数和形状齿高 h<sub>s</sub></li><li><b>02 节、计算器说明（改正）</b>：原写“DIN 3960：正变位 = 齿槽变宽”，<b>写反了</b>。DIN 3960 / ISO 21771-1 中内齿轮正变位使直径绝对值变小、齿变厚；页面原公式是国内和日本的写法，现两种规定分开写明</li><li><b>计算器（改正）</b>：斜齿轮量棒距改为端面公式、量棒直径按法面取</li><li><b>13 节（完善）</b>：外花键改写为 S<sub>v max</sub> = S + es<sub>v</sub>；λ 改为“按标准由 F<sub>p</sub>、f<sub>f</sub>、F<sub>β</sub> 计算”，不是单独查表</li><li><b>06、08、09 节（完善）</b>：注明动画示意齿轮的参数，避免和例题数字混淆</li><li><b>03、12 节（完善）</b>：节点 P 在分度圆上补充“标准安装时”；注明标准版本（GB/T 3478.1-2008 对应 ISO 4156-1:2005，ISO 4156 现行为 2021 年版）；补充“DIN 5480 花键有变位”；D<sub>Fe</sub> 补充非 h 配合时的写法</li><li><b>14 节（完善）</b>：补充 6×23×26×6 为轻系列、同小径中系列为 6×23×28×6</li><li><b>计算器（完善）</b>：齿数、模数按绝对值计算，可直接输入 DIN / ISO 写法的负齿数</li>    <li><b>2026-11-11 算例实测</b>：用 KHK 齿轮技术资料的公开算例实测计算器：直齿公法线（m3 z24 x+0.4，W₄ = 32.8266）、直齿跨棒距（m1 z20，d<sub>p</sub> 1.7，M = 22.2941）、内齿棒间距（m1 z40，M = 37.5951）、法面制斜齿跨棒距（m<sub>n</sub>1 z20 β15° x+0.4，M = 24.5696）、端面制斜齿跨棒距（m<sub>t</sub>3 z36，M = 115.892），以及齿顶圆、齿根圆、基圆算例，结果全部一致（差值在末位四舍五入以内）。同时补上斜齿轮法向公法线（原来只算直齿），用 KHK 表 5.11（m<sub>n</sub>3 z24 β25° x<sub>n</sub>+0.4，k = 5，W = 42.0085）和表 5.12（端面制 m<sub>t</sub>3 β22.5°，k = 4，W = 30.5910）核对一致。</li>
     <li><b>2026-11-11 复验</b>：斜齿公法线再用 KISSsoft 两份报告（m<sub>n</sub>1.5 β25° z16/43：W₃ = 11.845、W₆ = 25.272；m<sub>n</sub>8 β8° z18/121：W₃ = 63.306、W₁₃ = 306.004）核对一致，并用 400 组随机参数与独立程序比对全部相同、测量点都落在有效齿面内。新增：可手填跨齿数 k（图纸指定时用；MESYS 算例 z20 k = 2：W = 4.7083 一致）；显示公法线测量点直径 d<sub>MWk</sub>（公式与 KISSsoft 报告一致）；负变位过大、d + 2xm 小于基圆时原来会显示 NaN，已改为按基圆处取跨齿数。</li>
+    <li><b>2026-11-11 大批量实测</b>：计算器与独立程序比对 3000 组随机参数、23409 个数值全部一致。发现并修正：内齿量棒过大（或外齿量棒过小）时，原来仍给出负的 α<sub>M</sub> 和错误的 M 值，现在提示“量棒放不进齿槽 / 碰不到渐开线”；新增量棒接触点直径，接触点超出齿顶或低于基圆时提示换量棒（直齿公式用 KHK 理想量棒算例核对：接触点正好落在 d + 2xm 上）。</li>
   </ul>
 </section>
 <footer>图中齿形均按渐开线公式实时计算绘制；花键尺寸系数以 GB/T 3478.1 为准。</footer>
@@ -732,10 +733,17 @@ const set = (id, h) => { const e = document.getElementById(id); if (e) e.innerHT
       // 端面公式（斜齿用法面齿厚和法面量棒直径换算）：inv αMt = inv αt ± sn/(mn z) ± dp/(mn z cos αn) − π/z
       const snn = m * (PI / 2 + 2 * xx * Math.tan(An));
       const v = ext ? inv(At) + snn / (m * z) + dp / (m * z * Math.cos(An)) - PI / z : inv(At) + snn / (m * z) - dp / (m * z * Math.cos(An));
+      if (!(v > 0)) { row('inv α<sub>M</sub>', v.toFixed(6), ext ? 'inv αₜ + sₙ/(mₙz) + dₚ/(mₙz cos αₙ) − π/z' : 'inv αₜ + eₙ/(mₙz) − dₚ/(mₙz cos αₙ)'); row(ext ? '跨棒距 M' : '棒间距 M', ext ? '量棒太小，落到基圆以下碰不到渐开线齿面，请加大量棒' : '量棒太大，放不进齿槽，请减小量棒'); out.innerHTML = R.join(''); return; }
       const aM = invInv(v), dM = db / Math.cos(aM), M = { v, aM, dM, M: (z % 2 ? dM * Math.cos(PI / 2 / z) : dM) + (ext ? dp : -dp) };
       row('inv α<sub>M</sub>', M.v.toFixed(6), ext ? 'inv αₜ + sₙ/(mₙz) + dₚ/(mₙz cos αₙ) − π/z' : 'inv αₜ + eₙ/(mₙz) − dₚ/(mₙz cos αₙ)');
       row('α<sub>M</sub>', deg(M.aM).toFixed(4) + '°', '迭代反求');
       row('量棒中心圆 d<sub>M</sub>', M.dM, 'd<sub>b</sub> / cos α<sub>M</sub>');
+      {  // 量棒与齿面的接触点：沿基圆切线距切点 r_b tan α_M ∓ d_p/(2cos β_b)
+        const bb = Math.asin(Math.sin(be) * Math.cos(An)), u = db / 2 * Math.tan(aM) + (ext ? -1 : 1) * dp / (2 * Math.cos(bb)), dc = 2 * Math.hypot(db / 2, u);
+        const tip = spl ? null : ext ? d + 2 * (1 + xx) * m : d - 2 * (1 - xx) * m;
+        const bad = ext ? (u <= 0 ? '接触点低于基圆，量棒太小' : tip && dc > tip ? '接触点超出齿顶圆，量棒太大' : '') : (tip && dc < tip ? '接触点超出齿顶（内孔），量棒太小' : '');
+        row(be ? '量棒接触点直径（斜齿为近似值）' : '量棒接触点直径', bad ? `${n3(dc)}（${bad}，请换量棒）` : dc, '√[d<sub>b</sub>² + (d<sub>b</sub> tan α<sub>M</sub> ' + (ext ? '−' : '+') + ' d<sub>p</sub>/cos β<sub>b</sub>)²]');
+      }
       row(ext ? `跨棒距 M（${z % 2 ? '奇数齿' : '偶数齿'}）` : `棒间距 M（${z % 2 ? '奇数齿' : '偶数齿'}）`, M.M, (z % 2 ? 'dM cos(90°/z) ' : 'dM ') + (ext ? '+ dₚ' : '− dₚ'));
     }
     out.innerHTML = R.join('');
