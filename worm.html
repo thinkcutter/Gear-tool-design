@@ -144,7 +144,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="say">齿轮的分度圆直径由齿数决定（<span class="f">d = m z</span>），蜗杆却不行：同样模数、同样头数，蜗杆可以做粗，也可以做细。图中两根蜗杆都是 <span class="f">m = 4、z<sub>1</sub> = 2</span>，细的 <span class="f">d<sub>1</sub> = 40</span>，粗的 <span class="f">d<sub>1</sub> = 71</span>，螺纹的倾斜程度（导程角）明显不同。</div>
   <ul>
     <li><b>直径系数</b> <span class="f">q = d<sub>1</sub> / m</span>，所以 <span class="f">d<sub>1</sub> = q m</span>。</li>
-    <li>为什么要标准化？蜗轮是用和蜗杆<b>一模一样</b>的滚刀切出来的，蜗杆直径每多一种，就要多备一把滚刀。所以 GB/T 10088 / GB/T 10085 对每个模数只规定了少数几个 <span class="f">d<sub>1</sub></span>（例如 <span class="f">m = 4</span>：40、71）。</li>
+    <li>为什么要标准化？蜗轮是用和蜗杆<b>一模一样</b>的滚刀切出来的，蜗杆直径每多一种，就要多备一把滚刀。所以 GB/T 10088 / GB/T 10085 对每个模数只规定了少数几个 <span class="f">d<sub>1</sub></span>（例如 <span class="f">m = 4</span>：40、71；表 1 里还有带括号的 31.5、50，标准注明括号中的数字尽可能不采用）。</li>
     <li>细蜗杆导程角大、效率高，但刚度差、容易弯；粗蜗杆刚度好但效率低。传递功率时按 GB/T 10085 的匹配表选 <span class="f">m、d<sub>1</sub>、z<sub>1</sub></span>。</li>
   </ul>
   <div class="vo">蜗杆的粗细不由齿数决定，而是标准里规定好的几种。因为每一种粗细都要配一把专门的滚刀去切蜗轮。</div>
@@ -273,10 +273,10 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
     <svg class="fig" id="f12" viewBox="-60 -60 120 120"></svg>
     <div class="ctl">
       <label>模数 m（GB/T 10088）</label><select id="cm"></select>
-      <label>蜗杆分度圆直径 d₁ <span class="tag">GB/T 10085 常用匹配</span></label><select id="cd"></select>
+      <label>蜗杆分度圆直径 d₁ <span class="tag">GB/T 10085 表 1 第一选择</span></label><select id="cd"></select>
       <label>头数 z₁</label><select id="cz1"><option>1</option><option selected>2</option><option>4</option><option>6</option></select>
       <label>蜗轮齿数 z₂ <b id="vz2"></b></label><input id="cz2" type="range" min="20" max="100" step="1" value="40">
-      <label>蜗轮变位系数 x₂ <b id="vx2"></b></label><input id="cx2" type="range" min="-1" max="1" step="0.05" value="0">
+      <label>蜗轮变位系数 x₂（可输到 4 位小数，如 GB/T 10085 附录 A 的 −0.1349）</label><input id="cx2" type="number" min="-1" max="1" step="0.0001" value="0">
       <label>当量摩擦系数 f′ <b id="vf"></b></label><input id="cf" type="range" min="0.01" max="0.15" step="0.005" value="0.04">
       <label>蜗杆转速 n₁（r/min）</label><input id="cn" type="number" min="1" max="6000" step="10" value="1450">
       <div class="warn" id="cw"></div>
@@ -317,6 +317,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <ul>
     <li><b>2026-11-08 首版</b>：14 节内容：蜗杆传动原理、头数与传动比、轴向模数、导程角（可调展开图）、直径系数、五种齿形（侧视和端面齿形按公式实时计算）、基本齿廓、蜗轮变位与中心距（可调）、效率与自锁曲线、滑动速度、加工、量棒测量、计算器和公式速查。</li>
     <li><b>2026-11-11 审核</b>：公式与 GB/T 10087-2018（齿廓、齿形角）、GB/T 10085-2018（传动比系列、中心距系列、推荐 ZI/ZK、自锁界限）逐条核对；计算器用 3 组参数手算复核全部一致；量棒算例改为按公式实时计算（原写死系数 2.2430，应为 2.2433），补充 GB/T 10087 允许 25°/15°/12° 齿形角的条款。</li>
+    <li><b>2026-11-11 算例实测</b>：计算器的 d₁/z₁ 匹配表与 GB/T 10085-2018 表 1 全部第一选择（不带括号）逐行核对一致；用表 1 的 d<sub>a1</sub>、d<sub>f1</sub>、导程角和附录 A 表 A.1 的中心距组合（如 a = 100：m 4、d₁ 40、z₁ 2、z₂ 41、x₂ −0.5）实测，结果全部一致；量棒距公式与 KHK 技术资料表 5.24 算例（M = 35.3173）一致。变位系数原来是步长 0.05 的滑块，输不进表 A.1 的 −0.1349 这类值，改为可输 4 位小数；导程角小于 3°30′ 时按 GB/T 10085 表 1 注 2 提示自锁。</li>
     <li>基本齿廓数值按 GB/T 10087-2018：<span class="f">h<sub>a</sub> = 1m</span>（短齿 0.8m）、<span class="f">c = 0.2m</span>（0.15～0.35m）、<span class="f">ρ<sub>f</sub> = 0.3m</span>（0.2～0.4m）；同时把指型铣刀计算器里蜗杆齿根圆角系数的默认值由 0.2 改为 0.3。</li>
   </ul>
 </section>
@@ -1014,7 +1015,7 @@ function wormPair(svg, o) {
   let W = null, sc = 1;
   const run = () => {
     const m = +$('cm').value, d1 = +$('cd').value, z1 = +$('cz1').value, z2 = +$('cz2').value, x2 = +$('cx2').value, f = +$('cf').value, n1 = +$('cn').value || 0;
-    $('vz2').textContent = z2; $('vx2').textContent = (x2 >= 0 ? '+' : '') + x2.toFixed(2); $('vf').textContent = f.toFixed(3);
+    $('vz2').textContent = z2; $('vf').textContent = f.toFixed(3);
     const q = d1 / m, px = PI * m, pz = z1 * px, gam = Math.atan(z1 / q), rho = Math.atan(f), al = 20 * D2R;
     const da1 = d1 + 2 * m, df1 = d1 - 2.4 * m, d2 = m * z2, da2 = d2 + 2 * m * (1 + x2), df2 = d2 - 2 * m * (1.2 - x2), a = (d1 + d2 + 2 * x2 * m) / 2;
     const rg2 = a - da2 / 2, de2 = da2 + (z1 === 1 ? 2 : z1 <= 3 ? 1.5 : 1) * m, b2 = (z1 <= 3 ? 0.75 : 0.67) * da1;
@@ -1034,7 +1035,7 @@ function wormPair(svg, o) {
     if (!zOK.includes(z1)) W2.push(`GB/T 10085 常用匹配里，m = ${m}、d₁ = ${d1} 的头数为 ${zOK.join('、')}，z₁ = ${z1} 不在其中。`);
     if (z2 < 28) W2.push('z₂ 小于 28：啮合区小，容易根切，一般取 28～80。');
     if (z2 > 80) W2.push('z₂ 大于 80：蜗轮直径大，蜗杆支承跨度长、刚度不够，要校核。');
-    if (gam <= rho) W2.push('γ ≤ ρᵥ：可能自锁；但振动、冲击时自锁不可靠，安全场合要另加制动。');
+    if (gam < 3.5 * D2R) W2.push('γ < 3°30′：GB/T 10085 表 1 把这类蜗杆标为自锁（注 2）。'); if (gam <= rho) W2.push('γ ≤ ρᵥ：可能自锁；但振动、冲击时自锁不可靠，安全场合要另加制动。');
     $('cw').innerHTML = W2.join('<br>');
     // 图
     g.innerHTML = '';

@@ -331,14 +331,15 @@ ol.steps li{margin:4px 0}
     </div>
     <table class="out" id="cout"></table>
   </div>
-  <div class="say">计算器只算基本尺寸（不含公差，外花键按 h 配合）。内齿轮变位系数按国内习惯：正变位 = 直径变大、齿槽变宽；图纸按 DIN 3960 / ISO 21771-1 标注时（内齿轮齿数、直径为负），变位系数要先换号，齿数、直径按绝对值输入。斜齿轮量棒距用端面公式，量棒直径按法面取（实际用量球）。</div>
+  <div class="say">计算器只算基本尺寸（不含公差，外花键按 h 配合）。斜齿轮给出法向公法线和测量所需的最小齿宽。内齿轮变位系数按国内习惯：正变位 = 直径变大、齿槽变宽；图纸按 DIN 3960 / ISO 21771-1 标注时（内齿轮齿数、直径为负），变位系数要先换号，齿数、直径按绝对值输入。斜齿轮量棒距用端面公式，量棒直径按法面取（实际用量球）。</div>
   <div class="vo">最后，把参数填进去，所有结果一步一步算给你看。</div>
 </section>
 
 <section class="card" id="rev">
   <h2>修订记录</h2>
   <div class="meta">本页于 2026-11-03 发布后，经过两轮全面复核（含独立复核和标准、资料查证），改正和完善了以下内容：</div>
-  <ul><li><b>12 节、计算器（改正）</b>：原写内花键小径 D<sub>ii</sub> = m(z − 1)，<b>错误</b>。标准为 D<sub>ii min</sub> = D<sub>Fe max</sub> + 2c<sub>F</sub>，例题由 46 改为 46.189；同时补充 D<sub>Fe max</sub> 公式、37.5° / 45° 系数和形状齿高 h<sub>s</sub></li><li><b>02 节、计算器说明（改正）</b>：原写“DIN 3960：正变位 = 齿槽变宽”，<b>写反了</b>。DIN 3960 / ISO 21771-1 中内齿轮正变位使直径绝对值变小、齿变厚；页面原公式是国内和日本的写法，现两种规定分开写明</li><li><b>计算器（改正）</b>：斜齿轮量棒距改为端面公式、量棒直径按法面取</li><li><b>13 节（完善）</b>：外花键改写为 S<sub>v max</sub> = S + es<sub>v</sub>；λ 改为“按标准由 F<sub>p</sub>、f<sub>f</sub>、F<sub>β</sub> 计算”，不是单独查表</li><li><b>06、08、09 节（完善）</b>：注明动画示意齿轮的参数，避免和例题数字混淆</li><li><b>03、12 节（完善）</b>：节点 P 在分度圆上补充“标准安装时”；注明标准版本（GB/T 3478.1-2008 对应 ISO 4156-1:2005，ISO 4156 现行为 2021 年版）；补充“DIN 5480 花键有变位”；D<sub>Fe</sub> 补充非 h 配合时的写法</li><li><b>14 节（完善）</b>：补充 6×23×26×6 为轻系列、同小径中系列为 6×23×28×6</li><li><b>计算器（完善）</b>：齿数、模数按绝对值计算，可直接输入 DIN / ISO 写法的负齿数</li></ul>
+  <ul><li><b>12 节、计算器（改正）</b>：原写内花键小径 D<sub>ii</sub> = m(z − 1)，<b>错误</b>。标准为 D<sub>ii min</sub> = D<sub>Fe max</sub> + 2c<sub>F</sub>，例题由 46 改为 46.189；同时补充 D<sub>Fe max</sub> 公式、37.5° / 45° 系数和形状齿高 h<sub>s</sub></li><li><b>02 节、计算器说明（改正）</b>：原写“DIN 3960：正变位 = 齿槽变宽”，<b>写反了</b>。DIN 3960 / ISO 21771-1 中内齿轮正变位使直径绝对值变小、齿变厚；页面原公式是国内和日本的写法，现两种规定分开写明</li><li><b>计算器（改正）</b>：斜齿轮量棒距改为端面公式、量棒直径按法面取</li><li><b>13 节（完善）</b>：外花键改写为 S<sub>v max</sub> = S + es<sub>v</sub>；λ 改为“按标准由 F<sub>p</sub>、f<sub>f</sub>、F<sub>β</sub> 计算”，不是单独查表</li><li><b>06、08、09 节（完善）</b>：注明动画示意齿轮的参数，避免和例题数字混淆</li><li><b>03、12 节（完善）</b>：节点 P 在分度圆上补充“标准安装时”；注明标准版本（GB/T 3478.1-2008 对应 ISO 4156-1:2005，ISO 4156 现行为 2021 年版）；补充“DIN 5480 花键有变位”；D<sub>Fe</sub> 补充非 h 配合时的写法</li><li><b>14 节（完善）</b>：补充 6×23×26×6 为轻系列、同小径中系列为 6×23×28×6</li><li><b>计算器（完善）</b>：齿数、模数按绝对值计算，可直接输入 DIN / ISO 写法的负齿数</li>    <li><b>2026-11-11 算例实测</b>：用 KHK 齿轮技术资料的公开算例实测计算器：直齿公法线（m3 z24 x+0.4，W₄ = 32.8266）、直齿跨棒距（m1 z20，d<sub>p</sub> 1.7，M = 22.2941）、内齿棒间距（m1 z40，M = 37.5951）、法面制斜齿跨棒距（m<sub>n</sub>1 z20 β15° x+0.4，M = 24.5696）、端面制斜齿跨棒距（m<sub>t</sub>3 z36，M = 115.892），以及齿顶圆、齿根圆、基圆算例，结果全部一致（差值在末位四舍五入以内）。同时补上斜齿轮法向公法线（原来只算直齿），用 KHK 表 5.11（m<sub>n</sub>3 z24 β25° x<sub>n</sub>+0.4，k = 5，W = 42.0085）和表 5.12（端面制 m<sub>t</sub>3 β22.5°，k = 4，W = 30.5910）核对一致。</li>
+  </ul>
 </section>
 <footer>图中齿形均按渐开线公式实时计算绘制；花键尺寸系数以 GB/T 3478.1 为准。</footer>
 </div>
@@ -717,6 +718,13 @@ const set = (id, h) => { const e = document.getElementById(id); if (e) e.innerHT
     const sn = m * (PI / 2 + 2 * xx * Math.tan(An));
     if (!spl) row(ext ? '分度圆法面齿厚 sₙ' : '分度圆法面齿槽宽 eₙ', sn, 'mₙ(π/2 + 2x tan αₙ)');
     if (ext && !(be)) { const W = Wk(G(m, z, al, xx)); row(`公法线 W${W.k}（跨 ${W.k} 齿）`, W.W, 'm cos α[π(k−0.5) + z inv α] + 2xm sin α'); }
+    if (ext && be && !spl) {   // 斜齿法向公法线（KHK 表 5.11 / DIN 3960 写法）
+      const bb = Math.asin(Math.sin(be) * Math.cos(An)), ax = Math.acos(db / (d + 2 * xx * m));
+      const k = Math.max(2, Math.round(z / PI * (Math.tan(ax) / Math.cos(bb) ** 2 - inv(At) - 2 * xx * Math.tan(An) / z) + 0.5));
+      const Wn = m * Math.cos(An) * (PI * (k - 0.5) + z * inv(At)) + 2 * xx * m * Math.sin(An);
+      row(`法向公法线 W<sub>n${k}</sub>（跨 ${k} 齿）`, Wn, 'mₙ cos αₙ[π(k−0.5) + z inv αₜ] + 2xₙmₙ sin αₙ');
+      row('测公法线所需最小齿宽', Wn * Math.sin(bb), 'W<sub>n</sub> sin β<sub>b</sub>，实际再留 3 mm 以上（KHK）');
+    }
     if (dp > 0) {
       // 端面公式（斜齿用法面齿厚和法面量棒直径换算）：inv αMt = inv αt ± sn/(mn z) ± dp/(mn z cos αn) − π/z
       const snn = m * (PI / 2 + 2 * xx * Math.tan(An));
