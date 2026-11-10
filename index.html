@@ -1993,7 +1993,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     let Q = g, note = '';
     if (std === 'agmaA') note = 'ANSI/AGMA ISO 1328-1-B14 等同 ISO 1328-1:2013，A 级与 ISO 同号等级相同；早先的 AGMA 2015-1-A01 公式也与它一致。';
     if (std === 'agmaQ') { Q = 17 - g; note = 'AGMA 2000 的 Q 级数字越大越精密，按经验 ISO ≈ 17 − Q，这里按 ISO 1328-1:2013 的 ' + Q + ' 级计算，只作参考，请向客户确认。'; }
-    if (gb2363) note = 'GB/T 2363-2025 第 5.1 条公式 (1)～(9)：已从标准原文核对 (1) f<sub>pT</sub>、(2) F<sub>pT</sub>、(3) f<sub>HαT</sub>、(5) F<sub>αT</sub>（用未圆整值合成）、(6) f<sub>HβT</sub>、(7) f<sub>fβT</sub>、(8) F<sub>βT</sub>，系数和级间公比 √2 与 GB/T 10095.1-2022 完全相同；(4) f<sub>fαT</sub>、(9) F<sub>rT</sub> 和 5.2 圆整规则未取得原文，按 GB/T 10095.1-2022 计算（公开解读给出 F<sub>rT</sub> = 0.9F<sub>pT</sub>）。GB/T 2363-2025 不给切向、径向综合偏差的公差值；法向模数小于 0.1 mm 时可参考本标准，但仅限供需双方协商使用。';
+    if (gb2363) note = 'GB/T 2363-2025 第 5 章已逐条对照标准全文核对：公式 (1)～(9) 的系数、级间公比 √2（5.2.2）和圆整规则（5.2.3：大于 10 µm 圆整到整数，5～10 µm 圆整到 0.5，小于 5 µm 圆整到 0.1）都与 GB/T 10095.1-2022 相同；F<sub>αT</sub>、F<sub>βT</sub> 用未圆整的分量合成，F<sub>rT</sub> = 0.9F<sub>pT</sub> 是本标准正文的公式 (9)。GB/T 2363-2025 不给切向、径向综合偏差的公差值；法向模数小于 0.1 mm 时可参考本标准，但仅限供需双方协商使用。';
     const qMin = gb2363 ? 4 : ed13 ? 1 : 0, qMax = ed13 ? 11 : 12;
     if (!(Q >= qMin && Q <= qMax)) { out.innerHTML = '<div class="accnote">等级超出范围：' + (gb2363 ? 'GB/T 2363-2025 为 4–11 级。' : ed13 ? 'ISO 1328-1:2013 / GB/T 10095.1-2022 为 1–11 级。' : 'ISO 1328-1:1995 / GB/T 10095.1-2008 为 0–12 级。') + '</div>'; return null; }
     const d = 2 * geo.r, m = P.mn, b = P.b || 0, f = Math.pow(2, (Q - 5) / 2);
@@ -2004,7 +2004,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       const sd = Math.sqrt(d), sb = Math.sqrt(gb2363 ? Math.max(b, 0.2) : Math.max(b, 4));
       const fH = (0.4 * m + 0.001 * d + 4) * f, ff = (0.55 * m + 5) * f, fHb = (0.05 * sd + 0.35 * sb + 4) * f, ffb = (0.07 * sd + 0.45 * sb + 4) * f, Fp = (0.002 * d + 0.55 * sd + 0.7 * m + 12) * f;
       items = [['单个齿距公差', '±fpT', (0.001 * d + 0.4 * m + 5) * f], ['齿距累积总公差', 'FpT', Fp], ['齿廓总公差', 'FαT', Math.hypot(fH, ff)], ['齿廓形状公差', 'ffαT', ff], ['齿廓倾斜公差', '±fHαT', fH],
-        ['螺旋线总公差', 'FβT', Math.hypot(fHb, ffb)], ['螺旋线形状公差', 'ffβT', ffb], ['螺旋线倾斜公差', '±fHβT', fHb], ['径向跳动公差（附录推荐）', 'FrT', 0.9 * Fp]].map(r => [r[0], r[1], rd(r[2])]);
+        ['螺旋线总公差', 'FβT', Math.hypot(fHb, ffb)], ['螺旋线形状公差', 'ffβT', ffb], ['螺旋线倾斜公差', '±fHβT', fHb], [gb2363 ? '径向跳动公差（公式 9）' : '径向跳动公差（附录推荐）', 'FrT', 0.9 * Fp]].map(r => [r[0], r[1], rd(r[2])]);
       const out_ = gb2363 ? P.z < 5 || P.z > 200 || d < 0.5 || d > 100 || m < 0.1 || m >= 0.5 || (b > 0 && (b < 0.2 || b > 10)) || Math.abs(P.beta || 0) > 45 * D2R
         : P.z < 5 || P.z > 1000 || d < 5 || d > 15000 || m < 0.5 || m > 70 || (b > 0 && (b < 4 || b > 1200)) || Math.abs(P.beta || 0) > 45 * D2R;
       const rng = gb2363 ? 'z 5–200、d 0.5–100、mn 0.1–<0.5、b 0.2–10、β ≤ 45°' : 'z 5–1000、d 5–15000、mn 0.5–70、b 4–1200、β ≤ 45°';
