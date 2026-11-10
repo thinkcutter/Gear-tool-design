@@ -151,7 +151,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="ctl"><label>选一个螺纹</label><select id="i5"></select></div>
   <svg class="fig" id="f5" viewBox="-4 -24 124 36"></svg>
   <table class="out" id="t5"></table>
-  <div class="say">把<b>中径</b>圆柱展开：底边是 <span class="f">π d<sub>2</sub></span>，高是导程 <span class="f">P<sub>h</sub></span>，斜边和底边的夹角就是<b>导程角</b>（也叫螺纹升角）。图中三角形按真实比例画——普通螺纹的导程角只有 2°～3°，几乎是平的。</div>
+  <div class="say">把<b>中径</b>圆柱展开：底边是 <span class="f">π d<sub>2</sub></span>，高是导程 <span class="f">P<sub>h</sub></span>，斜边和底边的夹角就是<b>导程角</b>（也叫螺纹升角）。图中三角形按真实比例画——普通粗牙螺纹的导程角只有约 2°～3.5°，几乎是平的。</div>
   <ul>
     <li><span class="f">tan φ = P<sub>h</sub> / (π d<sub>2</sub>) = n P / (π d<sub>2</sub>)</span>。导程越大、直径越小，导程角越大。</li>
     <li>导程角决定了螺纹<b>能不能自锁</b>和<b>传动效率</b>（10 节）；车削螺纹时，车刀两侧的后角也要按导程角修正。</li>
@@ -182,7 +182,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <svg class="fig" id="f7b" viewBox="-4 -16 124 34"></svg>
   <div class="say">螺纹标记按“<b>牙型和直径 × 螺距 − 公差带 − 旋合长度 − 旋向</b>”的顺序写。公差带由<b>公差等级</b>（数字，越小越精密）和<b>基本偏差</b>（字母，决定公差带离基本尺寸多远）组成：外螺纹用小写 e、f、g、h，内螺纹用大写 G、H。</div>
   <ul>
-    <li>最常用的配合是 <b>6H / 6g</b>：螺母 6H 从基本尺寸往大里放（下偏差 0）；螺栓 6g 从基本尺寸往小里收，留出一点间隙 <span class="f">es = −(15 + 11P)</span> μm，方便装配和镀层。</li>
+    <li>最常用的配合是 <b>6H / 6g</b>：螺母 6H 从基本尺寸往大里放（下偏差 0）；螺栓 6g 从基本尺寸往小里收，留出一点间隙 <span class="f">es</span>：按 GB/T 197 表 1 取值，如 P1.5 为 −32 μm、P1.75 为 −34 μm（由公式 <span class="f">−(15 + 11P)</span> 圆整而来，以表为准），方便装配和镀层。</li>
     <li>公差带写两个时，<b>前面是中径、后面是顶径</b>（外螺纹顶径是大径，内螺纹顶径是小径），两个一样只写一个：<span class="f">M10 − 6g</span>。</li>
     <li>旋合长度 S（短）、N（中等，不标）、L（长）；中等精度、中等旋合长度最常用。标准：GB/T 197（ISO 965-1）。</li>
   </ul>
@@ -243,7 +243,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <p class="cap">滚压螺纹：毛坯直径约等于中径，滚丝轮把槽里的金属挤到牙顶上，金属纤维不被切断。</p>
   <svg class="fig" id="f11b" viewBox="-4 -14 120 40"></svg>
   <ul>
-    <li><b>车削</b>：工件转一圈，车刀沿轴向走一个导程，分多刀车到全牙深（普通外螺纹 <span class="f">0.6134P</span>）。直进法两刃同时切，适合小螺距；斜进法（沿牙侧方向进刀，进刀角比牙侧角小 0.5°～1°）排屑好，适合大螺距和难加工材料；左右交替进刀两侧刃磨损均匀，适合梯形螺纹。</li>
+    <li><b>车削</b>：工件转一圈，车刀沿轴向走一个导程，分多刀车到全牙深（普通外螺纹 <span class="f">0.6134P</span>）。直进法两刃同时切，适合小螺距；斜进法（沿牙侧方向进刀，进刀角比牙侧角小 0.5°～5°，刀具厂常推荐小 1° 左右）排屑好，适合大螺距和难加工材料；左右交替进刀两侧刃磨损均匀，适合梯形螺纹。</li>
     <li><b>攻丝 / 套丝</b>：丝锥加工内螺纹，板牙加工外螺纹，单件和小直径最方便。</li>
     <li><b>滚压（搓丝）</b>：冷挤压成形，生产率高，螺纹表面硬化、纤维连续，疲劳强度高，标准螺栓大多是滚出来的。</li>
     <li><b>旋风铣</b>：几把刀装在高速旋转的刀盘上，刀盘偏心绕工件转，一次走刀铣出全牙型。走心机上加工<b>骨钉</b>、长丝杠常用。</li>
@@ -307,7 +307,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
     <tr><td>当量摩擦角</td><td><span class="f">ρ′ = arctan(μ / cos β)</span>（β 为受力一侧的牙侧角）</td></tr>
     <tr><td>自锁条件 / 拧紧效率</td><td><span class="f">φ ≤ ρ′</span>；<span class="f">η = tan φ / tan(φ + ρ′)</span></td></tr>
     <tr><td>三针测量</td><td><span class="f">M = d<sub>2</sub> + d<sub>w</sub>(1 + 1/sin(α/2)) − (P/2) cot(α/2)</span>，最佳 <span class="f">d<sub>w</sub> = P / (2 cos(α/2))</span></td></tr>
-    <tr><td>普通外螺纹 6g 上偏差</td><td><span class="f">es = −(15 + 11P)</span> μm（e：−(50 + 11P)，f：−(30 + 11P)，h：0）</td></tr>
+    <tr><td>普通外螺纹 6g 上偏差</td><td>按 GB/T 197 表 1：P1 −26、P1.25 −28、P1.5 −32、P1.75 −34、P2 −38、P2.5 −42、P3 −48 μm（推导公式 g：−(15 + 11P)，e：−(50 + 11P)，f：−(30 + 11P)，h：0，表中值经圆整，以表为准）</td></tr>
   </table></div>
 </section>
 
@@ -315,6 +315,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <h2>版本记录</h2>
   <div class="meta">本页依据 GB/T 192、193、196、197、14791，GB/T 5796、13576、7306、7307，ISO 68-1、965-1、228-1、5835 和 ASTM F543 整理，标准原文不一致时以标准为准。</div>
   <ul>
+    <li><b>2026-11-11 审核</b>：牙型公式与 GB/T 192/196/197、GB/T 5796、GB/T 13576、GB/T 7306/7307、ISO 228-1、ISO 5835 逐项核对，粗牙螺距、G 管螺纹大径、Tr/B 优选螺距全部一致；三针公式和最佳量针按公式手算复核。<b>改正</b>：计算器 6g 上偏差原按公式 −(15+11P) 四舍五入，与 GB/T 197 表 1 有 1 μm 出入（如 P1.25 应为 −28、P2 应为 −38），改为直接查表；斜进法进刀角范围改为 0.5°～5°（按刀具厂资料）；粗牙导程角范围改为约 2°～3.5°。</li>
     <li><b>2026-11-08 首版</b>：15 节内容：螺旋线的形成、五种牙型（按标准公式实时绘制）、三个直径、螺距线数导程、旋向、导程角（真实比例）、普通螺纹基本牙型、公差与标记、管螺纹、传动和骨钉螺纹、自锁与效率曲线、三种车削进刀方式和滚压动画、三针测量（可调量针）、计算器和速查表。</li>
   </ul>
 </section>
@@ -519,6 +520,8 @@ function startsFig(svg, list, o) {
 const scenes = [];
 // ---------- 牙型（外螺纹，轴向截面），k 为绘图缩放 ----------
 const BONE = { HA: { d: 4.5, dr: 3.0, P: 1.75, r4: 1.0, r5: 0.3, e: 0.1, b1: 3, b2: 35 }, HB: { d: 6.5, dr: 3.0, P: 2.75, r4: 1.2, r5: 0.8, e: 0.2, b1: 5, b2: 25 } };
+// GB/T 197-2018 表 1（= ISO 965-1）外螺纹 g 基本偏差 es（μm）；公式 −(15+11P) 的值经标准圆整后列表，以表为准
+const ES_G = { 0.2: -17, 0.25: -18, 0.3: -18, 0.35: -19, 0.4: -19, 0.45: -20, 0.5: -20, 0.6: -21, 0.7: -22, 0.75: -22, 0.8: -24, 1: -26, 1.25: -28, 1.5: -32, 1.75: -34, 2: -38, 2.5: -42, 3: -48, 3.5: -53, 4: -60, 4.5: -63, 5: -71, 5.5: -75, 6: -80, 8: -100 };
 const acOf = P => P <= 1.5 ? 0.15 : P <= 5 ? 0.25 : P <= 12 ? 0.5 : 1;
 function tInfo(type, d, P) {   // 基本尺寸
   if (type === 'M') return { d2: d - 0.649519 * P, d1: d - 1.082532 * P, d3: d - 1.226869 * P, h: 0.613435 * P, al: 60, bL: 30, H: 0.866025 * P };
@@ -963,7 +966,7 @@ const fillPresets = (id, def) => { $(id).innerHTML = PRESETS.map((p, i) => `<opt
     if (!(d > 0 && P > 0) || P > d / 2) { $('cw').textContent = '请输入合理的大径和螺距'; return; }
     const I = tInfo(tp, d, P), Ph = n * P, phi = Math.atan(Ph / (PI * I.d2)), rho = Math.atan(mu / Math.cos(I.bL * D2R)), eta = Math.tan(phi) / Math.tan(phi + rho);
     const rows = [['螺距 P', P.toFixed(4)], ['导程 P_h = n P', Ph.toFixed(4)], ['大径 d', d.toFixed(3)], ['中径 d_2', I.d2.toFixed(3)]];
-    if (tp === 'M') rows.push(['小径 d_1（内螺纹 D_1）', I.d1.toFixed(3)], ['外螺纹牙底 d_3', I.d3.toFixed(3)], ['原始三角形高 H', I.H.toFixed(4)], ['外螺纹牙高（车削总切深）', I.h.toFixed(4)], ['牙底圆弧 R', (0.144338 * P).toFixed(4)], ['6g 上偏差 es', '−' + Math.round(15 + 11 * P) + ' μm']);
+    if (tp === 'M') rows.push(['小径 d_1（内螺纹 D_1）', I.d1.toFixed(3)], ['外螺纹牙底 d_3', I.d3.toFixed(3)], ['原始三角形高 H', I.H.toFixed(4)], ['外螺纹牙高（车削总切深）', I.h.toFixed(4)], ['牙底圆弧 R', (0.144338 * P).toFixed(4)], ['6g 上偏差 es（GB/T 197 表 1）', ES_G[+P.toFixed(3)] !== undefined ? ES_G[+P.toFixed(3)] + ' μm' : '约 −' + Math.round(15 + 11 * P) + ' μm（非标准螺距，按公式估算）']);
     if (tp === 'G') rows.push(['小径 d_1', I.d1.toFixed(3)], ['原始三角形高 H', I.H.toFixed(4)], ['牙高 h', I.h.toFixed(4)], ['牙顶、牙底圆弧 r', (0.137329 * P).toFixed(4)]);
     if (tp === 'Tr') rows.push(['牙顶间隙 a_c', I.ac.toFixed(2)], ['牙高 h_3 = 0.5P + a_c', I.h.toFixed(3)], ['外螺纹小径 d_3', I.d3.toFixed(3)], ['内螺纹小径 D_1 = d − P', I.d1.toFixed(3)], ['内螺纹大径 D_4 = d + 2a_c', I.D4.toFixed(3)]);
     if (tp === 'B') rows.push(['牙高 h_3 = 0.867767P', I.h.toFixed(3)], ['外螺纹小径 d_3', I.d3.toFixed(3)], ['内螺纹小径 D_1 = d − 1.5P', I.d1.toFixed(3)], ['牙底圆弧 R = 0.124271P', (0.124271 * P).toFixed(4)]);

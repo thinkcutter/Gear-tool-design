@@ -131,7 +131,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="say">把蜗杆的分度圆柱像纸筒一样<b>剪开铺平</b>：一圈的周长是 <span class="f">π d<sub>1</sub></span>，同一条螺纹绕一圈沿轴向前进一个<b>导程</b> <span class="f">p<sub>z</sub> = z<sub>1</sub> p<sub>x</sub></span>，螺旋线就变成直角三角形的斜边。斜边和圆周方向的夹角就是<b>导程角</b> <span class="f">γ</span>。</div>
   <ul>
     <li><span class="f">tan γ = p<sub>z</sub> / (π d<sub>1</sub>) = z<sub>1</sub> m / d<sub>1</sub> = z<sub>1</sub> / q</span>。头数越多、蜗杆越细，导程角越大。</li>
-    <li>导程角决定了效率和能不能自锁：<span class="f">γ</span> 小（约 3.5°～4.5° 以下）可能自锁但效率低；要效率时取 15°～30°。</li>
+    <li>导程角决定了效率和能不能自锁：能否自锁要看 <span class="f">γ</span> 是否小于当量摩擦角（08 节），GB/T 10085 的蜗杆参数表把 <span class="f">γ &lt; 3°30′</span> 的蜗杆标为自锁；要效率时取 15°～30°。</li>
     <li>蜗杆的导程角 <span class="f">γ</span> 和螺旋角 <span class="f">β<sub>1</sub></span> 互余：<span class="f">β<sub>1</sub> = 90° − γ</span>；而蜗轮的螺旋角 <span class="f">β<sub>2</sub> = γ</span>。</li>
   </ul>
   <div class="vo">把分度圆柱剪开铺平，螺旋线就是一条斜线。斜线越陡，导程角越大，蜗杆越“快”，但也越不容易自锁。</div>
@@ -158,7 +158,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <p class="cap">左：侧视图和刀具位置（橙色为齿面是直线的截面）；右：端面（垂直于轴线的截面）里的齿形，双头蜗杆。</p>
   <div class="say" id="say5"></div>
   <ul>
-    <li>GB/T 10087 规定基本蜗杆的齿形角：ZA 为<b>轴向</b>齿形角 <span class="f">α<sub>x</sub> = 20°</span>；ZN、ZI 为<b>法向</b>齿形角 <span class="f">α<sub>n</sub> = 20°</span>；ZK 为生成刀具（砂轮）的齿形角 20°。</li>
+    <li>GB/T 10087 规定基本蜗杆的齿形角：ZA 为<b>轴向</b>齿形角 <span class="f">α<sub>x</sub> = 20°</span>；ZN、ZI 为<b>法向</b>齿形角 <span class="f">α<sub>n</sub> = 20°</span>；ZK 为形成齿面的锥形刀具的产形角 <span class="f">α<sub>0</sub> = 20°</span>。动力传动中导程角 <span class="f">γ &gt; 20°</span> 时允许增大齿形角，推荐 25°；分度传动允许减小，推荐 15° 或 12°。本页计算一律按 20°。</li>
     <li>GB/T 10085 <b>推荐采用 ZI 和 ZK 蜗杆</b>；除特殊要求外，蜗杆用<b>右旋</b>。ZC 蜗杆的齿形和其他几种不同，齿顶圆、齿根圆要另行计算。</li>
     <li>蜗轮必须用和配对蜗杆<b>同一种齿形</b>的滚刀加工，否则啮合不对。</li>
   </ul>
@@ -316,6 +316,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <div class="meta">本页依据 GB/T 10085、GB/T 10087、GB/T 10088、GB/T 10089、DIN 3975 及《机械设计》教材整理，标准原文不一致时以标准为准。</div>
   <ul>
     <li><b>2026-11-08 首版</b>：14 节内容：蜗杆传动原理、头数与传动比、轴向模数、导程角（可调展开图）、直径系数、五种齿形（侧视和端面齿形按公式实时计算）、基本齿廓、蜗轮变位与中心距（可调）、效率与自锁曲线、滑动速度、加工、量棒测量、计算器和公式速查。</li>
+    <li><b>2026-11-11 审核</b>：公式与 GB/T 10087-2018（齿廓、齿形角）、GB/T 10085-2018（传动比系列、中心距系列、推荐 ZI/ZK、自锁界限）逐条核对；计算器用 3 组参数手算复核全部一致；量棒算例改为按公式实时计算（原写死系数 2.2430，应为 2.2433），补充 GB/T 10087 允许 25°/15°/12° 齿形角的条款。</li>
     <li>基本齿廓数值按 GB/T 10087-2018：<span class="f">h<sub>a</sub> = 1m</span>（短齿 0.8m）、<span class="f">c = 0.2m</span>（0.15～0.35m）、<span class="f">ρ<sub>f</sub> = 0.3m</span>（0.2～0.4m）；同时把指型铣刀计算器里蜗杆齿根圆角系数的默认值由 0.2 改为 0.3。</li>
   </ul>
 </section>
@@ -997,7 +998,8 @@ function wormPair(svg, o) {
   line(svg, -30, cy - r1, 30, cy - r1, { stroke: 'var(--accent)', w: 0.2, dash: '1 0.6' }); line(svg, -30, cy + r1, 30, cy + r1, { stroke: 'var(--accent)', w: 0.2, dash: '1 0.6' });
   txt(svg, -29.5, cy - r1 + 2, '分度线 d₁', { fs: 1.9, fill: 'var(--accent)', anchor: 'start' });
   const M = 2 * r1 + 2 * hc + dp;
-  txt(svg, -38, 26.5, `例：m = 4、d₁ = 40、αₓ = 20°：最佳量棒 d_p = ${(1.6716 * 4).toFixed(3)}，M = ${(40 + 2.2430 * 4).toFixed(3)}`, { fs: 2.1, anchor: 'start', fill: 'var(--muted)' });
+  const dpE = PI * 4 / (2 * Math.cos(al)), ME = 40 + dpE * (1 + 1 / Math.sin(al)) - PI * 4 / 2 / Math.tan(al);
+  txt(svg, -38, 26.5, `例：m = 4、d₁ = 40、αₓ = 20°：最佳量棒 d_p = ${dpE.toFixed(3)}，M = ${ME.toFixed(3)}`, { fs: 2.1, anchor: 'start', fill: 'var(--muted)' });
 }
 // ================= 12 计算器 =================
 {
