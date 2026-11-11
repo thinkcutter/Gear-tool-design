@@ -1032,8 +1032,9 @@ function wormPair(svg, o) {
       ['当量摩擦角 ρᵥ', (rho / D2R).toFixed(3) + '°'], ['啮合效率 η₁（蜗杆主动）', (e1 * 100).toFixed(1) + '%'], ['反推效率 η′（蜗轮主动）', gam > rho ? (e2 * 100).toFixed(1) + '%' : '0，自锁'],
       ['最佳量棒 d_p（ZA）', dp.toFixed(3)], ['量棒距 M（ZA，未修正）', M.toFixed(3)]];
     $('tout').innerHTML = rows.map(r => `<tr><td>${hs(r[0])}</td><td>${r[1]}</td></tr>`).join('');
-    const W2 = [], zOK = TAB[m].find(r => r[0] === d1)[1].split(',').map(Number);
-    if (!zOK.includes(z1)) W2.push(`GB/T 10085 常用匹配里，m = ${m}、d₁ = ${d1} 的头数为 ${zOK.join('、')}，z₁ = ${z1} 不在其中。`);
+    const W2 = [], rowM = (TAB[m] || []).find(r => r[0] === d1), zOK = rowM ? rowM[1].split(',').map(Number) : [];
+    if (rowM && !zOK.includes(z1)) W2.push(`GB/T 10085 常用匹配里，m = ${m}、d₁ = ${d1} 的头数为 ${zOK.join('、')}，z₁ = ${z1} 不在其中。`);
+    if (Math.abs(x2) > 1) W2.push('变位系数一般在 −1～+1 之间，请核对。');
     if (z2 < 28) W2.push('z₂ 小于 28：啮合区小，容易根切，一般取 28～80。');
     if (z2 > 80) W2.push('z₂ 大于 80：蜗轮直径大，蜗杆支承跨度长、刚度不够，要校核。');
     if (gam < 3.5 * D2R) W2.push('γ < 3°30′：GB/T 10085 表 1 把这类蜗杆标为自锁（注 2）。'); if (gam <= rho) W2.push('γ ≤ ρᵥ：可能自锁；但振动、冲击时自锁不可靠，安全场合要另加制动。');

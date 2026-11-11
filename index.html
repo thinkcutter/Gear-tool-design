@@ -1478,6 +1478,8 @@ if (typeof module !== 'undefined') module.exports = HX;
   const $ = id => document.getElementById(id);
   const D2R = Math.PI / 180, PI = Math.PI;
   const f3 = v => (isFinite(v) ? v.toFixed(3) : '—');
+  // 程序自己抛出的提示原样显示；JS 内部错误（参数组合超出能计算的范围）换成能看懂的话
+  const friendlyErr = err => { const m = String(err && err.message || err); return /Cannot read|undefined|is not a function|is not iterable|Invalid array length|Maximum call stack|of null/.test(m) ? '这组参数无法计算（输入组合超出范围或互相矛盾），请检查最近改动的参数。内部信息：' + m : m; };
   const f2 = v => (isFinite(v) ? v.toFixed(2) : '—');
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
@@ -1575,7 +1577,11 @@ if (typeof module !== 'undefined') module.exports = HX;
   };
   function parseDim(str) {
     let s = String(str || '').trim().replace(/[ΦφøØ∅]/g, '').replace(/，/g, ',').replace(/[～~—–]/g, '~').replace(/\s+/g, ' ');
+    // 从 PDF / Word 复制来的符号：数学负号 −、全角 ＋－；逗号小数点 249,54；正负公差 ±、+/-、+-
+    s = s.replace(/[−－﹣]/g, '-').replace(/＋/g, '+').replace(/(\d),(\d)/g, '$1.$2').replace(/,\s*$/, '').replace(/\+\s*\/?\s*-/g, '±');
     if (!s) return { val: 0 };
+    const pm = s.match(/^([+-]?\d*\.?\d+)\s*±\s*(\d*\.?\d+)$/);
+    if (pm) { const n = parseFloat(pm[1]), t = parseFloat(pm[2]); return { val: n, lo: n - t, hi: n + t, range: true }; }
     const fit = s.match(/^(\d+(?:\.\d+)?)\s*(JS|Js|js|H|h)\s*(\d{1,2})$/);
     if (fit) {
       const D = parseFloat(fit[1]), L = fit[2], g = parseInt(fit[3], 10);
@@ -1724,6 +1730,11 @@ if (typeof module !== 'undefined') module.exports = HX;
     if (P.type === 'rect') { pos('d', '小径'); pos('D', '大径'); pos('B', '键宽'); if (P.N < 3) bad.push('键数至少 3'); if (P.D <= P.d) bad.push('大径必须大于小径'); }
     else { pos('mn', '模数'); if (!(P.z >= 6)) bad.push('齿数至少 6'); if (P.beta >= 60 * D2R) bad.push('螺旋角需小于 60°'); if (!(P.an > 5 * D2R && P.an < 50 * D2R)) bad.push('压力角应在 5°–50°'); }
     if (!(P.b > 0)) bad.push('齿宽必须大于 0');
+    // 明显的输错（多打了零）先拦下来，否则三维模型和点列会大到让浏览器卡死
+    if (P.type === 'rect') { if (P.N > 100) bad.push('键数超过 100，请核对'); if (P.D > 3000) bad.push('大径超过 3000 mm，请核对'); }
+    else { if (P.z > 2000) bad.push('齿数超过 2000，请核对'); if (P.mn > 100) bad.push('模数超过 100，请核对'); if (P.z * P.mn > 10000) bad.push('分度圆直径超过 10 m，请核对'); }
+    { const e = parseFloat($('ext').value) || 0, lim = Math.max(20, 5 * (P.mn || 0)); if (e < 0 || e > lim) bad.push('刀刃外延量应在 0～' + lim + ' mm 之间'); }
+    if (P.b > 20000) bad.push('齿宽超过 20 m，请核对');
     bad.push(...dimErr);
     return bad;
   }
@@ -1744,7 +1755,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     'gear.cc': '顶隙系数，标准 0.25，决定齿根深度。填了齿根圆 df 后自动推算。',
     'gear.rhoF': '基本齿条齿顶圆角系数，圆角 ρf = 系数 × 模数，决定齿根过渡曲线和刀尖圆角。GB/T 1356 标准为 0.38。越大齿根和刀尖越结实，但渐开线起始圆会升高，不能超过图纸要求。图纸直接标了齿根圆角 R（毫米）时，系数 ≈ R ÷ 模数，例如 R3、mn 8.7988 → 0.34。',
     'gear.ds': '法向齿厚减薄量（比理论齿厚薄多少），用来留侧隙。图纸给了跨棒距、公法线或齿厚时，在“齿厚依据”里选择，这里会自动计算。',
-    'gear.da': '齿顶圆直径（内齿为齿顶圆即内孔直径），0 = 按系数计算。可以照图纸写公差，例如 944H7、1440.59-1440.69、250 0 -0.46，程序自动取中值。',
+    'gear.da': '齿顶圆直径（内齿为齿顶圆即内孔直径），0 = 按系数计算。可以照图纸写公差，例如 944H7、1440.59-1440.69、250 0 -0.46、250±0.05（从 PDF 复制的 − 号、逗号小数点也能识别），程序自动取中值。',
     'gear.df': '齿根圆直径，由铣刀刀尖决定，0 = 按系数计算。可以照图纸写公差，例如 992H9、1400.68-1401.19、237.5 0 -0.46，程序自动取中值。',
     'gear.root': '展成：按滚齿形成的齿根过渡曲线，适合大多数图纸。切圆弧：渐开线和齿根圆之间用一段相切圆弧过渡，适合图纸标注了齿根圆弧半径的情况。',
     'gear.b': '齿宽只用于 3D 显示，不影响刀具廓形。',
@@ -2203,7 +2214,7 @@ if (typeof module !== 'undefined') module.exports = HX;
         const sp = geo.k ? G.fromNormal(cut.slotPts, geo.k, geo.r) : cut.slotPts;
         if (geo.cutPts && geo.cutPts !== geo.pts) geo.cutPts = sp; else { geo.pts = sp; if (!geo.k) geo.Rinv = cut.flat.Rinv; }
       }
-    } catch (err) { warnEl.textContent = err.message; clearOut(); return; }
+    } catch (err) { warnEl.textContent = friendlyErr(err); clearOut(); return; }
     geo.M = M;
     const W = geo.W.concat(mod.W);
     if ($('t_kind').value === 'disc') {
@@ -3316,7 +3327,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
         const part = type === 'worm' ? hxWorm(W) : type === 'wheel' ? hxWheel(W) : type === 'thread' ? hxThread(W) : hxRotor(W);
         hxR = Object.assign(part, hxTool(part, W));
       }
-    } catch (err) { warnEl.textContent = err.message; clearOut(); return; }
+    } catch (err) { warnEl.textContent = friendlyErr(err); clearOut(); return; }
     warnEl.textContent = W.join('；'); window.__hxR = hxR;
     hxResults(); hxDrawPart(); hxDrawTool(); fillTable(); hxBuild3D();
   }
@@ -3325,6 +3336,8 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       ha: hn('h_ha'), cc: hn('h_cc'), rho: hn('h_rho'), sx: hn('h_sx'), da: hn('h_da'), df: hn('h_df'), D0: hn('h_D0'), ext: Math.max(0, hn('h_ext')) };
     if (!(o.mx > 0 && o.d1 > 0)) throw new Error('模数和分度圆直径必须大于 0');
     if (!(o.al > 2 && o.al < 45)) throw new Error('压力角应在 2°~45°');
+    if (o.z1 > 12) throw new Error('蜗杆头数超过 12，请核对');
+    if (o.mx > 100 || o.d1 > 5000) throw new Error('模数或分度圆直径过大，请核对');
     const w = HX.worm(o); W.push(...w.W.filter(s => !/^ZK 生成刀具/.test(s)));
     // 整圈端面型线（3D）：每头一个齿槽，齿槽之间接齿顶圆
     const Aeff = w.A.filter(q => q[0] <= w.ra + 1e-9);
@@ -3356,7 +3369,10 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     return o;
   }
   function hxThread(W) {
-    const o = threadParams(), w = HX.thread(o); W.push(...w.W);
+    const o = threadParams();
+    if (o.n > 12) throw new Error('螺纹头数超过 12，请核对');
+    if (!(o.P > 0) || !(o.d > 0) || o.d > 5000 || o.P > o.d) throw new Error('大径、螺距不合理，请核对');
+    const w = HX.thread(o); W.push(...w.W);
     const Aeff = w.A.filter(q => q[0] <= w.ra + 1e-9);
     const G = HX.axialToEnd(Aeff, w.p), Efull = hxFullEnd(G, o.n, w.ra);
     return { kind: 'thread', o, w: Object.assign({ px: w.P }, w), A: w.A, Aeff, p: w.p, r1: w.r1, ra: w.ra, rf: w.rf, Efull, rb: NaN, L: hn('h_L') || 30, starts: o.n };
@@ -3414,6 +3430,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     if (!(m > 0 && o.d1 > 0)) throw new Error('模数和蜗杆分度圆直径必须大于 0');
     if (!(o.al > 2 && o.al < 45)) throw new Error('压力角应在 2°~45°');
     if (!(z2 >= 10)) throw new Error('蜗轮齿数至少 10');
+    if (z2 > 2000 || o.z1 > 12 || m > 100 || o.d1 > 5000) throw new Error('蜗轮齿数、蜗杆头数、模数或直径过大，请核对');
     o.ext = (o.cc + 0.8) * m;
     const w = HX.worm(o);
     const r1 = w.r1, r2 = m * z2 / 2, a = r1 + r2 + x2 * m, rh = r1 + (o.ha + o.cc) * m, rg = r1 - o.ha * m, px = PI * m;
@@ -3589,11 +3606,12 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     // 成形车刀
     const mode = hv('h_rk'), g = hn('h_tg') * D2R, al = hn('h_ta') * D2R;
     const rod = (v, u, t) => { u = HX.unit(u); const c = Math.cos(t), s = Math.sin(t), d = HX.dot(u, v), x = HX.cross(u, v); return [v[0] * c + x[0] * s + u[0] * d * (1 - c), v[1] * c + x[1] * s + u[1] * d * (1 - c), v[2] * c + x[2] * s + u[2] * d * (1 - c)]; };
-    const plane = (P0, n0, u) => { const s0 = HX.rakeSection(A, p, P0, n0); if (!g) return { P0, nr: n0, rs: s0 }; const nr = rod(n0, u, g); return { P0: s0.tip, nr, rs: HX.rakeSection(A, p, s0.tip, nr) }; };
+    const plane = (P0, n0, u) => { const s0 = HX.rakeSection(A, p, P0, n0); if (!g) return { P0, nr: n0, rs: s0 }; if (!s0 || !s0.tip) throw new Error('车刀前刀面与零件没有交线，请检查前角和偏置量'); const nr = rod(n0, u, g); return { P0: s0.tip, nr, rs: HX.rakeSection(A, p, s0.tip, nr) }; };
     const out = { tool, mode };
     if (mode === 'of') {
       let h = hn('h_off'); if (!(h > 0)) h = part.kind === 'worm' && part.o.type === 'ZI' ? part.rb : 0;
       if (!(h > 0)) W.push('偏置量为 0：等于轴向安装');
+      if (h >= part.ra) throw new Error('偏置量 ' + f3(h) + ' 不小于齿顶半径 ' + f3(part.ra) + '，前刀面碰不到零件，请减小偏置量');
       const R1 = plane([h * sgn, 0, 0], [1, 0, 0], [0, 0, 1]), L1 = plane([-h * sgn, 0, 0], [1, 0, 0], [0, 0, 1]);
       out.two = true; out.h = h;
       out.sides = [{ nm: '右齿面车刀', rs: R1.rs, sel: i => A[i][1] >= 0, only: 1 }, { nm: '左齿面车刀', rs: L1.rs, sel: i => A[i][1] <= 0, only: -1 }];
