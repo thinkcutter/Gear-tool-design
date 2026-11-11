@@ -1736,7 +1736,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     { const e = parseFloat($('ext').value) || 0, lim = Math.max(20, 5 * (P.mn || 0)); if (e < 0 || e > lim) bad.push('刀刃外延量应在 0～' + lim + ' mm 之间'); }
     if (P.b > 20000) bad.push('齿宽超过 20 m，请核对');
     {   // 系数和修形量的合理范围（明显输错时先拦下）；矩形花键按键高 (D − d)/2 当作“模数”衡量
-      const isR = P.type === 'rect', m = isR ? Math.max(0, (P.D - P.d) / 2) : P.mn || 0, num = id => parseFloat(($(id) || {}).value) || 0;
+      const isR = P.type === 'rect', m = isR ? (Math.max(0, (P.D - P.d) / 2) || 0) : P.mn || 0, num = id => parseFloat(($(id) || {}).value) || 0;
       if (!isR) {
       if (P.ha > 3 || P.ha < 0) bad.push('齿顶高系数应在 0～3 之间');
       if (P.cc > 3 || P.cc < -0.5) bad.push('顶隙 / 齿根高系数超出合理范围');
@@ -1744,10 +1744,12 @@ if (typeof module !== 'undefined') module.exports = HX;
       if (Math.abs(P.x) > 5) bad.push('变位系数超出 ±5，请核对');
       if (Math.abs(P.ds || 0) > m) bad.push('齿厚减薄量大于一个模数，请核对');
       }
+      if (m > 0) {
       if (num('m_Ca') > m || num('m_Ca') < 0) bad.push('修缘量应在 0～' + m + ' mm（一个模数）以内');
       if (num('m_hr') > 2.5 * m || num('m_hr') < 0) bad.push('修缘高度应在 0～' + 2.5 * m + ' mm 以内');
       if (num('m_c') > 2 * m || num('m_cw') > 2 * m || num('m_c') < 0 || num('m_cw') < 0) bad.push('倒角尺寸应在 0～' + 2 * m + ' mm 以内');
       if (num('m_q') > 0.5 * m || num('m_pr') > 0.5 * m || num('m_q') < 0 || num('m_pr') < 0) bad.push('留磨量、挖根量应在 0～' + 0.5 * m + ' mm 以内');
+      }
       for (const [id, nm] of [['t_as', '侧后角'], ['t_a', '后角'], ['t_g', '前角']]) { const v = num(id); if (Math.abs(v) > 45) bad.push(nm + '应在 ±45° 以内'); }
     }
     bad.push(...dimErr);
