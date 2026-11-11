@@ -1735,6 +1735,18 @@ if (typeof module !== 'undefined') module.exports = HX;
     else { if (P.z > 2000) bad.push('齿数超过 2000，请核对'); if (P.mn > 100) bad.push('模数超过 100，请核对'); if (P.z * P.mn > 10000) bad.push('分度圆直径超过 10 m，请核对'); }
     { const e = parseFloat($('ext').value) || 0, lim = Math.max(20, 5 * (P.mn || 0)); if (e < 0 || e > lim) bad.push('刀刃外延量应在 0～' + lim + ' mm 之间'); }
     if (P.b > 20000) bad.push('齿宽超过 20 m，请核对');
+    if (P.type !== 'rect') {   // 系数和修形量的合理范围（明显输错时先拦下）
+      const m = P.mn || 0, num = id => parseFloat(($(id) || {}).value) || 0;
+      if (P.ha > 3 || P.ha < 0) bad.push('齿顶高系数应在 0～3 之间');
+      if (P.cc > 3 || P.cc < -0.5) bad.push('顶隙 / 齿根高系数超出合理范围');
+      if (P.rhoF > 1.5 || P.rhoF < 0) bad.push('齿根圆角系数应在 0～1.5 之间');
+      if (Math.abs(P.x) > 5) bad.push('变位系数超出 ±5，请核对');
+      if (Math.abs(P.ds || 0) > m) bad.push('齿厚减薄量大于一个模数，请核对');
+      if (num('m_Ca') > m || num('m_Ca') < 0) bad.push('修缘量应在 0～' + m + ' mm（一个模数）以内');
+      if (num('m_hr') > 2.5 * m || num('m_hr') < 0) bad.push('修缘高度应在 0～' + 2.5 * m + ' mm 以内');
+      if (num('m_c') > 2 * m || num('m_cw') > 2 * m || num('m_c') < 0 || num('m_cw') < 0) bad.push('倒角尺寸应在 0～' + 2 * m + ' mm 以内');
+      if (num('m_q') > 0.5 * m || num('m_pr') > 0.5 * m || num('m_q') < 0 || num('m_pr') < 0) bad.push('留磨量、挖根量应在 0～' + 0.5 * m + ' mm 以内');
+    }
     bad.push(...dimErr);
     return bad;
   }
@@ -3337,6 +3349,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     if (!(o.mx > 0 && o.d1 > 0)) throw new Error('模数和分度圆直径必须大于 0');
     if (!(o.al > 2 && o.al < 45)) throw new Error('压力角应在 2°~45°');
     if (o.z1 > 12) throw new Error('蜗杆头数超过 12，请核对');
+    if (o.ha < 0 || o.ha > 3 || o.cc < 0 || o.cc > 3 || o.rho < 0 || o.rho > 1.5) throw new Error('齿顶高、顶隙或圆角系数超出合理范围（0～3、0～3、0～1.5），请核对');
     if (o.mx > 100 || o.d1 > 5000) throw new Error('模数或分度圆直径过大，请核对');
     const w = HX.worm(o); W.push(...w.W.filter(s => !/^ZK 生成刀具/.test(s)));
     // 整圈端面型线（3D）：每头一个齿槽，齿槽之间接齿顶圆
@@ -3431,12 +3444,14 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     if (!(o.al > 2 && o.al < 45)) throw new Error('压力角应在 2°~45°');
     if (!(z2 >= 10)) throw new Error('蜗轮齿数至少 10');
     if (z2 > 2000 || o.z1 > 12 || m > 100 || o.d1 > 5000) throw new Error('蜗轮齿数、蜗杆头数、模数或直径过大，请核对');
+    if (o.ha < 0 || o.ha > 3 || o.cc < 0 || o.cc > 3 || o.rho < 0 || o.rho > 1.5 || Math.abs(x2) > 3) throw new Error('齿顶高、顶隙、圆角或变位系数超出合理范围，请核对');
     o.ext = (o.cc + 0.8) * m;
     const w = HX.worm(o);
     const r1 = w.r1, r2 = m * z2 / 2, a = r1 + r2 + x2 * m, rh = r1 + (o.ha + o.cc) * m, rg = r1 - o.ha * m, px = PI * m;
     const ra2 = a - rg, da1 = 2 * (r1 + o.ha * m);
     const de2 = hn('h_de2') > 0 ? hn('h_de2') : 2 * ra2 + (o.z1 === 1 ? 2 : o.z1 <= 3 ? 1.5 : 1) * m;
     const b2 = hn('h_b2') > 0 ? hn('h_b2') : (o.z1 <= 3 ? 0.75 : 0.67) * da1;
+    if (de2 > 2 * ra2 + 10 * m || b2 > 3 * da1 + 10 * m) throw new Error('蜗轮外径或齿宽明显过大，请核对');
     const af = hn('h_af') > 0 ? hn('h_af') : Math.max(0.2, 0.05 * m), ar = hn('h_ar') > 0 ? hn('h_ar') : af, mode = hv('h_wm') || 'arc';
     if (de2 < 2 * ra2) throw new Error('蜗轮外径不能小于喉圆直径 ' + f3(2 * ra2));
     if (b2 / 2 >= rh * 0.98) throw new Error('蜗轮齿宽太大：超出了滚刀的作用范围（b2/2 应小于 ' + f3(rh) + '）');
