@@ -1732,7 +1732,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     if (!(P.b > 0)) bad.push('齿宽必须大于 0');
     // 明显的输错（多打了零）先拦下来，否则三维模型和点列会大到让浏览器卡死
     if (P.type === 'rect') { if (P.N > 100) bad.push('键数超过 100，请核对'); if (P.D > 3000) bad.push('大径超过 3000 mm，请核对'); }
-    else { if (P.z > 2000) bad.push('齿数超过 2000，请核对'); if (P.mn > 100) bad.push('模数超过 100，请核对'); if (P.z * P.mn > 10000) bad.push('分度圆直径超过 10 m，请核对'); }
+    else { if (P.z > 2000) bad.push('齿数超过 2000，请核对'); if (P.mn > 0 && P.mn < 0.05) bad.push('模数小于 0.05，请核对'); if (P.mn > 100) bad.push('模数超过 100，请核对'); if (P.z * P.mn > 10000) bad.push('分度圆直径超过 10 m，请核对'); }
     { const e = parseFloat($('ext').value) || 0, lim = Math.max(20, 5 * (P.mn || 0)); if (e < 0 || e > lim) bad.push('刀刃外延量应在 0～' + lim + ' mm 之间'); }
     if (P.b > 20000) bad.push('齿宽超过 20 m，请核对');
     if (P.type !== 'rect') {   // 系数和修形量的合理范围（明显输错时先拦下）
@@ -3349,6 +3349,10 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     if (!(o.mx > 0 && o.d1 > 0)) throw new Error('模数和分度圆直径必须大于 0');
     if (!(o.al > 2 && o.al < 45)) throw new Error('压力角应在 2°~45°');
     if (o.z1 > 12) throw new Error('蜗杆头数超过 12，请核对');
+    if (o.mx < 0.05) throw new Error('模数小于 0.05，请核对');
+    if (o.da > 0 && (o.da <= o.d1 || o.da > o.d1 + 6 * o.mx)) throw new Error('齿顶圆 da1 应大于分度圆、且不超过 d1 + 6m，请核对');
+    if (o.df > 0 && (o.df >= o.d1 || o.df < o.d1 - 6 * o.mx || o.df <= 0)) throw new Error('齿根圆 df1 应小于分度圆、且不小于 d1 − 6m，请核对');
+    if (o.ext > Math.max(20, 5 * o.mx)) throw new Error('刃部外延量过大（不超过 ' + Math.max(20, 5 * o.mx) + ' mm），请核对');
     if (o.ha < 0 || o.ha > 3 || o.cc < 0 || o.cc > 3 || o.rho < 0 || o.rho > 1.5) throw new Error('齿顶高、顶隙或圆角系数超出合理范围（0～3、0～3、0～1.5），请核对');
     if (o.mx > 100 || o.d1 > 5000) throw new Error('模数或分度圆直径过大，请核对');
     const w = HX.worm(o); W.push(...w.W.filter(s => !/^ZK 生成刀具/.test(s)));
@@ -3384,6 +3388,10 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   function hxThread(W) {
     const o = threadParams();
     if (o.n > 12) throw new Error('螺纹头数超过 12，请核对');
+    if (o.ext > Math.max(20, 5 * o.P)) throw new Error('刃部外延量过大（不超过 ' + Math.max(20, 5 * o.P) + ' mm），请核对');
+    if (o.P < 0.05) throw new Error('螺距小于 0.05，请核对');
+    if (o.tp === 'cu' && (!(o.dr > 0) || o.dr >= o.d || o.d - o.dr > 4 * o.P)) throw new Error('小径应小于大径、牙高不超过 2 倍螺距，请核对');
+    if (o.tp === 'cu' && (o.a1 < 0 || o.a1 > 60 || o.a2 < 0 || o.a2 > 60)) throw new Error('牙侧角应在 0°～60°，请核对');
     if (!(o.P > 0) || !(o.d > 0) || o.d > 5000 || o.P > o.d) throw new Error('大径、螺距不合理，请核对');
     const w = HX.thread(o); W.push(...w.W);
     const Aeff = w.A.filter(q => q[0] <= w.ra + 1e-9);
