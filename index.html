@@ -283,7 +283,7 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
     <p><b>外螺纹（含骨钉）</b>：按轴向截面牙型生成螺旋面，再用与蜗杆相同的方法算成形车刀刃口（也可选盘形铣刀、指型铣刀）。普通螺纹按 ISO 68-1 基本牙型，外螺纹牙底取整圆弧 R = 0.1443P（d3 = d − 1.2269P）；梯形螺纹按 GB/T 5796，h3 = 0.5P + ac，牙顶宽 0.366P，牙底圆角取 0.5ac；锯齿形按 GB/T 13576 / DIN 513，承载面 3°、另一面 30°，h3 = 0.86777P，牙顶宽 0.26384P，牙底整圆弧 R = 0.12427P；骨钉 HA 1.5～5（35° / 3°）、HB 4、6.5（25° / 5°）按 ISO 5835 / ASTM F543 的大径 d1、芯径 d5、螺距 P、前侧圆角 r4（35° 或 25° 面与牙底之间）、后侧圆角 r5（3° 或 5° 面与牙底之间）和牙顶宽 e；标准中 e、r4、r5、α、β 是近似值（≈），HA 1.5、HA 2 按近似值构造时圆角放不下，程序按比例缩小并提示。牙侧角都从垂直于轴线的径向线量起，图中右侧为螺纹尖端方向。骨钉直径小、导程角大（小径处常到 10°～16°），车刀背离进给一侧的侧后角往往不够，需要按导程角倾斜安装或选“法向”前刀面。标准牙型的数值以标准原文和图纸为准，不一致时选“自定义牙型”逐项填写（切换时会先填入上一个牙型的数值）。牙顶圆角大于 0 时按全牙型车刀计算，刀具覆盖一个螺距并车出牙顶。</p>
     <p><b>蜗杆成形车刀</b>：刃口 = 前刀面与螺旋面的交线。轴向安装（ZA 刃口为直线）、法向安装（ZN，前刀面在分度圆处的齿槽法平面内）、偏置安装（ZI，前刀面偏离轴线 rb，左右齿面各用一把车刀，刃口均为直线）。有前角时前刀面绕刃口方向转 γ；“后刀面法向截面”给出磨刀用的廓形（深度 × cos(α+γ)/cosγ）。侧后角：进给一侧要加上齿根导程角，另一侧要减去齿顶导程角。</p>
     <p><b>回转体成形车刀</b>：输入零件轮廓（轴向位置 z，直径或半径），刀尖对准零件最小半径。C = √(r² − (r₁ sinγ)²) − r₁ cosγ 为前刀面内的廓形深度；<b>棱体刀</b>廓形深度 P = C·cos(α + γ)（垂直于后刀面量）；<b>圆体刀</b>各点半径 Rx = √(R0² + C² − 2R0·C·cos(α + γ))，刀具中心高于工件中心 R0·sinα。</p>
-    <p><b>DXF 文件</b>：点“下载 DXF 文件”直接得到 .dxf 轮廓文件（DXF R12 格式，单位 mm），AutoCAD、中望、CAXA、SolidWorks 等都能直接打开。图层：CUTTER / TOOL 为刀具廓形（等点距时是多段线，拟合时是圆弧和直线），CENTER 为刀具中心线，SPACE_TRANSVERSE / SPACE_NORMAL 为零件端面 / 法向齿槽，PART_AXIAL 为零件轴向齿形，SPACE_PREGRIND 为留磨量后的开粗齿槽。“复制 DXF 文本”复制的是同一文件的文字内容，要粘贴到记事本另存为 .dxf 才能用 CAD 打开，一般用不到。</p>
+    <p><b>DXF 文件</b>：点“下载 DXF 文件”直接得到 .dxf 轮廓文件（DXF R12 格式，单位 mm），AutoCAD、中望、CAXA、SolidWorks 等都能直接打开。图层：CUTTER / TOOL 为刀具廓形（等点距时是多段线，拟合时是圆弧和直线），CENTER 为刀具中心线，SPACE_TRANSVERSE / SPACE_NORMAL 为零件端面 / 法向齿槽，PART_AXIAL 为零件轴向齿形，SPACE_PREGRIND 为留磨量后的开粗齿槽，MARK 为分度圆、齿顶圆对应高度标记线，NOTES 为说明文字。每条线旁都有中文标注，右侧说明栏列出零件、刀具、全部输入参数、计算结果、提示和图层说明，方便直接发给刀具厂或存档。中文用 CAD 通用的 \U+ 编码写入，字体为 gbenor.shx + gbcbig.shx（国标字体，AutoCAD、中望、CAXA 自带），若显示问号请把文字样式 CN 改成任一中文字体。“复制 DXF 文本”复制的是同一文件的文字内容，要粘贴到记事本另存为 .dxf 才能用 CAD 打开，一般用不到。</p>
     <p><b>刀具坐标输出</b>：① <b>等点距坐标点</b>：沿廓形每隔“点距”取一点，相邻点连成直线。曲线段的误差很小，但廓形上的尖角（如齿面与倒角的交点）可能落在两点之间被削掉，最大约为点距的 1/10，所以要求 1 µm 时点距要取到 0.01 左右。② <b>圆弧 + 直线拟合</b>：按“拟合误差”自动分段，用最少的圆弧和直线逼近程序算出的理论廓形；刀尖平底、倒角等直线段保持为直线，尖角和曲率突变点（直线接圆角、圆角接渐开线）作为段的端点保留。选“相切连续”时用双圆弧逐段拟合，每段终点的切向与廓形一致，连接处没有折角（廓形本身的尖角除外）；选“允许微小折角”时每段用过三点的圆弧，段数更少，连接处折角一般只有百分之几度。表中给出每段的起点、终点、圆心、半径和实测偏差，DXF 中为真正的 ARC / LINE 图元，可直接用于磨床或线切割编程。</p>
     <p><b>直齿</b>：刀轴沿齿槽对称线，刀具轴向廓形 = 端面齿槽廓形。<b>斜齿</b>：刀轴垂直并相交于齿轮轴线，沿螺旋线进给；对每个齿面点求“齿面法线与刀轴相交”的接触点，得到精确的刀具回转廓形。图中虚线为分度圆处的法向截面，供对比。</p>
     <p><b>齿形修正</b>：修缘量从修缘高度起点按直线或抛物线增加，到齿顶达到 Ca；倒角按“高度 × 宽度”给出：高度从齿顶圆沿径向往下量，宽度沿齿顶圆从原齿顶角往齿中间量，两腿相等即 C 型倒角；倒圆为与齿面、齿顶圆同时相切的圆弧。<b>留磨量</b>沿齿面法向把刀具每侧收窄 q，只影响刀具，图中黑线仍是成品齿形；<b>挖根量</b>让刀具在齿根过渡区比成品多铣 pr，磨齿时砂轮不碰齿根、不留台阶，过渡区内两者平滑衔接。斜齿时以上修正都按端面截面计算。</p>
@@ -2726,9 +2726,10 @@ if (typeof module !== 'undefined') module.exports = HX;
     }
   }
   function fitDxf(out, layer) {
-    let off = 0;
+    let off = 0; const labs = [];
     for (const c of fitRes) {
       const segs = c.f.segs; if (!segs.length) continue;
+      { const pt = c.pts.reduce((m, q) => q[1] > m[1] ? q : m, c.pts[0]); labs.push({ x: off + Math.abs(pt[0]), y: pt[1], nm: c.nm }); }
       dxfSegs(out, segs, layer, false, off);
       if (c.sym) {
         dxfSegs(out, segs, layer, true, off);
@@ -2736,6 +2737,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       }
       const xs = c.pts.map(q => q[0]); off += (c.sym ? 2 * Math.max(...xs.map(Math.abs)) : Math.max(...xs) - Math.min(...xs)) * 1.5 + 5;
     }
+    return labs;
   }
   function syncOut() { const fit = fitOn(); $('f_step').hidden = fit; $('f_ftol').hidden = !fit; $('f_fg1').hidden = !fit; if (!fit) { $('fitMsg').hidden = true; fitRes = null; } }
   function fillTable() {
@@ -2758,36 +2760,112 @@ if (typeof module !== 'undefined') module.exports = HX;
       for (const p of pts) out.push('0', 'VERTEX', '8', layer, '10', p[0].toFixed(5), '20', p[1].toFixed(5), '30', '0');
       out.push('0', 'SEQEND', '8', layer);
     };
-    const R = profOut().map(q => [q[1], q[0]]), L = R.slice(1).reverse().map(q => [-q[0], q[1]]);
+    const po = profOut(), R = po.map(q => [q[1], q[0]]), L = R.slice(1).reverse().map(q => [-q[0], q[1]]), labs = [], marks = [];
+    const tnm = cut.slot ? '成形插刀刀齿廓形' : cut.disc ? '盘形铣刀刀齿廓形' : '指型铣刀轴向廓形', top = R[R.length - 1];
     if (fitOn() && fitRes) fitDxf(out, 'CUTTER'); else poly(L.concat(R), 'CUTTER', false);
-    out.push('0', 'LINE', '8', 'CENTER', '10', '0', '20', '-1', '30', '0', '11', '0', '21', (cut.prof[cut.prof.length - 1][0] + 2).toFixed(4), '31', '0');
-    const sp = spaceOutline(halfRes(200));
+    labs.push({ layer: 'CUTTER', x: top[0], y: top[1], t: tnm + '（H 自刀尖起算）' });
+    const yC = cut.prof[cut.prof.length - 1][0] + 2;
+    out.push('0', 'LINE', '8', 'CENTER', '10', '0', '20', '-1', '30', '0', '11', '0', '21', yC.toFixed(4), '31', '0');
+    labs.push({ layer: 'CENTER', x: 0, y: yC, t: cut.formTool ? '刀齿中心线' : '刀具轴线' });
+    // 分度圆、齿顶圆对应高度的标记线（与网页刀具图一致）
+    const sh = cut.prof[0][0] - po[0][0], wTxt = cut.formTool ? '刀齿宽 ' : '刀径 %%c';
+    const xAt = h => { for (let i = 1; i < po.length; i++) { const a = po[i - 1], b = po[i]; if ((a[0] - h) * (b[0] - h) <= 0 && a[0] !== b[0]) return a[1] + (b[1] - a[1]) * (h - a[0]) / (b[0] - a[0]); } return NaN; };
+    const mark = (h, t) => { const x = xAt(h); if (!isFinite(x)) return; out.push('0', 'LINE', '8', 'MARK', '10', (-x).toFixed(5), '20', h.toFixed(5), '30', '0', '11', x.toFixed(5), '21', h.toFixed(5), '31', '0'); marks.push({ layer: 'MARK', x, y: h, t }); };
+    if (isFinite(cut.hP) && geo.rb > 0) mark(cut.hP - sh, '分度圆处 H=' + (cut.hP - sh).toFixed(3) + '  ' + wTxt + (2 * xAt(cut.hP - sh)).toFixed(3));
+    { const hE = (cut.formTool ? po[po.length - 2][0] : cut.hEdge); mark(hE, '齿顶圆对应高度 H=' + hE.toFixed(3) + '，以上为外延段'); }
+    const sp = spaceOutline(halfRes(200)), topOf = P => P.reduce((m, q) => q[1] > m[1] ? q : m, P[0]);
     poly(sp, 'SPACE_TRANSVERSE', false);
-    if (geo.k) poly(spaceOutline(G.normalSection(halfRes(200), geo.k, geo.r)), 'SPACE_NORMAL', false);
-    if (geo.cutPts && geo.cutPts !== geo.pts) poly(spaceOutline(G.resample(geo.cutPts, polyLen(geo.cutPts) / 200)), 'SPACE_PREGRIND', false);
+    { const t = topOf(sp); labs.push({ layer: 'SPACE_TRANSVERSE', x: Math.abs(t[0]), y: t[1], t: (geo.k ? '零件端面齿槽' : '零件齿槽') + '（零件坐标，原点在零件中心）' }); }
+    if (geo.k) { const ns = spaceOutline(G.normalSection(halfRes(200), geo.k, geo.r)); poly(ns, 'SPACE_NORMAL', false); const t = topOf(ns); labs.push({ layer: 'SPACE_NORMAL', x: Math.abs(t[0]), y: t[1], row: 1, t: '零件法向齿槽（分度圆螺旋线法平面）' }); }
+    if (geo.cutPts && geo.cutPts !== geo.pts) { const pg = spaceOutline(G.resample(geo.cutPts, polyLen(geo.cutPts) / 200)); poly(pg, 'SPACE_PREGRIND', false); const t = topOf(pg); labs.push({ layer: 'SPACE_PREGRIND', x: Math.abs(t[0]), y: t[1], row: 2, t: '留磨量后的开粗齿槽' }); }
     out.push('0', 'ENDSEC', '0', 'EOF');
-    return dxfDoc(out);
+    return dxfDoc(out, { labs: labs.concat(marks), tool: tnm,
+      coord: '刀具廓形：横向为' + (cut.formTool ? '刀齿半宽 X' : '刀具半径 R') + '，纵向为高度 H（自刀尖起算），刀具图左右对称；零件齿槽按零件端面坐标画（原点在零件中心）' });
+  }
+  // DXF 文字：中文等非 ASCII 字符写成 \U+XXXX（AutoCAD、中望、CAXA 等都认），°、Ø、± 用 CAD 控制码
+  function dxfStr(t) {
+    return String(t).replace(/[Øø⌀]/g, '%%c').replace(/°/g, '%%d').replace(/±/g, '%%p').replace(/[\r\n]+/g, ' ')
+      .replace(/[^\x20-\x7e]/g, c => '\\U+' + c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0'));
+  }
+  // 说明栏：零件、刀具、输入参数、计算结果、图层说明
+  function dxfNoteLines(opt) {
+    const tp = (document.querySelector('.seg button[data-t][aria-pressed="true"]') || {}).textContent || '';
+    const d = new Date(), ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+    const L = [{ t: '指型铣刀廓形计算器 导出（' + ds + '）', big: true }, { t: '零件：' + tp + '    刀具：' + (opt.tool || '') }, { t: '单位 mm。' + (opt.coord || '') }, { t: '' }, { t: '输入参数', big: true }];
+    const sec = document.querySelector('section.card');
+    for (const f of sec ? sec.querySelectorAll('.f') : []) {
+      if (f.offsetParent === null || f.hidden) continue;
+      const lab = f.querySelector('label'), el = f.querySelector('input,select'); if (!lab || !el || el.type === 'file' || el.tagName === 'TEXTAREA') continue;
+      const name = [...lab.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim(), unit = (lab.querySelector('b') || {}).textContent || '';
+      let v = el.tagName === 'SELECT' ? (el.selectedOptions[0] || {}).text || '' : el.value; if (v === '' || (v === '0' && /0\s*=/.test(unit))) continue;
+      const u = el.tagName === 'SELECT' ? '' : unit.replace(/\s*0\s*=.*$/, '').trim();
+      L.push({ t: name + ' = ' + v + (u ? (u === '°' ? u : ' ' + u) : '') });
+    }
+    for (const id of ['ext', 't_kind', 't_D', 't_tip']) { const el = $(id); if (!el || el.offsetParent === null) continue; const lab = document.querySelector('label[for="' + id + '"]'); if (!lab) continue;
+      const name = [...lab.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim(); if (L.some(q => q.t.startsWith(name + ' ='))) continue;
+      L.push({ t: name + ' = ' + (el.tagName === 'SELECT' ? (el.selectedOptions[0] || {}).text : el.value) }); }
+    L.push({ t: '' }, { t: '计算结果', big: true });
+    const sp = [...document.querySelectorAll('#res span')].map(e => e.textContent.trim());
+    for (let i = 0; i + 1 < sp.length; i += 2) L.push({ t: sp[i] + ' = ' + sp[i + 1] });
+    const wn = ($('warn').textContent || '').split('；').map(t => t.trim()).filter(Boolean);
+    if (wn.length) { L.push({ t: '' }, { t: '提示', big: true }); for (const t of wn) L.push({ t: '· ' + t }); }
+    L.push({ t: '' }, { t: '图层说明', big: true });
+    const desc = { CUTTER: '刀具廓形（红）', TOOL: '刀具廓形（红）', CENTER: '刀具中心线 / 轴线（灰）', MARK: '分度圆、齿顶圆对应高度标记（青）', SPACE_TRANSVERSE: '零件端面齿槽（白/黑）', SPACE_NORMAL: '零件法向齿槽（绿）', SPACE_PREGRIND: '留磨量后的开粗齿槽（蓝）', PART_AXIAL: '零件轴向齿形（白/黑）', NOTES: '说明文字（黄）' };
+    for (const k of opt.layers || []) if (desc[k]) L.push({ t: k + '：' + desc[k] });
+    // 长行折行（每行约 40 字，尽量在标点处断开）
+    const W = [];
+    for (const q of L) {
+      let t = q.t; while (t.length > 44) { let k = -1; for (let i = 40; i >= 20; i--) if ('，；。、 ）)'.includes(t[i])) { k = i + 1; break; } if (k < 0) k = 40; W.push({ t: t.slice(0, k), big: q.big }); t = '  ' + t.slice(k).trim(); }
+      W.push({ t, big: q.big });
+    }
+    return W;
   }
   // 补全成完整的 DXF R12（AC1009）文件：HEADER（版本、图形范围）+ TABLES（线型、图层）+ ENTITIES。
   // 只有 ENTITIES 段的简化文件有些 CAD / CAM 软件打不开或图层缺失，这里统一补全。单位 mm。
-  function dxfDoc(ent) {
+  function dxfDoc(ent, opt) {
+    opt = opt || {};
     if (ent[0] === '0' && ent[1] === 'SECTION') ent = ent.slice(4);           // 去掉调用方写的 SECTION/ENTITIES 头
     const ie = ent.lastIndexOf('ENDSEC'); if (ie > 0) ent = ent.slice(0, ie - 1);  // 去掉 ENDSEC/EOF，下面统一补
-    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity; const layers = [];
+    // 图形范围：逐个图元取点（圆弧取两端点和落在弧上的象限点，不取圆心）
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity; const layers = [], tb = [Infinity, Infinity, -Infinity, -Infinity];
+    const addP = (x, y, isT) => { if (!isFinite(x) || !isFinite(y)) return; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y);
+      if (isT) { tb[0] = Math.min(tb[0], x); tb[2] = Math.max(tb[2], x); tb[1] = Math.min(tb[1], y); tb[3] = Math.max(tb[3], y); } };
+    let e = null;
+    const fin = () => { if (!e) return; const isT = e.l === 'CUTTER' || e.l === 'TOOL', g = k => parseFloat(e.v[k]);
+      if (e.t === 'ARC') { const cx = g('10'), cy = g('20'), r = g('40'); let a0 = g('50'), a1 = g('51'); if (a1 < a0) a1 += 360;
+        for (const a of [a0, a1]) addP(cx + r * Math.cos(a * Math.PI / 180), cy + r * Math.sin(a * Math.PI / 180), isT);
+        for (let q = Math.ceil(a0 / 90) * 90; q < a1; q += 90) addP(cx + r * Math.cos(q * Math.PI / 180), cy + r * Math.sin(q * Math.PI / 180), isT); }
+      else if (e.t === 'LINE') { addP(g('10'), g('20'), isT); addP(g('11'), g('21'), isT); }
+      else if (e.t === 'VERTEX') addP(g('10'), g('20'), isT);
+      e = null; };
     for (let i = 0; i + 1 < ent.length; i += 2) {
       const c = ent[i], v = ent[i + 1];
-      if (c === '8' && !layers.includes(v)) layers.push(v);
-      const n = parseFloat(v); if (!isFinite(n)) continue;
-      if (c === '10' || c === '11') { x0 = Math.min(x0, n); x1 = Math.max(x1, n); }
-      if (c === '20' || c === '21') { y0 = Math.min(y0, n); y1 = Math.max(y1, n); }
+      if (c === '0') { fin(); e = { t: v, l: '', v: {} }; continue; }
+      if (c === '8') { if (e) e.l = v; if (!layers.includes(v)) layers.push(v); }
+      if (e) e.v[c] = v;
     }
+    fin();
     if (!isFinite(x0)) { x0 = y0 = 0; x1 = y1 = 1; }
-    const col = { CUTTER: 1, TOOL: 1, CENTER: 8, SPACE_TRANSVERSE: 7, SPACE_NORMAL: 3, SPACE_PREGRIND: 5, PART_AXIAL: 7 }, f = v => v.toFixed(5);
+    // 文字：曲线旁的标注 + 右侧说明栏（字高按图形大小取）
+    // 字高按刀具廓形大小取（零件齿槽画在零件坐标里，离刀具很远，不能按整张图的大小取）
+    const tS = isFinite(tb[0]) ? Math.max(tb[2] - tb[0], tb[3] - tb[1]) : Math.max(x1 - x0, y1 - y0, 1);
+    const size = Math.max(x1 - x0, y1 - y0, 1), th = +(Math.max(0.1, tS * 0.035)).toPrecision(2), f = v => v.toFixed(5);
+    const text = (layer, x, y, h, t) => ent.push('0', 'TEXT', '8', layer, '10', f(x), '20', f(y), '30', '0.0', '40', f(h), '1', dxfStr(t), '7', 'CN');
+    for (const q of opt.labs || []) text(q.layer, q.x + th * 0.8, q.y + (q.layer === 'MARK' ? 0.2 * th : 0.3 * th) - (q.row || 0) * 1.6 * th, th * (q.layer === 'MARK' ? 0.8 : 1), q.t);
+    if (!layers.includes('NOTES')) { const lay = layers.slice(); if (opt.labs && opt.labs.some(q => q.layer === 'MARK') && !lay.includes('MARK')) lay.push('MARK');
+      const N = dxfNoteLines(Object.assign({}, opt, { layers: lay.concat('NOTES') }));
+      // 说明栏放在刀具右侧，从刀具顶部往下排
+      const tx1 = isFinite(tb[0]) ? tb[2] : x1, nx = Math.max(tx1 + th * 25, x1 + th * 3);
+      let ny = isFinite(tb[0]) ? tb[3] : y1; for (const q of N) { if (q.t) text('NOTES', nx, ny, q.big ? th * 1.25 : th, q.t); ny -= th * (q.big ? 2.0 : 1.6); }
+      layers.push('NOTES'); x1 = Math.max(x1, nx + th * 40); y0 = Math.min(y0, ny); }
+    if (opt.labs && opt.labs.some(q => q.layer === 'MARK') && !layers.includes('MARK')) layers.push('MARK');
+    const col = { CUTTER: 1, TOOL: 1, CENTER: 8, MARK: 4, NOTES: 2, SPACE_TRANSVERSE: 7, SPACE_NORMAL: 3, SPACE_PREGRIND: 5, PART_AXIAL: 7 };
     const h = ['0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '9', '$INSBASE', '10', '0.0', '20', '0.0', '30', '0.0',
       '9', '$EXTMIN', '10', f(x0), '20', f(y0), '30', '0.0', '9', '$EXTMAX', '10', f(x1), '20', f(y1), '30', '0.0',
       '9', '$LIMMIN', '10', f(x0), '20', f(y0), '9', '$LIMMAX', '10', f(x1), '20', f(y1), '0', 'ENDSEC',
       '0', 'SECTION', '2', 'TABLES',
       '0', 'TABLE', '2', 'LTYPE', '70', '1', '0', 'LTYPE', '2', 'CONTINUOUS', '70', '0', '3', 'Solid line', '72', '65', '73', '0', '40', '0.0', '0', 'ENDTAB',
+      '0', 'TABLE', '2', 'STYLE', '70', '1', '0', 'STYLE', '2', 'CN', '70', '0', '40', '0.0', '41', '1.0', '50', '0.0', '71', '0', '42', String(th), '3', 'gbenor.shx', '4', 'gbcbig.shx', '0', 'ENDTAB',
       '0', 'TABLE', '2', 'LAYER', '70', String(layers.length + 1),
       '0', 'LAYER', '2', '0', '70', '0', '62', '7', '6', 'CONTINUOUS'];
     for (const L of layers) if (L !== '0') h.push('0', 'LAYER', '2', L, '70', '0', '62', String(col[L] || 7), '6', 'CONTINUOUS');
@@ -2811,10 +2889,13 @@ if (typeof module !== 'undefined') module.exports = HX;
     const done = ok => { $('cpMsg').textContent = ok ? label + ' 已复制' : '复制被浏览器拒绝，请在下方文本框长按全选复制'; if (!ok) { ta.hidden = false; ta.focus(); ta.select(); } };
     try { navigator.clipboard.writeText(text).then(() => done(true), () => done(false)); } catch (e) { done(false); }
   }
-  $('cpCsv').addEventListener('click', () => copy(csvText(), 'CSV'));
-  $('cpDxf').addEventListener('click', () => copy(dxfText(), 'DXF 文本'));
-  $('dlDxf').addEventListener('click', () => download(dxfText(), 'dxf', 'application/dxf'));
-  $('dlCsv').addEventListener('click', () => download(csvText(), 'csv', 'text/csv;charset=utf-8'));
+  // 还没有算出结果（如螺杆转子未输入型线、参数有误）时不导出
+  const outText = f => { if ((hxOn ? !hxR : !(cut && geo)) || !$('res').children.length) { /* 参数有误时上次的结果已清空，不能导出旧结果 */ $('cpMsg').textContent = '还没有可导出的结果，请先输入参数并确认上方没有报错'; return null; }
+    try { return f(); } catch (e) { $('cpMsg').textContent = '导出失败：' + friendlyErr(e); return null; } };
+  $('cpCsv').addEventListener('click', () => { const t = outText(csvText); if (t) copy(t, 'CSV'); });
+  $('cpDxf').addEventListener('click', () => { const t = outText(dxfText); if (t) copy(t, 'DXF 文本'); });
+  $('dlDxf').addEventListener('click', () => { const t = outText(dxfText); if (t) download(t, 'dxf', 'application/dxf'); });
+  $('dlCsv').addEventListener('click', () => { const t = outText(csvText); if (t) download(t, 'csv', 'text/csv;charset=utf-8'); });
   $('step').addEventListener('input', () => { if (cut || hxOn) fillTable(); });
   $('omode').addEventListener('change', () => { syncOut(); if (cut || hxOn) fillTable(); });
   for (const id of ['ftol', 'fg1']) $(id).addEventListener(id === 'fg1' ? 'change' : 'input', () => { if (cut || hxOn) fillTable(); });
@@ -3978,11 +4059,12 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   }
   function hxCsv() { return 'No,H(mm),X(mm),Tool\n' + hxRows.map((q, i) => `${i},${q[1].toFixed(4)},${q[2].toFixed(4)},${q[0]}`).join('\n'); }
   function hxDxfOut() {
-    const out = ['0', 'SECTION', '2', 'ENTITIES'];
+    const out = ['0', 'SECTION', '2', 'ENTITIES'], labs = [];
     let off = 0;
-    if (fitOn() && fitRes) fitDxf(out, 'TOOL');
+    if (fitOn() && fitRes) fitDxf(out, 'TOOL').forEach(q => labs.push({ layer: 'TOOL', x: q.x, y: q.y, t: q.nm || '刀具廓形' }));
     else for (const c of hxToolCurves()) {
       let pts = c.pts; if (c.sym) pts = pts.slice().reverse().map(q => [-q[0], q[1]]).concat(pts);
+      { const t = pts.reduce((m, q) => q[1] > m[1] ? q : m, pts[0]); labs.push({ layer: 'TOOL', x: Math.max(...pts.map(q => q[0])) + off, y: t[1], t: c.nm }); }
       out.push('0', 'POLYLINE', '8', 'TOOL', '66', '1', '70', '0', '10', '0', '20', '0', '30', '0');
       for (const q of pts) out.push('0', 'VERTEX', '8', 'TOOL', '10', (q[0] + off).toFixed(5), '20', q[1].toFixed(5), '30', '0');
       out.push('0', 'SEQEND', '8', 'TOOL'); off += (Math.max(...pts.map(q => q[0])) - Math.min(...pts.map(q => q[0]))) * 1.5 + 5;
@@ -3991,8 +4073,10 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       out.push('0', 'POLYLINE', '8', 'PART_AXIAL', '66', '1', '70', '0', '10', '0', '20', '0', '30', '0');
       for (const q of hxR.Aeff) out.push('0', 'VERTEX', '8', 'PART_AXIAL', '10', q[1].toFixed(5), '20', q[0].toFixed(5), '30', '0');
       out.push('0', 'SEQEND', '8', 'PART_AXIAL');
+      const t = hxR.Aeff.reduce((m, q) => q[0] > m[0] ? q : m, hxR.Aeff[0]); labs.push({ layer: 'PART_AXIAL', x: Math.max(...hxR.Aeff.map(q => q[1])), y: t[0], t: (hxR.kind === 'wheel' ? '蜗轮开粗齿槽（轴向截面，' : '零件轴向齿形（') + '横向为轴向 z，纵向为半径 r，原点在零件轴线上）' });
     }
-    out.push('0', 'ENDSEC', '0', 'EOF'); return dxfDoc(out);
+    const tn = hxToolCurves().map(c => c.nm).join('、');
+    out.push('0', 'ENDSEC', '0', 'EOF'); return dxfDoc(out, { labs, tool: tn, coord: '刀具廓形按网页刀具图的坐标画（横向为宽度，纵向为高度），零件齿形按轴向截面画' });
   }
 
   // ---------- 3D ----------
