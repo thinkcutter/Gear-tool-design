@@ -926,24 +926,33 @@ var G = (function () {
     const rr = src.map(q => hyp(q[0], q[1]));
     let iD = 0; for (let i = 1; i < rr.length; i++) if (isExt ? rr[i] < rr[iD] - 1e-12 : rr[i] > rr[iD] + 1e-12) iD = i;
     const Ac = isExt ? rr[iD] + dTip : rr[iD] - dTip;
-    const A = HX.endToAxial(src, p), res = HX.toolFromHelicoid(A, p, [0, Ac, 0], a, 'disc', PI / 2, iD);
+    // 只接受刀盘上真实存在的接触点：半径不超过刀盘外缘，且在刀盘朝向工件的一侧（外齿在刀盘中心下方，内齿在上方）
+    // （外齿刀齿顶内凹，两角半径比槽底中心处略大——槽底圆弧的拱高，远小于 0.5m；内齿刀齿顶外凸，槽底中心就是刀盘最外缘）
+    const mm = Math.abs(geo.ra - geo.rf) / 2.25 || 1, rLim = isExt ? dTip + 0.5 * mm : dTip * (1 + 1e-9) + 1e-9, accept = c => c.R <= rLim && (isExt ? c.P[1] < Ac : c.P[1] > Ac);
+    const A = HX.endToAxial(src, p), res = HX.toolFromHelicoid(A, p, [0, Ac, 0], a, 'disc', PI / 2, iD, accept);
+    // 个别点（如根切处、内齿小圆角处）刀盘可能根本接触不到：先跳过这些点，之后按刀盘实际扫出的槽形核对并提示
     const miss = res.filter(o => !o).length;
-    if (miss) throw new Error('斜齿盘形铣刀：有 ' + miss + ' 个齿形点找不到刀具接触点（螺旋角太大或刀盘外径不合适），请调整刀盘外径');
-    let sH = 1; for (const o of res) if (Math.abs(o.H) > 1e-9) { sH = Math.sign(o.H); break; }
-    const out = res.map(o => [sH * o.H, isExt ? Ac - o.R : Ac + o.R]);
-    out.ex = { Ac, a, p, sH, sig, isExt };
+    if (miss > 0.3 * res.length) throw new Error('斜齿盘形铣刀：有 ' + miss + ' 个齿形点找不到刀具接触点（螺旋角太大或刀盘外径不合适），请调整刀盘外径或改用指型铣刀');
+    let sH = 1; for (const o of res) if (o && Math.abs(o.H) > 1e-9) { sH = Math.sign(o.H); break; }
+    const out = res.map(o => o ? [sH * o.H, isExt ? Ac - o.R : Ac + o.R] : null);
+    const mr = src.filter((q, i) => !res[i]).map(q => hyp(q[0], q[1]));
+    out.ex = { Ac, a, p, sH, sig, isExt, miss, missR: mr.length ? [Math.min(...mr), Math.max(...mr)] : null };
     return out;
   }
   // 精确盘形铣刀的逆运算：刀齿廓形 [u, Y]（同 discExact 的输出坐标）→ 刀具沿螺旋线切出的端面齿槽 [x, y]
   function discBack(pts, ex) {
     const prof = pts.map(([u, Y]) => [ex.sH * u, ex.isExt ? ex.Ac - Y : Y - ex.Ac]);
     const res = HX.helicoidFromTool(prof, [0, ex.Ac, 0], ex.a, ex.p, !ex.isExt);
-    return res.map(o => o ? HX.axialToEnd([[o[0], o[1]]], ex.p)[0] : null);
+    const E = res.map(o => o ? HX.axialToEnd([[o[0], o[1]]], ex.p)[0] : null);
+    // 齿槽左右对称：统一换到 x ≥ 0 一侧（与输入的半齿槽同侧）
+    return E.map(q => q && q[0] < 0 ? [-q[0], q[1]] : q);
   }
   // 斜齿盘形铣刀实际切出的端面槽形（扫掠核对）：接触点只说明刀具在该点与齿面相切，刀盘其他部位（前后两侧）随螺旋运动时
   // 仍可能切得更深（刀齿顶改直线、圆角改小时会出现）。对每个点沿材料一侧的法向检查刀盘扫过的范围，找出真正的边界。
   // pts：端面半齿槽 [x, y]（从槽底中心起）；cut：makeDisc 的结果（含 exact）；返回 { pts, d（最大多切量）, r（所在半径） }
-  function discSweep(pts, cut, geo) {
+  // opt.both：两个方向都找边界（刀齿顶改直线后，有的点刀切不到、有的点切得更深），返回刀盘实际切出的槽形
+  function discSweep(pts, cut, geo, opt) {
+    opt = opt || {};
     const ex = cut.exact, isExt = ex.isExt, a = HX.unit(ex.a), Ac = ex.Ac, p = ex.p, m = Math.abs(geo.ra - geo.rf) / 2.25 || 1;
     const pr = cut.prof.map(q => [q[1], isExt ? Ac - (cut.yTip + q[0]) : (cut.yTip - q[0]) - Ac]);   // [H, R]
     const o = pr.slice().sort((u, v) => u[0] - v[0]), Hs = [], Rs = [];
@@ -951,24 +960,76 @@ var G = (function () {
     const Rc = h => { h = Math.abs(h); if (h > Hs[Hs.length - 1]) return -Infinity; if (h <= Hs[0]) return Rs[0];
       let lo = 0, hi = Hs.length - 1; while (hi - lo > 1) { const md = (lo + hi) >> 1; if (Hs[md] <= h) lo = md; else hi = md; }
       return Rs[lo] + (Rs[hi] - Rs[lo]) * (h - Hs[lo]) / (Hs[hi] - Hs[lo]); };
-    const thm = Math.min(PI / 2, 1.3 * (Math.max(...Rs) + Hs[Hs.length - 1]) / Math.abs(p)), N = 900;
+    const thm = Math.min(PI / 2, 1.3 * (Math.max(...Rs) + Hs[Hs.length - 1]) / Math.abs(p));
+    // 刀盘子午面（H ≥ 0, ρ）里的有向距离：边界 = 刀齿廓形 + 外延末端的侧面；刀盘内部为负。用分格加速最近线段查找，
+    // 离边界超过 cs 时只返回 ±cs（足够判断内外，且仍满足 1-Lipschitz）。
+    const Hm = Hs[Hs.length - 1], seg = [];
+    for (let k = 1; k < pr.length; k++) seg.push([pr[k - 1][0], pr[k - 1][1], pr[k][0], pr[k][1]]);
+    { const e = pr[pr.length - 1]; seg.push([e[0], e[1], e[0], 0]); }
+    const cs = Math.max(0.05 * m, 0.02), grid = new Map(), key = (i, j) => i * 100003 + j;
+    for (let k = 0; k < seg.length; k++) { const [x1, y1, x2, y2] = seg[k];
+      for (let gi = Math.floor(Math.min(x1, x2) / cs); gi <= Math.floor(Math.max(x1, x2) / cs); gi++)
+        for (let gj = Math.floor(Math.min(y1, y2) / cs); gj <= Math.floor(Math.max(y1, y2) / cs); gj++) { const kk = key(gi, gj); let b = grid.get(kk); if (!b) grid.set(kk, b = []); b.push(k); } }
+    // 内外判断与边界折线一致：从点沿 +ρ 方向作射线，数与刀齿廓形的交点（奇数 = 在刀盘内）。廓形 H 不单调时也成立
+    const cols = new Map();
+    for (let k = 0; k < seg.length; k++) { const [x1, , x2] = seg[k]; if (x1 === x2) continue;
+      for (let gi = Math.floor(Math.min(x1, x2) / cs); gi <= Math.floor(Math.max(x1, x2) / cs); gi++) { let b = cols.get(gi); if (!b) cols.set(gi, b = []); b.push(k); } }
+    const isIn = (h, r) => { if (h > Hm) return false; const b = cols.get(Math.floor(h / cs)); if (!b) return false; let c = 0;
+      for (const k of b) { const [x1, y1, x2, y2] = seg[k]; if ((x1 <= h) !== (x2 <= h) && y1 + (h - x1) * (y2 - y1) / (x2 - x1) > r) c++; }
+      return (c & 1) === 1; };
+    const sd = (h, r) => {
+      const inside = isIn(h, r), gi = Math.floor(h / cs), gj = Math.floor(r / cs); let best = Infinity;
+      for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) { const b = grid.get(key(gi + di, gj + dj)); if (!b) continue;
+        for (const k of b) { const [x1, y1, x2, y2] = seg[k], dx = x2 - x1, dy = y2 - y1, L2 = dx * dx + dy * dy;
+          let t = L2 ? ((h - x1) * dx + (r - y1) * dy) / L2 : 0; t = t < 0 ? 0 : t > 1 ? 1 : t; const ex2 = h - x1 - t * dx, ey2 = r - y1 - t * dy, d = ex2 * ex2 + ey2 * ey2; if (d < best) best = d; } }
+      best = Math.min(Math.sqrt(best), cs); return inside ? -best : best; };
     const g = (q, th) => { const c = Math.cos(th), s = Math.sin(th), X = q[0] * c - q[1] * s, Y = q[0] * s + q[1] * c - Ac, Z = p * th;
-      const H = X * a[0] + Y * a[1] + Z * a[2], rho = Math.sqrt(Math.max(0, X * X + Y * Y + Z * Z - H * H)); return rho - Rc(H); };
-    const gmin = q => { let bi = 0, bv = Infinity; const st = 2 * thm / N;
-      for (let k = 0; k <= N; k++) { const v = g(q, -thm + st * k); if (v < bv) { bv = v; bi = k; } }
-      let lo = -thm + st * (bi - 1), hi = -thm + st * (bi + 1);
-      for (let it = 0; it < 40; it++) { const t1 = lo + (hi - lo) / 3, t2 = hi - (hi - lo) / 3; if (g(q, t1) < g(q, t2)) hi = t2; else lo = t1; }
-      return Math.min(bv, g(q, (lo + hi) / 2)); };
-    let dmax = 0, rAt = NaN; const out = pts.map(q => q.slice()), n = pts.length;
+      const H = X * a[0] + Y * a[1] + Z * a[2], rho = Math.sqrt(Math.max(0, X * X + Y * Y + Z * Z - H * H)); return sd(Math.abs(H), rho); };
+    // 点随工件转过 θ 时到刀盘表面的有向距离的最小值（负 = 被切到）。点的空间速度 |dQ/dθ| = √(r² + p²) 是该函数的
+    // Lipschitz 常数，按“区间下界 = 端点值 − L·Δ/2”剪枝细分（分支定界），不会漏掉窄的低谷；最终步长对应点位移 < 0.1 µm。
+    const gmin = q => {
+      const L = Math.hypot(hyp(q[0], q[1]), p); let D = Math.min(2 * thm, 0.05 * m / L), n0 = Math.ceil(2 * thm / D); D = 2 * thm / n0;
+      let ts = [], fs = []; for (let k = 0; k <= n0; k++) { const t = -thm + D * k; ts.push(t); fs.push(g(q, t)); }
+      let U = Math.min(...fs), iv = [];
+      for (let k = 0; k < n0; k++) iv.push([ts[k], fs[k], ts[k + 1], fs[k + 1]]);
+      for (let lev = 0; lev < 12 && iv.length; lev++) {
+        const lb = x => Math.min(x[1], x[3]) - L * (x[2] - x[0]) / 2;
+        iv = iv.filter(x => lb(x) < U - 1e-9); if (!iv.length || L * (iv[0][2] - iv[0][0]) < 1e-4) break;
+        if (iv.length > 400) { iv.sort((x, y) => lb(x) - lb(y)); iv = iv.slice(0, 400); }
+        const nx = [];
+        for (const x of iv) { let t0 = x[0], f0 = x[1]; for (let k = 1; k <= 4; k++) { const t1 = x[0] + (x[2] - x[0]) * k / 4, f1 = k === 4 ? x[3] : g(q, t1); if (f1 < U) U = f1; nx.push([t0, f0, t1, f1]); t0 = t1; f0 = f1; } }
+        iv = nx;
+      }
+      return U; };
+    let dmax = 0, rAt = NaN, dFl = 0, rFl = NaN, dAll = 0, rAll = NaN; const out = pts.map(q => q.slice()), n = pts.length;
+    // 刀齿顶改直线只影响齿根圆角；渐开线起始圆以外（齿面）被多切才算干涉
+    const rMid = geo.Rinv > 0 && (isExt ? geo.Rinv > geo.rf && geo.Rinv < geo.ra : geo.Rinv < geo.rf && geo.Rinv > geo.ra) ? geo.Rinv : (geo.ra + geo.rf) / 2;
     for (let i = 0; i < n; i++) {
-      const q = pts[i]; if (gmin(q) > -1e-6) continue;
+      const q = pts[i], f0 = gmin(q); if (opt.both ? Math.abs(f0) < 2e-5 : f0 > -2e-5) continue;
       const u = pts[Math.min(n - 1, i + 1)], v = pts[Math.max(0, i - 1)]; let tx = u[0] - v[0], ty = u[1] - v[1]; const L = hyp(tx, ty) || 1; tx /= L; ty /= L;
       const nx = isExt ? ty : -ty, ny = isExt ? -tx : tx;          // 指向材料一侧
-      let t0 = 0, t1 = 0.002 * m; while (t1 < 2 * m && gmin([q[0] + nx * t1, q[1] + ny * t1]) < 0) { t0 = t1; t1 *= 2; }
-      for (let it = 0; it < 40; it++) { const tm = (t0 + t1) / 2; if (gmin([q[0] + nx * tm, q[1] + ny * tm]) < 0) t0 = tm; else t1 = tm; }
-      const t = (t0 + t1) / 2; out[i] = [q[0] + nx * t, q[1] + ny * t]; if (t > dmax) { dmax = t; rAt = hyp(q[0], q[1]); }
+      const F = t => gmin([q[0] + nx * t, q[1] + ny * t]);
+      let t0, t1;
+      if (f0 < 0) { t0 = 0; t1 = 0.002 * m; while (t1 < 2 * m && F(t1) < 0) { t0 = t1; t1 *= 2; } }       // 切多了：往材料里找边界
+      else { t1 = 0; t0 = -0.002 * m; while (t0 > -2 * m && F(t0) >= 0) { t1 = t0; t0 *= 2; } if (F(t0) >= 0) continue; }   // 切不到：往槽里找边界
+      for (let it = 0; it < 40; it++) { const tm = (t0 + t1) / 2; if (F(tm) < 0) t0 = tm; else t1 = tm; }
+      const t = (t0 + t1) / 2, rq = hyp(q[0], q[1]); out[i] = [q[0] + nx * t, q[1] + ny * t]; if (Math.abs(t) > dAll) { dAll = Math.abs(t); rAll = rq; }
+      if (t > dmax) { dmax = t; rAt = rq; }
+      if (t > dFl && (isExt ? rq > rMid : rq < rMid)) { dFl = t; rFl = rq; }   // 齿面（刀齿顶处理影响不到）多切
     }
-    return { pts: out, d: dmax, r: rAt };
+    // 相邻齿：齿顶（齿顶圆上两齿槽之间）和下一个齿槽的近侧齿面，刀盘不得切到（刀盘左右对称，查一侧即可）
+    let nb = { d: 0, r: NaN };
+    if (geo.z > 0) {
+      const ang = 2 * PI / geo.z, last = pts[n - 1], ph1 = Math.atan2(last[0], last[1]), rT = hyp(last[0], last[1]), T = [];
+      for (let k = 1; k < 24; k++) { const ph = ph1 + (ang - 2 * ph1) * k / 24; T.push([rT * Math.sin(ph), rT * Math.cos(ph)]); }
+      for (let k = 0; k < n; k += 3) { const q = pts[k], ph = ang - Math.atan2(q[0], q[1]), r = hyp(q[0], q[1]); T.push([r * Math.sin(ph), r * Math.cos(ph)]); }
+      for (const q of T) { const f = gmin(q); if (-f > nb.d) nb = { d: -f, r: hyp(q[0], q[1]) }; }
+    }
+    // 各点沿各自法向移动后，凹处相邻点可能交叉打折，去掉打结的小环
+    let outT = opt.both ? trimLoops(out).pts : out;
+    // 齿顶被切掉的点会沿法向跑到齿顶圆以外，去掉（端面图仍按齿顶圆封口）
+    outT = outT.filter(q => isExt ? hyp(q[0], q[1]) <= geo.ra + 1e-6 : hyp(q[0], q[1]) >= geo.ra - 1e-6);
+    return { pts: outT, d: dmax, r: rAt, dFlank: dFl, rFlank: rFl, nb, dAll, rAll };
   }
   function makeDisc(geo, src, ext, tool, tip, opt) {
     const D = opt && opt.D > 0 ? opt.D : 0;
@@ -976,9 +1037,12 @@ var G = (function () {
     // 斜齿：精确接触计算。刀齿顶做成直线时刀尖会比槽底抬高，按实际刀尖再算一次，使刀盘外径正好等于输入值
     const hT = Math.abs(geo.ra - geo.rf) + Math.max(0, ext || 0);
     if (!(D / 2 > hT + 1)) throw new Error('斜齿盘形铣刀外径太小：刀盘半径要大于齿高加刃部外延（' + hT.toFixed(2) + '）再留出刀体，否则刀盘中心会落进齿槽，无法计算');
+    if (geo.kind === 'int') { const rr = src.map(q => hyp(q[0], q[1])), Dm = Math.max(...rr) + geo.ra;
+      if (!(D < Dm)) throw new Error('内齿：刀盘外径 ' + D.toFixed(2) + ' 放不进内孔（从槽底量到对面齿顶只有 ' + Dm.toFixed(2) + '），请减小刀盘外径'); }
     let dTip = D / 2, c = null;
     for (let it = 0; it < 4; it++) {
-      const pts = discExact(src, geo, dTip); c = makeDiscCore(geo, src, ext, tool, tip, pts); c.exact = pts.ex;
+      const pts = discExact(src, geo, dTip), ok = pts.map(Boolean), ptsK = pts.filter(Boolean), srcK = src.filter((q, i) => ok[i]);
+      c = makeDiscCore(geo, srcK, ext, tool, tip, ptsK); c.exact = pts.ex;
       const rTip = geo.kind === 'ext' ? pts.ex.Ac - c.yTip : c.yTip - pts.ex.Ac, d = D / 2 - rTip;
       if (Math.abs(d) < 1e-7) break; dTip += d;
     }
@@ -1025,7 +1089,7 @@ var G = (function () {
       if ((r1 - geo.r) * (r2 - geo.r) <= 0 && r1 !== r2) { const u = (geo.r - r1) / (r2 - r1); hP = prof[i - 1][0] + (prof[i][0] - prof[i - 1][0]) * u; RP = prof[i - 1][1] + (prof[i][1] - prof[i - 1][1]) * u; break; }
     }
     const arcDepth = flat ? 0 : arcDepth0;
-    return { prof, hEdge: b[0], yTip: yTn, sag: 0, residual: 0, mono: true, contact: pts, hP, RP, isExt, disc: tool === 'disc', slot: tool === 'slot', formTool: true, arcDepth, arcHalfW: flat ? flat.w / 2 : arcHalfW0, bulge: arcDepth, flat, flatFail, slotPts };
+    return { prof, hEdge: b[0], yTip: yTn, sag: 0, residual: 0, mono: true, contact: pts, hP, RP, isExt, disc: tool === 'disc', slot: tool === 'slot', formTool: true, arcDepth, arcHalfW: flat ? flat.w / 2 : arcHalfW0, bulge: arcDepth, flat, flatFail, slotPts, arcD0: arcDepth0 };
   }
   function makeCutter(geo, ext, mode, tool, tip, opt) {
     const src = geo.cutPts || geo.pts;
@@ -1160,7 +1224,7 @@ const HX = (() => {
   // ---------- 正算：零件螺旋面 → 回转刀具（盘形铣刀 / 指型铣刀）廓形 ----------
   // 接触条件：曲面法线与刀具轴线相交，(S − C)·(n × a) = 0。
   // C、a：刀具轴线上一点与方向。pick：'disc' 取 |H| 最小的根，'finger' 取 R 最小的根。
-  function toolFromHelicoid(A, p, C, a, pick, thR, iStart) {
+  function toolFromHelicoid(A, p, C, a, pick, thR, iStart, accept) {
     a = unit(a); const T = tangents(A), all = [], N = 1600, R0 = thR || PI;
     for (let i = 0; i < A.length; i++) {
       const [r, z] = A[i], [dr, dz] = T[i];
@@ -1173,7 +1237,8 @@ const HX = (() => {
       for (const th of roots(f, -R0, R0, N)) {
         const P = S(r, z, p, th); if (P[1] <= 0) continue;       // 齿槽在 +y 一侧，背面的解不是刀具接触点
         const d = sub(P, C), H = dot(d, a), Rr = hyp(...sub(d, mul(a, H)));
-        cand.push({ H, R: Rr, th, P, i, score: pick === 'finger' ? Rr : Math.abs(H) });
+        const cd = { H, R: Rr, th, P, i, score: pick === 'finger' ? Rr : Math.abs(H) };
+        if (!accept || accept(cd)) cand.push(cd);
       }
       all.push(cand);
     }
@@ -2301,12 +2366,20 @@ if (typeof module !== 'undefined') module.exports = HX;
       if (cut.flat && cut.slotPts && (!geo.k || cut.formTool)) {
         let sp = geo.k ? (cut.exact ? G.discBack(cut.slotPts, cut.exact) : G.fromNormal(cut.slotPts, geo.k, geo.r)) : cut.slotPts;
         if (sp.some(q => !q)) sp = sp.filter(Boolean);
-        if (cut.exact) { const sw = G.discSweep(sp, cut, geo); sp = sw.pts; }      // 刀齿顶改直线后刀盘其他部位可能切得更深，按扫掠结果
+        if (cut.exact) {   // 斜齿盘形铣刀：刀齿顶改直线后按刀盘沿螺旋线实际扫出的边界更新槽形（比接触点反算稳健）
+          const sw = G.discSweep(geo.cutPts || geo.pts, cut, geo, { both: true }); sp = sw.pts;
+          // 齿面（渐开线起始圆以外）被多切算干涉；齿根圆角一带的变化是刀齿顶改直线本身带来的，只提示变化量
+          if (sw.dFlank > 5e-4) cut.gouge = { d: sw.dFlank, r: sw.rFlank };
+          if (sw.dAll > 5e-4) cut.flatDev = { d: sw.dAll, r: sw.rAll };
+          if (sw.nb.d > 5e-4) cut.gougeNb = sw.nb;
+        }
         if (geo.cutPts && geo.cutPts !== geo.pts) geo.cutPts = sp; else { geo.pts = geo.cutPts = sp; if (!geo.k) geo.Rinv = cut.flat.Rinv; }
       } else if (cut.exact) {
         // 刀齿顶按齿根圆弧（精确共轭）：检查刀盘其他部位会不会多切（整体干涉）
-        const src = geo.cutPts || geo.pts, sw = G.discSweep(src, cut, geo);
+        const src = geo.cutPts || geo.pts, sw = G.discSweep(src, cut, geo, cut.exact.miss ? { both: true } : {});
+        if (cut.exact.miss) { cut.missDev = sw.dAll; if (geo.cutPts && geo.cutPts !== geo.pts) geo.cutPts = sw.pts; else geo.pts = geo.cutPts = sw.pts; }
         if (sw.d > 5e-4) { cut.gouge = sw; if (geo.cutPts && geo.cutPts !== geo.pts) geo.cutPts = sw.pts; else geo.pts = geo.cutPts = sw.pts; }
+        if (sw.nb.d > 5e-4) cut.gougeNb = sw.nb;
       }
     } catch (err) { warnEl.textContent = friendlyErr(err); clearOut(); return; }
     geo.M = M;
@@ -2314,7 +2387,10 @@ if (typeof module !== 'undefined') module.exports = HX;
     if ($('t_kind').value === 'disc') {
       if (geo.k && cut.exact) W.push('斜齿：刀齿廓形按刀盘扳转螺旋角 ' + (90 - cut.exact.sig / D2R).toFixed(3) + '°、刀盘外径 ' + f2(parseFloat($('t_D').value)) + ' 精确计算（刀盘中心到齿轮轴线 ' + f3(Math.abs(cut.exact.Ac)) + '）。廓形与刀盘外径有关，只适用于这个外径；刀具重磨后外径变小，廓形会有少量变化');
       else if (geo.k) W.push('斜齿盘形铣刀需要输入刀盘外径才能精确计算');
-      if (cut.gouge) W.push('刀盘随螺旋运动时其他部位会多切：在半径 ' + f3(cut.gouge.r) + ' 处最多多切 ' + (cut.gouge.d * 1000).toFixed(1) + ' µm（端面图按实际切出的槽形显示）。多在槽底圆角很小处出现，可调整刀盘外径、刀齿顶改直线，或改用指型铣刀');
+      if (cut.exact && cut.exact.miss) W.push('有 ' + cut.exact.miss + ' 个齿形点（半径 ' + f3(cut.exact.missR[0]) + '～' + f3(cut.exact.missR[1]) + '）刀盘接触不到，已跳过，端面图按刀盘实际切出的槽形显示' + (isFinite(cut.missDev) && cut.missDev > 5e-4 ? '，与设计齿形最多相差 ' + (cut.missDev * 1000).toFixed(1) + ' µm' : '') + '。多见于根切、内齿小圆角或修形转折处');
+      if (cut.flatDev) W.push('刀齿顶改直线后，槽底一带实际切出的槽形与设计齿形最多相差 ' + (cut.flatDev.d * 1000).toFixed(1) + ' µm（半径 ' + f3(cut.flatDev.r) + ' 处，端面图按实际槽形显示），请对照图纸核对齿根');
+      if (cut.gougeNb) W.push('刀盘随螺旋运动时会碰到相邻轮齿：在半径 ' + f3(cut.gougeNb.r) + ' 处约 ' + (cut.gougeNb.d * 1000).toFixed(1) + ' µm（径向），多由刃部外延过长、齿顶倒角或大变位引起，请减小刃部外延量或调整刀盘外径');
+      if (cut.gouge) W.push('刀盘随螺旋运动时其他部位会多切：在半径 ' + f3(cut.gouge.r) + ' 处最多多切 ' + (cut.gouge.d * 1000).toFixed(1) + ' µm（端面图按实际切出的槽形显示，按此刀加工出的齿形会偏离设计齿形）。根切齿形、槽底圆角很小或挖根较深时常见，可调整刀盘外径、刀齿顶改直线，或改用指型铣刀');
       const Dd = parseFloat($('t_D').value) || 0, Hd = cut.prof[cut.prof.length - 1][0];
       if (!(Dd / 2 >= Hd + 5)) W.push('盘形铣刀外径 ' + f2(Dd) + ' 太小：刀齿高（含外延）' + f2(Hd) + '，外径至少要大于 ' + f2(2 * (Hd + 5)) + '，还要放得下刀体和内孔；3D 图暂按最小外径显示');
       if (geo.kind === 'int') {
