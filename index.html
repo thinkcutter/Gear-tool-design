@@ -273,7 +273,7 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
     <p><b>插刀后角形式与廓形补偿</b>：① <b>整体倾斜</b>：刀具做成等截面棱柱，装刀时倾斜 α 得到后角。刀具廓形按后刀面法向截面给出，齿高 × cos(α+γ)/cosγ，宽度不变；侧刃后角随齿侧倾斜变小。② <b>平面后角</b>：刀具竖直安装，后刀面沿刃口法向磨出（或锥度线切割出）后角 α，侧刃后角处处等于 α。前角 γ = 0 时刃口就是齿槽形状，不需要补偿；γ ≠ 0 时，齿高 H 处的刃口比刀尖靠后 H·tanγ，后刀面在那里已经向内收了 H·tanγ·tanα，所以过刀尖、垂直刀具轴线的基准截面（线切割或磨削编程用）要把齿槽形状沿法向向外放大 H·tanγ·tanα；离基准截面 z 处的截面 = 基准截面沿法向向内收 z·tanα（锥度线切割的另一个面按这个算）。刃口在前刀面内的齿高 = H ÷ cosγ。不考虑重磨。</p>
     <p><b>成形插刀</b>：单齿插刀沿齿向往复插削，切削刃在端面的投影就是齿槽形状，外齿、内齿都适用（只限直齿）。有前角 γ、后角 α 时，刃口在前刀面内的齿高 = 端面齿高 ÷ cosγ；磨刀用的后刀面法向截面齿高 = 端面齿高 × cos(α+γ) ÷ cosγ，宽度方向不变。侧刃的实际后角 = arctan(tanα × sinψ)，ψ 是刃口切线与刀具中心线的夹角，齿侧越接近平行于中心线，侧后角越小，程序会给出最小侧后角。矩形花键这类平行侧壁几乎没有侧后角，要在“侧后角 αs”里另磨 1°–3°（只在刃口后面收窄，不改变刃口形状和廓形）。</p>
     <p><b>圆柄插刀与刀杆检查</b>：3D 按圆柄单齿插刀显示——前端刀头 + 缩颈 + 刀柄，刀具轴线平行于工件轴线，偏心放置使刀尖正好到达齿根圆；动画为切削行程、抬刀回程、刀头退出工件后分度一个齿。内齿（内花键）时缩颈在内孔里，程序按内孔（小径）自动限制缩颈直径，并给出切削时和抬刀回程时缩颈与孔壁的最小间隙；外齿时给出刀柄与零件外圆的间隙。刀柄直径、刀头长度只影响 3D 和干涉检查，不影响刀具廓形。</p>
-    <p><b>盘形铣刀</b>：刀轴与齿槽垂直，刀齿廓形就是齿槽的端面形状，槽底按齿根圆铣成圆弧，所以刀齿顶是一段内凹圆弧（结果里的“刀齿顶圆弧凹深”）。只用于直齿外齿轮和花键，坐标表里 X 为刀齿半宽。</p>
+    <p><b>盘形铣刀</b>：刀轴与齿槽垂直，刀齿廓形就是齿槽的端面形状，槽底按齿根圆铣成圆弧，所以刀齿顶是一段内凹圆弧（结果里的“刀齿顶圆弧凹深”）。坐标表里 X 为刀齿半宽。<b>斜齿</b>：刀盘平面按分度圆螺旋角 β 扳转（刀轴与齿轮轴线成 90° − β），工件边转边移走螺旋线。刀盘与螺旋齿面的接触线是一条空间曲线，不在法向截面内，所以刀齿廓形不等于齿槽法向截面：程序对每个齿形点求“齿面法线与刀轴相交”的接触点（与蜗杆、螺纹盘形铣刀同一方法）得到精确廓形，再把刀盘沿螺旋线扫过工件核对有没有多切。斜齿时廓形与刀盘外径有关，只适用于输入的外径。</p>
     <p><b>蜗杆（ZA / ZN / ZI / ZK，GB/T 10087、DIN 3975）</b>：ZA 轴向截面齿形为直线；ZN 齿槽法向截面为直线（程序迭代法向槽宽，使分度圆轴向齿厚准确）；ZI 端面为渐开线，tanαt = tanαn / sinγ1，基圆 rb = r1·cosαt；ZK 由双锥砂轮（盘铣刀）包络生成，生成刀具直径填在“ZK 生成刀具直径”里。齿根圆角在各自的定义截面里做。</p>
     <p><b>蜗轮开粗</b>：精加工蜗轮要用与配对蜗杆一致的滚刀或飞刀展成，成形铣刀只用于开粗。程序把滚刀看成配对蜗杆（齿顶加高一个顶隙、齿顶按“滚刀齿顶圆角系数”倒圆），在平行于中间平面的 25 个截面里分别求出滚刀包络出的真实齿槽（每个截面里滚刀的截形像一根齿条，与蜗轮按传动比滚动），取所有截面齿槽的公共部分，再沿齿面法向减去余量，得到开粗齿槽，然后按螺旋线走刀计算指型铣刀或盘形铣刀。蜗轮槽底是一段圆弧，两端比中间浅：选“沿喉部圆弧径向插补”时刀尖随齿宽位置升降（公式见结果），选“固定深度”时只能开到两端槽底的高度。</p>
     <p><b>螺杆转子</b>：① 三螺杆泵按 Mimmi &amp; Pennacchi 摆线型线由参数生成：主动螺杆齿根 r、齿顶 (1+k)r，齿面为外摆线；从动螺杆齿顶 r、腹板 (1−k)r，齿面为外次摆线，两者共轭（已仿真校核）。② 压缩机等转子：粘贴端面坐标或读取 DXF（直线、圆弧、多段线、样条），程序自动找出一个齿槽，转成轴向截面后再算刀具。三螺杆主动螺杆齿根是摆线尖点，刀具对应处也是尖点，实际制刀按图纸加圆角；从动螺杆齿槽在齿顶附近内收（燕尾），盘铣刀铣不到那一小块，程序会给出偏差。</p>
@@ -913,9 +913,76 @@ var G = (function () {
   }
   // 盘形铣刀 / 成形插刀：刀齿廓形 = 齿槽端面（直齿）形状。
   // tip：'arc' 刀齿顶按齿根圆弧；'corner' 直线、两角到位；'center' 直线、槽底中心到根圆
-  function makeDisc(geo, src, ext, tool, tip) {
+  // 斜齿盘形铣刀（精确）：刀盘平面按分度圆螺旋角扳转（刀轴与齿轮轴线夹角 90° − β），刀盘中心在 y 轴上 (0, Ac, 0)。
+  // 对每个端面齿形点，沿螺旋面找“齿面法线与刀轴相交”的接触点（与蜗杆、螺纹盘形铣刀同一算法），得到刀齿廓形 (H, R)。
+  // 输出换成与法向截面相同的坐标 [u, Y]：u = H（沿刀轴的宽度），Y = Ac ∓ R（外齿刀盘在外侧，内齿刀盘在内孔里），
+  // 这样后面的刀齿顶处理、高度、表格都不用改。dTip：刀齿最外点到刀盘中心的半径（= 外径 / 2）
+  function discExact(src, geo, dTip) {
+    const isExt = geo.kind === 'ext', p = 1 / geo.k, sgn = Math.sign(p) || 1;
+    const sig = Math.atan(Math.abs(p) / geo.r), a = [Math.sin(sig) * sgn, 0, Math.cos(sig)];
+    const rr = src.map(q => hyp(q[0], q[1]));
+    let iD = 0; for (let i = 1; i < rr.length; i++) if (isExt ? rr[i] < rr[iD] - 1e-12 : rr[i] > rr[iD] + 1e-12) iD = i;
+    const Ac = isExt ? rr[iD] + dTip : rr[iD] - dTip;
+    const A = HX.endToAxial(src, p), res = HX.toolFromHelicoid(A, p, [0, Ac, 0], a, 'disc', PI / 2, iD);
+    const miss = res.filter(o => !o).length;
+    if (miss) throw new Error('斜齿盘形铣刀：有 ' + miss + ' 个齿形点找不到刀具接触点（螺旋角太大或刀盘外径不合适），请调整刀盘外径');
+    let sH = 1; for (const o of res) if (Math.abs(o.H) > 1e-9) { sH = Math.sign(o.H); break; }
+    const out = res.map(o => [sH * o.H, isExt ? Ac - o.R : Ac + o.R]);
+    out.ex = { Ac, a, p, sH, sig, isExt };
+    return out;
+  }
+  // 精确盘形铣刀的逆运算：刀齿廓形 [u, Y]（同 discExact 的输出坐标）→ 刀具沿螺旋线切出的端面齿槽 [x, y]
+  function discBack(pts, ex) {
+    const prof = pts.map(([u, Y]) => [ex.sH * u, ex.isExt ? ex.Ac - Y : Y - ex.Ac]);
+    const res = HX.helicoidFromTool(prof, [0, ex.Ac, 0], ex.a, ex.p, !ex.isExt);
+    return res.map(o => o ? HX.axialToEnd([[o[0], o[1]]], ex.p)[0] : null);
+  }
+  // 斜齿盘形铣刀实际切出的端面槽形（扫掠核对）：接触点只说明刀具在该点与齿面相切，刀盘其他部位（前后两侧）随螺旋运动时
+  // 仍可能切得更深（刀齿顶改直线、圆角改小时会出现）。对每个点沿材料一侧的法向检查刀盘扫过的范围，找出真正的边界。
+  // pts：端面半齿槽 [x, y]（从槽底中心起）；cut：makeDisc 的结果（含 exact）；返回 { pts, d（最大多切量）, r（所在半径） }
+  function discSweep(pts, cut, geo) {
+    const ex = cut.exact, isExt = ex.isExt, a = HX.unit(ex.a), Ac = ex.Ac, p = ex.p, m = Math.abs(geo.ra - geo.rf) / 2.25 || 1;
+    const pr = cut.prof.map(q => [q[1], isExt ? Ac - (cut.yTip + q[0]) : (cut.yTip - q[0]) - Ac]);   // [H, R]
+    const o = pr.slice().sort((u, v) => u[0] - v[0]), Hs = [], Rs = [];
+    for (const q of o) { if (Hs.length && q[0] - Hs[Hs.length - 1] < 1e-12) { Rs[Rs.length - 1] = Math.max(Rs[Rs.length - 1], q[1]); continue; } Hs.push(q[0]); Rs.push(q[1]); }
+    const Rc = h => { h = Math.abs(h); if (h > Hs[Hs.length - 1]) return -Infinity; if (h <= Hs[0]) return Rs[0];
+      let lo = 0, hi = Hs.length - 1; while (hi - lo > 1) { const md = (lo + hi) >> 1; if (Hs[md] <= h) lo = md; else hi = md; }
+      return Rs[lo] + (Rs[hi] - Rs[lo]) * (h - Hs[lo]) / (Hs[hi] - Hs[lo]); };
+    const thm = Math.min(PI / 2, 1.3 * (Math.max(...Rs) + Hs[Hs.length - 1]) / Math.abs(p)), N = 900;
+    const g = (q, th) => { const c = Math.cos(th), s = Math.sin(th), X = q[0] * c - q[1] * s, Y = q[0] * s + q[1] * c - Ac, Z = p * th;
+      const H = X * a[0] + Y * a[1] + Z * a[2], rho = Math.sqrt(Math.max(0, X * X + Y * Y + Z * Z - H * H)); return rho - Rc(H); };
+    const gmin = q => { let bi = 0, bv = Infinity; const st = 2 * thm / N;
+      for (let k = 0; k <= N; k++) { const v = g(q, -thm + st * k); if (v < bv) { bv = v; bi = k; } }
+      let lo = -thm + st * (bi - 1), hi = -thm + st * (bi + 1);
+      for (let it = 0; it < 40; it++) { const t1 = lo + (hi - lo) / 3, t2 = hi - (hi - lo) / 3; if (g(q, t1) < g(q, t2)) hi = t2; else lo = t1; }
+      return Math.min(bv, g(q, (lo + hi) / 2)); };
+    let dmax = 0, rAt = NaN; const out = pts.map(q => q.slice()), n = pts.length;
+    for (let i = 0; i < n; i++) {
+      const q = pts[i]; if (gmin(q) > -1e-6) continue;
+      const u = pts[Math.min(n - 1, i + 1)], v = pts[Math.max(0, i - 1)]; let tx = u[0] - v[0], ty = u[1] - v[1]; const L = hyp(tx, ty) || 1; tx /= L; ty /= L;
+      const nx = isExt ? ty : -ty, ny = isExt ? -tx : tx;          // 指向材料一侧
+      let t0 = 0, t1 = 0.002 * m; while (t1 < 2 * m && gmin([q[0] + nx * t1, q[1] + ny * t1]) < 0) { t0 = t1; t1 *= 2; }
+      for (let it = 0; it < 40; it++) { const tm = (t0 + t1) / 2; if (gmin([q[0] + nx * tm, q[1] + ny * tm]) < 0) t0 = tm; else t1 = tm; }
+      const t = (t0 + t1) / 2; out[i] = [q[0] + nx * t, q[1] + ny * t]; if (t > dmax) { dmax = t; rAt = hyp(q[0], q[1]); }
+    }
+    return { pts: out, d: dmax, r: rAt };
+  }
+  function makeDisc(geo, src, ext, tool, tip, opt) {
+    const D = opt && opt.D > 0 ? opt.D : 0;
+    if (!(geo.k && tool === 'disc' && D > 0)) return makeDiscCore(geo, src, ext, tool, tip, geo.k ? normalSection(src, geo.k, geo.r) : src.map(p => p.slice()));
+    // 斜齿：精确接触计算。刀齿顶做成直线时刀尖会比槽底抬高，按实际刀尖再算一次，使刀盘外径正好等于输入值
+    const hT = Math.abs(geo.ra - geo.rf) + Math.max(0, ext || 0);
+    if (!(D / 2 > hT + 1)) throw new Error('斜齿盘形铣刀外径太小：刀盘半径要大于齿高加刃部外延（' + hT.toFixed(2) + '）再留出刀体，否则刀盘中心会落进齿槽，无法计算');
+    let dTip = D / 2, c = null;
+    for (let it = 0; it < 4; it++) {
+      const pts = discExact(src, geo, dTip); c = makeDiscCore(geo, src, ext, tool, tip, pts); c.exact = pts.ex;
+      const rTip = geo.kind === 'ext' ? pts.ex.Ac - c.yTip : c.yTip - pts.ex.Ac, d = D / 2 - rTip;
+      if (Math.abs(d) < 1e-7) break; dTip += d;
+    }
+    return c;
+  }
+  function makeDiscCore(geo, src, ext, tool, tip, pts) {
     const isExt = geo.kind === 'ext';
-    const pts = geo.k ? normalSection(src, geo.k, geo.r) : src.map(p => p.slice());
     let yT = isExt ? Infinity : -Infinity;
     for (const p of pts) yT = isExt ? Math.min(yT, p[1]) : Math.max(yT, p[1]);
     let prof = pts.map(p => [isExt ? p[1] - yT : yT - p[1], Math.abs(p[0])]);
@@ -957,9 +1024,9 @@ var G = (function () {
     const arcDepth = flat ? 0 : arcDepth0;
     return { prof, hEdge: b[0], yTip: yTn, sag: 0, residual: 0, mono: true, contact: pts, hP, RP, isExt, disc: tool === 'disc', slot: tool === 'slot', formTool: true, arcDepth, arcHalfW: flat ? flat.w / 2 : arcHalfW0, bulge: arcDepth, flat, flatFail, slotPts };
   }
-  function makeCutter(geo, ext, mode, tool, tip) {
+  function makeCutter(geo, ext, mode, tool, tip, opt) {
     const src = geo.cutPts || geo.pts;
-    if (tool === 'disc') return makeDisc(geo, src, ext, 'disc', tip);      // 内齿也可用（需要内齿铣头，刀盘在内孔里）
+    if (tool === 'disc') return makeDisc(geo, src, ext, 'disc', tip, opt);      // 内齿也可用（需要内齿铣头，刀盘在内孔里）
     if (tool === 'slot') return makeDisc(geo, src, ext, 'slot', tip);
     const cc = cutterContact(src, geo.k);
     const pts = cc.pts;
@@ -1015,7 +1082,7 @@ var G = (function () {
     return { prof, hEdge: b[0], yTip, sag, residual, mono, contact: pts, hP, RP, isExt, flat, flatFail, slotPts };
   }
 
-  return { arcFit, build, modify, makeCutter, thicknessFromM, MFromThickness, WFromThickness, thicknessFromW, spanK, normalSection, fromNormal, cutterContact, resample, xAtY, rot, inv, hyp, D2R };
+  return { arcFit, build, modify, makeCutter, thicknessFromM, MFromThickness, WFromThickness, thicknessFromW, spanK, normalSection, fromNormal, discBack, discSweep, cutterContact, resample, xAtY, rot, inv, hyp, D2R };
 })();
 if (typeof module !== 'undefined') module.exports = G;
 
@@ -1090,7 +1157,7 @@ const HX = (() => {
   // ---------- 正算：零件螺旋面 → 回转刀具（盘形铣刀 / 指型铣刀）廓形 ----------
   // 接触条件：曲面法线与刀具轴线相交，(S − C)·(n × a) = 0。
   // C、a：刀具轴线上一点与方向。pick：'disc' 取 |H| 最小的根，'finger' 取 R 最小的根。
-  function toolFromHelicoid(A, p, C, a, pick, thR) {
+  function toolFromHelicoid(A, p, C, a, pick, thR, iStart) {
     a = unit(a); const T = tangents(A), all = [], N = 1600, R0 = thR || PI;
     for (let i = 0; i < A.length; i++) {
       const [r, z] = A[i], [dr, dz] = T[i];
@@ -1110,6 +1177,7 @@ const HX = (() => {
     // 一个廓形点可能有多个接触解（宽槽、大导程时常见）。从槽底（最深点，解唯一可靠）开始，向两侧按 θ 连续跟踪，
     // 避免跳到另一支假解（假解会让刀具在别处切进零件）
     let i0 = 0; for (let i = 1; i < A.length; i++) if (A[i][0] < A[i0][0] - 1e-9 || (Math.abs(A[i][0] - A[i0][0]) <= 1e-9 && Math.abs(i - (A.length - 1) / 2) < Math.abs(i0 - (A.length - 1) / 2))) i0 = i;
+    if (iStart >= 0 && iStart < A.length) i0 = iStart;          // 内齿等槽底在外侧时由调用者指定起点
     const out = new Array(A.length).fill(null), best = c => c.length ? c.reduce((x, y) => y.score < x.score ? y : x) : null;
     out[i0] = best(all[i0]);
     for (const dir of [1, -1]) {
@@ -1126,14 +1194,14 @@ const HX = (() => {
 
   // ---------- 反算：回转刀具 → 零件螺旋面（用于 ZK 蜗杆生成、刀具检验） ----------
   // 刀具廓形 prof = [[H, R], ...]（沿刀轴 H、半径 R），轴线 (C, a)。包络条件：刀具曲面法线 · 工件螺旋运动速度 = 0
-  function helicoidFromTool(prof, C, a, p) {
+  function helicoidFromTool(prof, C, a, p, far) {
     a = unit(a); const [e1, e2] = basis(a), T = tangents(prof), out = [];
     for (let j = 0; j < prof.length; j++) {
       const [H, R] = prof[j], [dH, dR] = T[j];
       const Q = ps => { const er = add(mul(e1, Math.cos(ps)), mul(e2, Math.sin(ps))); return { Q: add(add(C, mul(a, H)), mul(er, R)), er }; };
       const g = ps => { const { Q: q, er } = Q(ps); const Nn = sub(mul(a, dR), mul(er, dH)); return dot(Nn, [-q[1], q[0], p]); };
       let best = null;
-      for (const ps of roots(g, -PI + 0.1234, PI + 0.1234, 720)) { const q = Q(ps).Q, rr = hyp(q[0], q[1]); if (!best || rr < best.rr) best = { q, rr }; }
+      for (const ps of roots(g, -PI + 0.1234, PI + 0.1234, 720)) { const q = Q(ps).Q, rr = hyp(q[0], q[1]); if (!best || (far ? rr > best.rr : rr < best.rr)) best = { q, rr }; }   // far：内齿（材料在外）取离轴最远的接触点
       if (!best) { out.push(null); continue; }
       const q = best.q, th = Math.atan2(-q[0], q[1]); out.push([best.rr, q[2] - p * th, q]);
     }
@@ -1816,9 +1884,9 @@ if (typeof module !== 'undefined') module.exports = HX;
     'm.q': '铣齿后还要磨齿时，每侧齿面留给磨削的余量（法向）。只影响刀具，成品齿形不变。直接精铣成品填 0。',
     'm.pr': '挖根量：刀具在齿根过渡区比成品多铣的深度，磨齿时砂轮不碰齿根、不留台阶。只在留磨量大于 0 时使用。',
     'ext': '刀刃在齿顶圆以外再延长的长度，保证齿顶处切削完整并覆盖齿顶圆公差，一般 1–2 mm。',
-    't_kind': '指型铣刀沿齿向进给，适用于外齿、内齿、斜齿。盘形铣刀的刀齿廓形与齿槽端面形状相同，槽底可以铣成圆弧，适用于直齿（外齿、花键、矩形花键）；内齿要用内齿铣头，刀盘外径必须放得进内孔（程序会检查），斜齿时刀齿廓形只是法向截面近似值。成形插刀（单齿）在插床或数控插削上一个槽一个槽地插，外齿、内齿都可以，只适用于直齿。成形插刀按圆柄单齿插刀考虑：刀具轴线平行于工件轴线，沿轴向往复插削，每插完一个槽工件分度一次。',
+    't_kind': '指型铣刀沿齿向进给，适用于外齿、内齿、斜齿。盘形铣刀的刀齿廓形与齿槽端面形状相同，槽底可以铣成圆弧，适用于直齿（外齿、花键、矩形花键）；内齿要用内齿铣头，刀盘外径必须放得进内孔（程序会检查），斜齿时按刀盘扳转螺旋角精确计算，廓形与刀盘外径有关。成形插刀（单齿）在插床或数控插削上一个槽一个槽地插，外齿、内齿都可以，只适用于直齿。成形插刀按圆柄单齿插刀考虑：刀具轴线平行于工件轴线，沿轴向往复插削，每插完一个槽工件分度一次。',
     't_tip': '盘形铣刀、成形插刀的刀齿顶就是槽底的形状。圆弧：按齿根圆做成圆弧（外齿刀齿顶略凹，内齿略凸），槽底处处在根圆上。直线 · 两角到位：直线过两侧圆角的位置，齿面和圆角不变；外齿槽底中心比根圆略深，内齿槽底中心比根圆略浅。直线 · 中心到根圆：槽底中心正好在根圆上，圆角按原半径重新与直线、齿面相切；外齿两角略浅、渐开线起点略升高，内齿两角略深。结果里给出槽底中心和两角的直径，供与图纸小径/大径公差对照。指型铣刀端面本身是平的，对应的是“槽底处理”的两个选项。',
-    't_D': '盘形铣刀外径。直齿时不影响刀齿廓形，用于 3D 显示、刃数建议，内齿时还用来检查刀盘能否放进内孔。',
+    't_D': '盘形铣刀外径。直齿时不影响刀齿廓形，用于 3D 显示、刃数建议，内齿时还用来检查刀盘能否放进内孔。斜齿时刀齿廓形随外径变化（外径越大，与法向截面差得越多），必须按实际刀盘外径输入；刀具重磨后外径变小，廓形会有少量变化。',
     't_as': '侧刃另外磨出的侧后角：只在刃口后面向内收窄，刃口本身形状不变，所以不影响刀具廓形，一般 1°–3°。整体倾斜得到的侧刃后角只有 atan(tanα·sinψ)，侧壁越陡越小，矩形花键的平行侧壁几乎为 0，必须另磨侧后角。',
     't_Ds': '圆柄插刀的刀柄直径，只影响 3D 显示和刀杆干涉检查，不影响刀具廓形。0 = 自动：约为刀齿宽度的 3 倍取标准直径，内孔加工时不超过内孔的 0.6 倍。',
     't_Lh': '刀头（刃部）沿插削方向的长度，只影响 3D 显示。0 = 自动，约等于齿高。',
@@ -2224,18 +2292,26 @@ if (typeof module !== 'undefined') module.exports = HX;
       geo.pts = mod.pts; geo.cutPts = mod.cutPts; geo.Rend = mod.Rend;
       { const o = $('mode').options, isI = geo.kind === 'int';   // 槽底处理：内齿、外齿各用自己的说法（值的含义：corner = 不留残留，center = 有残留）
         o[0].text = isI ? '中心到根圆（两角略深）' : '角部到位（中心略深）'; o[1].text = isI ? '两角到位（中心略浅）' : '中心到根圆（角部残留）'; }
-      cut = G.makeCutter(geo, parseFloat($('ext').value) || 0, $('mode').value, $('t_kind').value, $('t_tip').value);
+      cut = G.makeCutter(geo, parseFloat($('ext').value) || 0, $('mode').value, $('t_kind').value, $('t_tip').value, { D: parseFloat($('t_D').value) || 0 });
       // 刀齿顶做成直线：零件齿槽按刀具实际加工出的形状更新（端面图、3D、渐开线起始圆都随之改变）
-      // 斜齿的成形插刀 / 盘形铣刀：刀齿廓形在法向截面内，换算回端面再更新齿槽
+      // 斜齿的成形插刀：刀齿廓形在法向截面内，换算回端面再更新齿槽；斜齿盘形铣刀按精确接触关系反算刀盘切出的槽形
       if (cut.flat && cut.slotPts && (!geo.k || cut.formTool)) {
-        const sp = geo.k ? G.fromNormal(cut.slotPts, geo.k, geo.r) : cut.slotPts;
-        if (geo.cutPts && geo.cutPts !== geo.pts) geo.cutPts = sp; else { geo.pts = sp; if (!geo.k) geo.Rinv = cut.flat.Rinv; }
+        let sp = geo.k ? (cut.exact ? G.discBack(cut.slotPts, cut.exact) : G.fromNormal(cut.slotPts, geo.k, geo.r)) : cut.slotPts;
+        if (sp.some(q => !q)) sp = sp.filter(Boolean);
+        if (cut.exact) { const sw = G.discSweep(sp, cut, geo); sp = sw.pts; }      // 刀齿顶改直线后刀盘其他部位可能切得更深，按扫掠结果
+        if (geo.cutPts && geo.cutPts !== geo.pts) geo.cutPts = sp; else { geo.pts = geo.cutPts = sp; if (!geo.k) geo.Rinv = cut.flat.Rinv; }
+      } else if (cut.exact) {
+        // 刀齿顶按齿根圆弧（精确共轭）：检查刀盘其他部位会不会多切（整体干涉）
+        const src = geo.cutPts || geo.pts, sw = G.discSweep(src, cut, geo);
+        if (sw.d > 5e-4) { cut.gouge = sw; if (geo.cutPts && geo.cutPts !== geo.pts) geo.cutPts = sw.pts; else geo.pts = geo.cutPts = sw.pts; }
       }
     } catch (err) { warnEl.textContent = friendlyErr(err); clearOut(); return; }
     geo.M = M;
     const W = geo.W.concat(mod.W);
     if ($('t_kind').value === 'disc') {
-      if (geo.k) W.push('斜齿用盘形铣刀需要按刀轴倾斜另行计算，当前刀齿廓形只是法向截面近似值，不能直接用于制刀');
+      if (geo.k && cut.exact) W.push('斜齿：刀齿廓形按刀盘扳转螺旋角 ' + (90 - cut.exact.sig / D2R).toFixed(3) + '°、刀盘外径 ' + f2(parseFloat($('t_D').value)) + ' 精确计算（刀盘中心到齿轮轴线 ' + f3(Math.abs(cut.exact.Ac)) + '）。廓形与刀盘外径有关，只适用于这个外径；刀具重磨后外径变小，廓形会有少量变化');
+      else if (geo.k) W.push('斜齿盘形铣刀需要输入刀盘外径才能精确计算');
+      if (cut.gouge) W.push('刀盘随螺旋运动时其他部位会多切：在半径 ' + f3(cut.gouge.r) + ' 处最多多切 ' + (cut.gouge.d * 1000).toFixed(1) + ' µm（端面图按实际切出的槽形显示）。多在槽底圆角很小处出现，可调整刀盘外径、刀齿顶改直线，或改用指型铣刀');
       const Dd = parseFloat($('t_D').value) || 0, Hd = cut.prof[cut.prof.length - 1][0];
       if (!(Dd / 2 >= Hd + 5)) W.push('盘形铣刀外径 ' + f2(Dd) + ' 太小：刀齿高（含外延）' + f2(Hd) + '，外径至少要大于 ' + f2(2 * (Hd + 5)) + '，还要放得下刀体和内孔；3D 图暂按最小外径显示');
       if (geo.kind === 'int') {
@@ -2252,7 +2328,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     }
     if ($('t_kind').value !== 'slot') stool = null;
     if (cut.flatFail) W.push('刀齿顶做成直线时圆角放不下（齿槽太窄或圆角太大），已按圆弧刀齿顶计算');
-    if (cut.flat && geo.k) W.push(cut.formTool ? '斜齿时刀齿顶直线在法向截面内，端面图和 3D 按换算到端面的槽形显示' : '斜齿时端面图中橙色虚线为刀具实际铣出的端面槽形，3D 也按它显示');
+    if (cut.flat && geo.k) W.push(cut.exact ? '斜齿时刀齿顶直线在刀盘轴向截面内，端面图和 3D 按刀盘沿螺旋线实际切出的槽形显示' : cut.formTool ? '斜齿时刀齿顶直线在法向截面内，端面图和 3D 按换算到端面的槽形显示' : '斜齿时端面图中橙色虚线为刀具实际铣出的端面槽形，3D 也按它显示');
     accWarn = []; accRes = calcAcc();
     if (qaInfo && qaInfo.err) W.push(qaInfo.err);
     if (!cut.mono) W.push('刀具廓形高度方向不单调，已做单调化处理，请复核');
@@ -2503,7 +2579,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     // 刀具（轴向截面，投到端面图中）
     const cp = cut.prof, sgn = isExt ? 1 : -1;
     let cr = cp.map(q => [q[1], cut.yTip + sgn * q[0]]);
-    if (geo.k && cut.formTool) cr = G.fromNormal(cr, geo.k, geo.r);   // 斜齿：法向截面刀齿换算到端面再画
+    if (geo.k && cut.formTool) cr = cut.exact ? G.discBack(cr, cut.exact).filter(Boolean) : G.fromNormal(cr, geo.k, geo.r);   // 斜齿：刀齿换算到端面（刀具沿螺旋线切出的槽形）再画
     const cl = cr.slice().reverse().map(q => [-q[0], q[1]]);
     s += `<path d="${pathD(cl.concat(cr), true)}" fill="var(--tin-soft)" stroke="var(--tin)" stroke-width="1.6" ${sw}/>`;
     // 斜齿指型铣刀：刀具轴截面不等于端面槽形，另画刀具实际扫出的端面槽形（与 3D 一致）
