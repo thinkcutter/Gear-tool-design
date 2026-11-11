@@ -230,8 +230,10 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
       <div class="f" id="f_step"><label for="step">点距 mm</label><input id="step" type="number" step="0.1" min="0.02" value="0.5"></div>
       <div class="f" id="f_ftol" hidden><label for="ftol">拟合误差 mm</label><input id="ftol" type="number" step="0.001" min="0.0001" value="0.001"></div>
       <div class="f" id="f_fg1" hidden><label for="fg1">段间相切</label><select id="fg1"><option value="1">相切连续</option><option value="0">允许微小折角</option></select></div>
+      <button class="btn" id="dlDxf" title="下载 .dxf 文件，可直接用 AutoCAD、CAXA、中望、SolidWorks 等打开">下载 DXF 文件</button>
+      <button class="btn" id="dlCsv" title="下载 .csv 文件，可用 Excel 打开">下载 CSV</button>
       <button class="btn" id="cpCsv">复制 CSV</button>
-      <button class="btn" id="cpDxf">复制 DXF</button>
+      <button class="btn" id="cpDxf" title="复制 DXF 文件的文本内容，需粘贴到记事本另存为 .dxf 才能用 CAD 打开">复制 DXF 文本</button>
       <span class="cap" id="cpMsg"></span>
     </div>
     <textarea id="outTxt" readonly hidden></textarea>
@@ -281,6 +283,7 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
     <p><b>外螺纹（含骨钉）</b>：按轴向截面牙型生成螺旋面，再用与蜗杆相同的方法算成形车刀刃口（也可选盘形铣刀、指型铣刀）。普通螺纹按 ISO 68-1 基本牙型，外螺纹牙底取整圆弧 R = 0.1443P（d3 = d − 1.2269P）；梯形螺纹按 GB/T 5796，h3 = 0.5P + ac，牙顶宽 0.366P，牙底圆角取 0.5ac；锯齿形按 GB/T 13576 / DIN 513，承载面 3°、另一面 30°，h3 = 0.86777P，牙顶宽 0.26384P，牙底整圆弧 R = 0.12427P；骨钉 HA 1.5～5（35° / 3°）、HB 4、6.5（25° / 5°）按 ISO 5835 / ASTM F543 的大径 d1、芯径 d5、螺距 P、前侧圆角 r4（35° 或 25° 面与牙底之间）、后侧圆角 r5（3° 或 5° 面与牙底之间）和牙顶宽 e；标准中 e、r4、r5、α、β 是近似值（≈），HA 1.5、HA 2 按近似值构造时圆角放不下，程序按比例缩小并提示。牙侧角都从垂直于轴线的径向线量起，图中右侧为螺纹尖端方向。骨钉直径小、导程角大（小径处常到 10°～16°），车刀背离进给一侧的侧后角往往不够，需要按导程角倾斜安装或选“法向”前刀面。标准牙型的数值以标准原文和图纸为准，不一致时选“自定义牙型”逐项填写（切换时会先填入上一个牙型的数值）。牙顶圆角大于 0 时按全牙型车刀计算，刀具覆盖一个螺距并车出牙顶。</p>
     <p><b>蜗杆成形车刀</b>：刃口 = 前刀面与螺旋面的交线。轴向安装（ZA 刃口为直线）、法向安装（ZN，前刀面在分度圆处的齿槽法平面内）、偏置安装（ZI，前刀面偏离轴线 rb，左右齿面各用一把车刀，刃口均为直线）。有前角时前刀面绕刃口方向转 γ；“后刀面法向截面”给出磨刀用的廓形（深度 × cos(α+γ)/cosγ）。侧后角：进给一侧要加上齿根导程角，另一侧要减去齿顶导程角。</p>
     <p><b>回转体成形车刀</b>：输入零件轮廓（轴向位置 z，直径或半径），刀尖对准零件最小半径。C = √(r² − (r₁ sinγ)²) − r₁ cosγ 为前刀面内的廓形深度；<b>棱体刀</b>廓形深度 P = C·cos(α + γ)（垂直于后刀面量）；<b>圆体刀</b>各点半径 Rx = √(R0² + C² − 2R0·C·cos(α + γ))，刀具中心高于工件中心 R0·sinα。</p>
+    <p><b>DXF 文件</b>：点“下载 DXF 文件”直接得到 .dxf 轮廓文件（DXF R12 格式，单位 mm），AutoCAD、中望、CAXA、SolidWorks 等都能直接打开。图层：CUTTER / TOOL 为刀具廓形（等点距时是多段线，拟合时是圆弧和直线），CENTER 为刀具中心线，SPACE_TRANSVERSE / SPACE_NORMAL 为零件端面 / 法向齿槽，PART_AXIAL 为零件轴向齿形，SPACE_PREGRIND 为留磨量后的开粗齿槽。“复制 DXF 文本”复制的是同一文件的文字内容，要粘贴到记事本另存为 .dxf 才能用 CAD 打开，一般用不到。</p>
     <p><b>刀具坐标输出</b>：① <b>等点距坐标点</b>：沿廓形每隔“点距”取一点，相邻点连成直线。曲线段的误差很小，但廓形上的尖角（如齿面与倒角的交点）可能落在两点之间被削掉，最大约为点距的 1/10，所以要求 1 µm 时点距要取到 0.01 左右。② <b>圆弧 + 直线拟合</b>：按“拟合误差”自动分段，用最少的圆弧和直线逼近程序算出的理论廓形；刀尖平底、倒角等直线段保持为直线，尖角和曲率突变点（直线接圆角、圆角接渐开线）作为段的端点保留。选“相切连续”时用双圆弧逐段拟合，每段终点的切向与廓形一致，连接处没有折角（廓形本身的尖角除外）；选“允许微小折角”时每段用过三点的圆弧，段数更少，连接处折角一般只有百分之几度。表中给出每段的起点、终点、圆心、半径和实测偏差，DXF 中为真正的 ARC / LINE 图元，可直接用于磨床或线切割编程。</p>
     <p><b>直齿</b>：刀轴沿齿槽对称线，刀具轴向廓形 = 端面齿槽廓形。<b>斜齿</b>：刀轴垂直并相交于齿轮轴线，沿螺旋线进给；对每个齿面点求“齿面法线与刀轴相交”的接触点，得到精确的刀具回转廓形。图中虚线为分度圆处的法向截面，供对比。</p>
     <p><b>齿形修正</b>：修缘量从修缘高度起点按直线或抛物线增加，到齿顶达到 Ca；倒角按“高度 × 宽度”给出：高度从齿顶圆沿径向往下量，宽度沿齿顶圆从原齿顶角往齿中间量，两腿相等即 C 型倒角；倒圆为与齿面、齿顶圆同时相切的圆弧。<b>留磨量</b>沿齿面法向把刀具每侧收窄 q，只影响刀具，图中黑线仍是成品齿形；<b>挖根量</b>让刀具在齿根过渡区比成品多铣 pr，磨齿时砂轮不碰齿根、不留台阶，过渡区内两者平滑衔接。斜齿时以上修正都按端面截面计算。</p>
@@ -2763,7 +2766,45 @@ if (typeof module !== 'undefined') module.exports = HX;
     if (geo.k) poly(spaceOutline(G.normalSection(halfRes(200), geo.k, geo.r)), 'SPACE_NORMAL', false);
     if (geo.cutPts && geo.cutPts !== geo.pts) poly(spaceOutline(G.resample(geo.cutPts, polyLen(geo.cutPts) / 200)), 'SPACE_PREGRIND', false);
     out.push('0', 'ENDSEC', '0', 'EOF');
-    return out.join('\n');
+    return dxfDoc(out);
+  }
+  // 补全成完整的 DXF R12（AC1009）文件：HEADER（版本、图形范围）+ TABLES（线型、图层）+ ENTITIES。
+  // 只有 ENTITIES 段的简化文件有些 CAD / CAM 软件打不开或图层缺失，这里统一补全。单位 mm。
+  function dxfDoc(ent) {
+    if (ent[0] === '0' && ent[1] === 'SECTION') ent = ent.slice(4);           // 去掉调用方写的 SECTION/ENTITIES 头
+    const ie = ent.lastIndexOf('ENDSEC'); if (ie > 0) ent = ent.slice(0, ie - 1);  // 去掉 ENDSEC/EOF，下面统一补
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity; const layers = [];
+    for (let i = 0; i + 1 < ent.length; i += 2) {
+      const c = ent[i], v = ent[i + 1];
+      if (c === '8' && !layers.includes(v)) layers.push(v);
+      const n = parseFloat(v); if (!isFinite(n)) continue;
+      if (c === '10' || c === '11') { x0 = Math.min(x0, n); x1 = Math.max(x1, n); }
+      if (c === '20' || c === '21') { y0 = Math.min(y0, n); y1 = Math.max(y1, n); }
+    }
+    if (!isFinite(x0)) { x0 = y0 = 0; x1 = y1 = 1; }
+    const col = { CUTTER: 1, TOOL: 1, CENTER: 8, SPACE_TRANSVERSE: 7, SPACE_NORMAL: 3, SPACE_PREGRIND: 5, PART_AXIAL: 7 }, f = v => v.toFixed(5);
+    const h = ['0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '9', '$INSBASE', '10', '0.0', '20', '0.0', '30', '0.0',
+      '9', '$EXTMIN', '10', f(x0), '20', f(y0), '30', '0.0', '9', '$EXTMAX', '10', f(x1), '20', f(y1), '30', '0.0',
+      '9', '$LIMMIN', '10', f(x0), '20', f(y0), '9', '$LIMMAX', '10', f(x1), '20', f(y1), '0', 'ENDSEC',
+      '0', 'SECTION', '2', 'TABLES',
+      '0', 'TABLE', '2', 'LTYPE', '70', '1', '0', 'LTYPE', '2', 'CONTINUOUS', '70', '0', '3', 'Solid line', '72', '65', '73', '0', '40', '0.0', '0', 'ENDTAB',
+      '0', 'TABLE', '2', 'LAYER', '70', String(layers.length + 1),
+      '0', 'LAYER', '2', '0', '70', '0', '62', '7', '6', 'CONTINUOUS'];
+    for (const L of layers) if (L !== '0') h.push('0', 'LAYER', '2', L, '70', '0', '62', String(col[L] || 7), '6', 'CONTINUOUS');
+    h.push('0', 'ENDTAB', '0', 'ENDSEC', '0', 'SECTION', '2', 'ENTITIES');
+    return h.concat(ent, ['0', 'ENDSEC', '0', 'EOF']).join('\n');
+  }
+  // 下载文件（DXF 按 Windows 习惯用 CRLF 换行）
+  function download(text, ext, mime) {
+    const t = (document.querySelector('.seg button[data-t][aria-pressed="true"]') || {}).dataset || {};
+    const nm = { gear: 'gear', internal: 'internal', spline: 'spline', rect: 'rect-spline', worm: 'worm', wheel: 'wormwheel', thread: 'thread', rotor: 'rotor', form: 'form' }[t.t] || 'cutter';
+    const tool = hxOn ? '' : '_' + ($('t_kind').value || ''), name = 'cutter_' + nm + tool + '.' + ext;
+    try {
+      const blob = new Blob([ext === 'dxf' ? text.replace(/\r?\n/g, '\r\n') : '\ufeff' + text], { type: mime }), a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+      $('cpMsg').textContent = '已下载 ' + name + (ext === 'dxf' ? '（DXF R12，单位 mm）' : '');
+    } catch (e) { copy(text, ext.toUpperCase()); }
   }
   function copy(text, label) {
     const ta = $('outTxt'); ta.value = text;
@@ -2771,7 +2812,9 @@ if (typeof module !== 'undefined') module.exports = HX;
     try { navigator.clipboard.writeText(text).then(() => done(true), () => done(false)); } catch (e) { done(false); }
   }
   $('cpCsv').addEventListener('click', () => copy(csvText(), 'CSV'));
-  $('cpDxf').addEventListener('click', () => copy(dxfText(), 'DXF'));
+  $('cpDxf').addEventListener('click', () => copy(dxfText(), 'DXF 文本'));
+  $('dlDxf').addEventListener('click', () => download(dxfText(), 'dxf', 'application/dxf'));
+  $('dlCsv').addEventListener('click', () => download(csvText(), 'csv', 'text/csv;charset=utf-8'));
   $('step').addEventListener('input', () => { if (cut || hxOn) fillTable(); });
   $('omode').addEventListener('change', () => { syncOut(); if (cut || hxOn) fillTable(); });
   for (const id of ['ftol', 'fg1']) $(id).addEventListener(id === 'fg1' ? 'change' : 'input', () => { if (cut || hxOn) fillTable(); });
@@ -3949,7 +3992,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       for (const q of hxR.Aeff) out.push('0', 'VERTEX', '8', 'PART_AXIAL', '10', q[1].toFixed(5), '20', q[0].toFixed(5), '30', '0');
       out.push('0', 'SEQEND', '8', 'PART_AXIAL');
     }
-    out.push('0', 'ENDSEC', '0', 'EOF'); return out.join('\n');
+    out.push('0', 'ENDSEC', '0', 'EOF'); return dxfDoc(out);
   }
 
   // ---------- 3D ----------
