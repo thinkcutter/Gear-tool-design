@@ -23,7 +23,7 @@
 :root{
   --bg:#0F1012; --panel:#18191C; --ink:#F2F2F0; --muted:#9EA3A9; --line:#2F3237;
   --steel:#5D6268; --metal:#2B2E33; --accent:#FF6B1A; --tin:#FF7A2E; --tin-soft:rgba(255,122,46,.20);
-  --warn:#FF7B72; --warn-bg:#2B1517; --ok:#7FD19B; --grid:#24262A; --v3d:#0D0E10; --glow:rgba(255,107,26,.55);
+  --warn:#FF7B72; --warn-bg:#2B1517; --nsec:#4FC3F7; --ok:#7FD19B; --grid:#24262A; --v3d:#0D0E10; --glow:rgba(255,107,26,.55);
   --g3d:#7D838B; --hl3d:#C4561C; --cap3d:#8E949C; --cut3d:#FF7A1E; --shank3d:#4D5157;
   --f-ui:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC",system-ui,sans-serif;
   --f-num:"TC Pixel",ui-monospace,"SF Mono",Consolas,monospace;
@@ -2407,7 +2407,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     }
     if ($('t_kind').value !== 'slot') stool = null;
     if (cut.flatFail) W.push('刀齿顶做成直线时圆角放不下（齿槽太窄或圆角太大），已按圆弧刀齿顶计算');
-    if (cut.flat && geo.k) W.push(cut.exact ? '斜齿时刀齿顶直线在刀盘轴向截面内，端面图和 3D 按刀盘沿螺旋线实际切出的槽形显示' : cut.formTool ? '斜齿时刀齿顶直线在法向截面内，端面图和 3D 按换算到端面的槽形显示' : '斜齿时端面图中橙色虚线为刀具实际铣出的端面槽形，3D 也按它显示');
+    if (cut.flat && geo.k) W.push(cut.exact ? '斜齿时刀齿顶直线在刀盘轴向截面内，端面图和 3D 按刀盘沿螺旋线实际切出的槽形显示' : cut.formTool ? '斜齿时刀齿顶直线在法向截面内，端面图和 3D 按换算到端面的槽形显示' : '斜齿时端面图中橙色点线为刀具实际铣出的端面槽形，3D 也按它显示');
     accWarn = []; accRes = calcAcc();
     if (qaInfo && qaInfo.err) W.push(qaInfo.err);
     if (!cut.mono) W.push('刀具廓形高度方向不单调，已做单调化处理，请复核');
@@ -2663,18 +2663,19 @@ if (typeof module !== 'undefined') module.exports = HX;
     s += `<path d="${pathD(cl.concat(cr), true)}" fill="var(--tin-soft)" stroke="var(--tin)" stroke-width="1.6" ${sw}/>`;
     // 斜齿指型铣刀：刀具轴截面不等于端面槽形，另画刀具实际扫出的端面槽形（与 3D 一致）
     let mhOn = false;
-    if (geo.k && !cut.formTool) { const mh = machinedHalf(geo.k); if (mh) { mhOn = true; const ml = mh.slice().reverse().map(q => [-q[0], q[1]]); s += `<path d="${pathD(ml.concat(mh.slice(1)))}" fill="none" stroke="var(--accent)" stroke-width="1.3" stroke-dasharray="2 2" ${sw}/>`; } }
+    if (geo.k && !cut.formTool) { const mh = machinedHalf(geo.k); if (mh) { mhOn = true; const ml = mh.slice().reverse().map(q => [-q[0], q[1]]); s += `<path d="${pathD(ml.concat(mh.slice(1)))}" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-dasharray="1.5 2.5" stroke-linecap="round" ${sw}/>`; } }
     // 法向截面
     if (geo.k) {
       const src = geo.cutPts || geo.pts, hc = G.resample(src, Math.max(1e-3, polyLen(src) / 140));
       const ns = G.normalSection(hc, geo.k, geo.r), nl = ns.slice().reverse().map(q => [-q[0], q[1]]);
-      s += `<path d="${pathD(nl.concat(ns))}" fill="none" stroke="var(--warn)" stroke-width="1.1" stroke-dasharray="4 3" ${sw}/>`;
+      s += `<path d="${pathD(nl.concat(ns))}" fill="none" stroke="var(--nsec)" stroke-width="1.1" stroke-dasharray="7 2.5 1.5 2.5" ${sw}/>`;   // 法向截面：蓝色点划线，与橙色的“铣出槽形”区分
     }
     // 中心线
     s += `<line x1="0" y1="${vb[1]}" x2="0" y2="${vb[1] + vb[3]}" stroke="var(--muted)" stroke-width="0.8" stroke-dasharray="10 3 2 3" ${sw}/>`;
     s += '</g>';
     svg.innerHTML = s;
-    $('lgT').innerHTML = `<span><i style="border-color:var(--ink)"></i>${geo.k ? '端面齿廓' : '齿廓'}</span><span><i style="border-color:var(--tin)"></i>${cut.slot ? '成形插刀端面' : cut.disc ? '盘形铣刀刀齿' : '指型铣刀轴截面'}${geo.k && cut.formTool ? '（换算到端面）' : ''}${geo.M && (geo.M.q || geo.M.pr) ? '（含留磨量）' : ''}</span>` + (mhOn ? `<span><i style="border-color:var(--accent);border-top-style:dashed"></i>铣出的端面槽形</span>` : '') + (geo.k ? `<span><i style="border-color:var(--warn);border-top-style:dashed"></i>法向截面</span>` : '');
+    $('lgT').innerHTML = `<span><i style="border-color:var(--ink)"></i>${geo.k ? '端面齿廓' : '齿廓'}</span><span><i style="border-color:var(--tin)"></i>${cut.slot ? '成形插刀端面' : cut.disc ? '盘形铣刀刀齿' : '指型铣刀轴截面'}${geo.k && cut.formTool ? '（换算到端面）' : ''}${geo.M && (geo.M.q || geo.M.pr) ? '（含留磨量）' : ''}</span>` + (mhOn ? `<span>${lgLine('var(--accent)', '1.5 2.5', true)}铣出的端面槽形（橙色点线）</span>` : '') + (geo.k ? `<span>${lgLine('var(--nsec)', '7 2.5 1.5 2.5')}法向截面（蓝色点划线）</span>` : '')
+      + (mhOn ? `<span style="flex-basis:100%">橙色点线压在白色齿廓上（看起来白橙相间）表示铣出的槽形与设计齿形重合；两线分开的地方才有偏差。</span>` : '');
     $('sc1').textContent = geo.kind === 'int' ? '内齿（刀尖朝外）' : '';
     svg.previousElementSibling.firstChild.textContent = '端面齿槽与刀具 ';   // 从蜗杆 / 转子页切回来时恢复标题
   }
@@ -3022,6 +3023,8 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     return { p: buf(pos, gl.ARRAY_BUFFER), n: buf(nor, gl.ARRAY_BUFFER), c: buf(col, gl.ARRAY_BUFFER), i: buf(idx, gl.ELEMENT_ARRAY_BUFFER), count: idx.length };
   }
   // 输入有误、算不出结果时，清掉上一次的图、表和 3D，避免显示的是别的零件或别的刀具
+  // 图例里的线型小样（与图中线型一致）
+  const lgLine = (c, dash, round) => `<svg width="24" height="6" style="vertical-align:middle;margin-right:4px"><line x1="1" y1="3" x2="23" y2="3" stroke="${c}" stroke-width="2" stroke-dasharray="${dash}"${round ? ' stroke-linecap="round"' : ''}/></svg>`;
   function clearOut() { for (const id of ['svgT', 'svgC', 'lgT', 'res', 'tb']) if ($(id)) $(id).innerHTML = ''; $('hC').firstChild.textContent = '刀具廓形 '; $('svgT').previousElementSibling.firstChild.textContent = '零件截面 '; $('sc1').textContent = ''; if (gl) { freeMeshes(); requestDraw(); } }
   function freeMeshes() { for (const m of meshes) for (const b of ['p', 'n', 'c', 'i']) gl.deleteBuffer(m[b]); meshes = []; }
   const col3 = (n, d) => hexRGB(css(n) || d);
