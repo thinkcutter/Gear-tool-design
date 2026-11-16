@@ -46,6 +46,7 @@ header .sub{color:var(--muted);font-size:12.5px}
 .seg button:last-child,.seg button:nth-child(4){border-right:0}
 .seg button:nth-child(n+5){border-top:1px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--bg);font-weight:600}
+.seg a.lnk{font-size:13px;padding:8px 2px;text-align:center;color:var(--accent);text-decoration:none;border-top:1px solid var(--line);border-right:1px solid var(--line)}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;margin-top:10px}
 .f{display:flex;flex-direction:column;gap:2px;min-width:0}
 .f label{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -132,6 +133,7 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
       <button data-t="thread" aria-pressed="false">外螺纹</button>
       <button data-t="rotor" aria-pressed="false">螺杆转子</button>
       <button data-t="form" aria-pressed="false">回转体车刀</button>
+      <a class="lnk" href="face-gear.html" title="端面齿 / 面齿轮：盘铣刀分层铣刀路与 G 代码">端面齿 ›</a>
     </div>
     <div class="grid" id="hxForm" hidden></div>
     <div class="grid" id="hxTool" hidden></div>
