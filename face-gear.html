@@ -45,6 +45,7 @@ header .sub{color:var(--muted);font-size:12.5px}
 .seg button:last-child,.seg button:nth-child(4){border-right:0}
 .seg button:nth-child(n+5){border-top:1px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--bg);font-weight:600}
+.seg a.lnk{font-size:13px;padding:8px 2px;text-align:center;color:var(--accent);text-decoration:none;border-top:1px solid var(--line);border-right:1px solid var(--line)}
 .grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 10px;margin-top:10px}
 .f{display:flex;flex-direction:column;gap:2px;min-width:0}
 .f label{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -125,6 +126,9 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
 .prog i{display:block;height:100%;width:0;background:var(--accent)}
 pre.code{margin:8px 0 0;max-height:300px;overflow:auto;background:var(--bg);border:1px solid var(--grid);border-radius:4px;padding:8px 10px;font-family:var(--f-num);font-size:12px;line-height:1.45;color:var(--ink)}
 svg text{font-family:var(--f-ui)}
+@media(max-width:640px){.res{grid-template-columns:minmax(0,1fr)}.res div{flex-wrap:wrap;column-gap:8px}.res div span:first-child{white-space:normal}.res div span:last-child{white-space:normal;text-align:right;margin-left:auto;overflow-wrap:anywhere;min-width:0}.v3d .tag{display:none}.v3d .info{left:10px;text-align:left}}
+.v3d .info{position:absolute;top:8px;right:10px;font-size:11.5px;color:var(--ink);text-align:right;font-family:var(--f-ui);text-shadow:0 1px 2px #000}
+input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0 0}
 </style>
 <div class="app">
 <header>
@@ -165,6 +169,18 @@ svg text{font-family:var(--f-ui)}
     <h2>计算结果</h2>
     <div class="res" id="res"></div>
     <div class="warn" id="warn"></div>
+  </section>
+  <section class="card">
+    <h2>加工过程 3D</h2>
+    <div class="v3d"><canvas id="cv"></canvas><span class="tag" id="tag3d">拖动旋转 · 双指缩放</span><span class="info" id="info3d"></span>
+      <div class="bar"><button class="btn acc" id="play">暂停</button><button class="btn on" data-v="near">刀具近景</button><button class="btn" data-v="all">全景</button><button class="btn" id="spd">速度 ×1</button></div></div>
+    <input type="range" id="scrub" min="0" max="1000" value="0" aria-label="加工进度">
+    <div class="cap">按程序的实际运动显示：零件绕 A 轴转（分度 + 随动摆角），盘铣刀沿 X/Y/Z 走；橙色细线是当前这一刀的刀尖接触轨迹。拖动进度条可以逐刀查看。</div>
+  </section>
+  <section class="card">
+    <h2>盘铣刀刃口轮廓</h2>
+    <svg class="dw" id="rimSvg" viewBox="0 0 520 330"></svg>
+    <div class="cap">刃口截面（过刀轴的平面），刀尖朝下；“下载刀具刃口 DXF”里 CUTTER 层就是这条轮廓线。刃部以里的刀体在齿顶面以外，可按刚性加厚。</div>
   </section>
   <section class="card">
     <h2>齿槽截面与刀位</h2>
@@ -431,7 +447,7 @@ const FG = (() => {
     for (const gr of grooves) { const r = probe(gr); for (let i = 0; i < r.length; i++) if (isFinite(r[i])) worst = Math.max(worst, Math.abs(r[i] - r0[i])); }
     return worst;
   }
-  // ---------------- 参数化齿形（按实际模型归纳）----------------
+  // ---------------- 参数化齿形（按 1397 模型归纳）----------------
   // 每个半径 L 的圆柱截面里，齿面是直线，齿形角 α 满足 L·cosα = C；
   // 齿在深度 dRef（自齿顶面）处的弧长半齿厚 sRef 沿半径不变；整体再按法向加留量 stock（齿变厚）；槽底与齿面之间倒圆 rf。
   function fromParams(p) {
@@ -577,7 +593,7 @@ const FG = (() => {
     const r = norm([mn[0] - k * a0[0], mn[1] - k * a0[1], mn[2] - k * a0[2]]);
     const w = -side * (tool.t / 2 - rc);   // 左面用刀的左角：刀心在 +Y 一侧
     const C = [Cr[0] - Rc * r[0] + w * a0[0], Cr[1] - Rc * r[1] + w * a0[1], Cr[2] - Rc * r[2] + w * a0[2]];
-    return { C, a: a0, psi: Math.atan2(-a0[0], a0[1]) };
+    return { C, a: a0, psi: Math.atan2(-a0[0], a0[1]), S };
   }
   // 刀体到点的有符号距离（负 = 点在刀体内 = 过切）
   function sdDisc(P, C, a, tool) {
@@ -614,8 +630,8 @@ const FG = (() => {
           const L = dir > 0 ? La + (Lb - La) * k / nstep : Lb - (Lb - La) * k / nstep;
           let p = pose(M, T, side, L, d, cut.swivel);
           // 刀盘最低点（刀轴与深度方向垂直，最低点深度 = 刀心深度 + 刀半径）不能低于槽底：改用“刀尖落到槽底、刀角贴齿面”的刀位
-          if (p.C[2] + T.D / 2 > h) { const b = bottomY(M, T, side, L, cut.swivel); if (b.C[2] < p.C[2]) p = { C: b.C, a: b.a, psi: Math.atan2(-b.a[0], b.a[1]) }; }
-          pts.push({ L, d, C: p.C, a: p.a, psi: p.psi });
+          if (p.C[2] + T.D / 2 > h) { const b = bottomY(M, T, side, L, cut.swivel); if (b.C[2] < p.C[2]) p = { C: b.C, a: b.a, psi: Math.atan2(-b.a[0], b.a[1]), S: b.S }; }
+          pts.push({ L, d, C: p.C, a: p.a, psi: p.psi, S: p.S });
         }
         passes.push({ side, d, pts, dir, kind: 'flank' });
         if (cut.zigzag) dir = -dir;
@@ -642,7 +658,7 @@ const FG = (() => {
           const A = yLeft[kk], B = yRight[kk];
           const C = [A.C[0] + t * (B.C[0] - A.C[0]), A.C[1] + t * (B.C[1] - A.C[1]), A.C[2] + t * (B.C[2] - A.C[2])];
           const a = norm([A.a[0] + t * (B.a[0] - A.a[0]), A.a[1] + t * (B.a[1] - A.a[1]), 0]);
-          pts.push({ L, d: h, C, a, psi: Math.atan2(-a[0], a[1]) });
+          pts.push({ L, d: h, C, a, psi: Math.atan2(-a[0], a[1]), S: [L, A.S[1] + t * (B.S[1] - A.S[1]), h] });
         }
         bottom.push({ side: 0, d: h, pts, dir, kind: 'bottom' });
         if (cut.zigzag) dir = -dir;
@@ -664,7 +680,7 @@ const FG = (() => {
     const w = -side * (T.t / 2 - rc);
     // 刀心：刀角圆心沿刀轴方向偏 w，往刀心方向（-d）R - rc
     const C = [L + w * a0[0], ycorner + w * a0[1], h - rc - (R - rc)];
-    return { C, a: a0 };
+    return { C, a: a0, S: [L, ycorner, h] };
   }
 
   // ---------------- 点数精简（Douglas–Peucker，含摆角） ----------------
@@ -924,22 +940,23 @@ const FG = (() => {
       ['齿形角范围', M.amin.toFixed(2) + '° ～ ' + M.amax.toFixed(2) + '°'], ['L·cosα（C）', f3(M.stat.reduce((s, q) => s + q.C, 0) / M.stat.length)],
       ['槽底宽', f3(M.wbMin) + ' ～ ' + f3(M.wbMax)], ['槽底过渡最小圆角', 'R' + f3(M.rfMin)],
       ['刀轴在齿顶面外', f3(tool.D / 2 - M.h) + ' mm'], ['刀柄外圆离齿顶面', f3(clr) + ' mm'],
-      ['每槽刀数', `${nL} 层齿面 + ${nB} 刀槽底`], ['A 轴随动摆角', cut.swivel ? (pmin * FG.R2D).toFixed(2) + '° ～ ' + (pmax * FG.R2D).toFixed(2) + '°' : '关闭'],
+      ['每槽刀数', `${nL} 层齿面 + ${nB} 刀槽底`], ['层间刀纹高度（估算）', f4(Math.pow(cut.dz / Math.cos(M.amax * FG.D2R), 2) / (8 * tool.rc)) + ' mm'], ['A 轴随动摆角', cut.swivel ? (pmin * FG.R2D).toFixed(2) + '° ～ ' + (pmax * FG.R2D).toFixed(2) + '°' : '关闭'],
       ['走刀范围（沿槽）', f3(P.La) + ' ～ ' + f3(P.Lb)], ['程序行数 / 每槽点数', G.lines + ' / ' + G.pathPts],
       ['每槽切削长度', (G.lenPerGroove / 1000).toFixed(2) + ' m'], ['每槽时间（按 F）', G.minPerGroove.toFixed(1) + ' min'],
       ['总时间（不含快移）', (G.minPerGroove * nG / 60).toFixed(1) + ' h']];
-    $('res').innerHTML = rows.map(r => `<div${/时间|摆角/.test(r[0]) ? ' class="hl"' : ''}><span>${r[0]}</span><span>${r[1]}</span></div>`).join('');
+    $('res').innerHTML = rows.map(r => `<div${/时间|摆角/.test(r[0]) ? ' class="hl"' : ''}><span>${r[0]}</span><span>${r[1]}</span></div>`).join('') + '<div class="resnote">层间刀纹高度 = (每层深度 ÷ cos 最大齿形角)² ÷ (8 × 刀尖圆角)，是相邻两层之间刀尖圆角留下的“扇贝”高度，也就是“逐点校核”里“多留”的主要来源。</div>';
     if (!cut.swivel && tool.D > 20) W.push('A 轴随动已关闭：刀径较大时前后两边会啃到齿面，建议打开后先做“逐点校核”');
     if (src === 'xt' && geo.consist > 0.005) W.push(`各齿槽之间相差 ${(geo.consist * 1000).toFixed(1)} µm，刀路按第 ${geo.repIndex + 1} 个齿槽计算`);
     $('warn').textContent = W.join('；');
     $('gprev').textContent = G.text.split('\n').slice(0, 60).join('\n') + '\n……（共 ' + G.lines + ' 行）';
     $('ckres').innerHTML = ''; $('msg').textContent = '';
-    draw(st);
+    draw(st); drawRim(st);
+    build3d(st);
   }
   // ---------- 图 ----------
   function draw(s) {
     const svg = $('secSvg'), ps = $('psiSvg');
-    if (!s) { svg.innerHTML = ''; ps.innerHTML = ''; return; }
+    if (!s) { svg.innerHTML = ''; ps.innerHTML = ''; drawRim(null); build3d(null); return; }
     const { M, tool, P } = s, h = M.h;
     const Ls = [M.Lmin + 0.2, (M.Lmin + M.Lmax) / 2, M.Lmax - 0.2];
     let ymax = 0; for (const L of Ls) ymax = Math.max(ymax, Math.abs(M.f(-1, L, 0).y), Math.abs(M.f(1, L, 0).y));
@@ -985,29 +1002,234 @@ const FG = (() => {
     pick.forEach((ps, i) => { let d = ''; for (const p of ps.pts) if (p.L >= M.Lmin && p.L <= M.Lmax) d += (d ? 'L' : 'M') + XX(p.L).toFixed(1) + ' ' + YY(p.psi * FG.R2D).toFixed(1); q += `<path d="${d}" fill="none" stroke="${pc[i]}" stroke-width="1.6"/><text x="${w2 - r2 - 4}" y="${t2 + 14 + i * 13}" fill="${pc[i]}" font-size="10.5" text-anchor="end">层深 ${ps.d.toFixed(2)}</text>`; });
     ps.innerHTML = q;
   }
+  // ---------- 盘铣刀刃口轮廓图 ----------
+  function drawRim(s) {
+    const svg = $('rimSvg'); if (!s) { svg.innerHTML = ''; return; }
+    const { tool, M } = s, rc = tool.rc, a = tool.t / 2 - rc, be = tool.beta, tb = Math.tan(be), Hr = val('t', 'Hr');
+    const W = 520, H = 330, top = 34, bot = 270, sc = (bot - top) / Hr, cx = 230;
+    const X = x => cx + x * sc, Y = r => bot - r * sc;    // r = 自刀尖往刀心的距离
+    const pts = [];
+    const sideY = rc * (1 - Math.sin(be)), sideX = a + rc * Math.cos(be);
+    pts.push([-(sideX + (Hr - sideY) * tb), Hr]);
+    for (let k = 0; k <= 16; k++) { const t = Math.PI + be + (Math.PI / 2 - be) * k / 16; pts.push([-a + rc * Math.cos(t), rc + rc * Math.sin(t)]); }
+    for (let k = 0; k <= 16; k++) { const t = 1.5 * Math.PI + (Math.PI / 2 - be) * k / 16; pts.push([a + rc * Math.cos(t), rc + rc * Math.sin(t)]); }
+    pts.push([sideX + (Hr - sideY) * tb, Hr]);
+    const d = pts.map((p, k) => (k ? 'L' : 'M') + X(p[0]).toFixed(1) + ' ' + Y(p[1]).toFixed(1)).join('');
+    const mu = '#9EA3A9', ac = '#FF6B1A';
+    let o = `<path d="${d}" fill="rgba(255,107,26,.10)" stroke="${ac}" stroke-width="2"/>`;
+    o += `<line x1="${cx}" x2="${cx}" y1="${top - 14}" y2="${bot + 16}" stroke="#5D6268" stroke-dasharray="8 3 2 3"/>`;
+    // 槽深线
+    o += `<line x1="${X(-1.7)}" x2="${X(1.7)}" y1="${Y(M.h)}" y2="${Y(M.h)}" stroke="#4FC3F7" stroke-dasharray="4 3"/><text x="${X(-1.75)}" y="${Y(M.h) + 4}" fill="#4FC3F7" font-size="11" text-anchor="end">槽深 ${f3(M.h)}</text>`;
+    // 尺寸：刀尖宽
+    o += `<line x1="${X(-tool.t / 2)}" x2="${X(-tool.t / 2)}" y1="${bot + 2}" y2="${bot + 26}" stroke="${mu}"/><line x1="${X(tool.t / 2)}" x2="${X(tool.t / 2)}" y1="${bot + 2}" y2="${bot + 26}" stroke="${mu}"/>`;
+    o += `<line x1="${X(-tool.t / 2) - 22}" x2="${X(tool.t / 2) + 22}" y1="${bot + 22}" y2="${bot + 22}" stroke="${mu}"/><text x="${X(tool.t / 2) + 26}" y="${bot + 26}" fill="var(--ink)" font-size="12">刀尖宽 ${tool.t}</text>`;
+    // R 角
+    o += `<text x="${X(a) + 14}" y="${Y(0) - 6}" fill="var(--ink)" font-size="12">两角 R${tool.rc}</text>`;
+    // 侧刃角
+    const xr = sideX + (Hr - sideY) * tb;
+    o += `<line x1="${X(xr)}" x2="${X(xr)}" y1="${Y(Hr)}" y2="${Y(Hr * 0.45)}" stroke="${mu}" stroke-dasharray="3 3"/><text x="${X(xr) + 6}" y="${Y(Hr * 0.62)}" fill="var(--ink)" font-size="12">两侧各 ${(be * FG.R2D).toFixed(1)}°</text>`;
+    // 刃部高度
+    o += `<line x1="${X(-xr) - 30}" x2="${X(-xr) - 30}" y1="${Y(0)}" y2="${Y(Hr)}" stroke="${mu}"/><line x1="${X(-xr) - 36}" x2="${X(-xr)}" y1="${Y(Hr)}" y2="${Y(Hr)}" stroke="${mu}"/><line x1="${X(-xr) - 36}" x2="${X(-0.08)}" y1="${Y(0)}" y2="${Y(0)}" stroke="${mu}" stroke-dasharray="2 3"/>`;
+    o += `<text x="${X(-xr) - 36}" y="${Y(Hr / 2)}" fill="var(--ink)" font-size="12" text-anchor="end">刃部高度 ${Hr}</text>`;
+    o += `<text x="${cx}" y="${Y(Hr) - 6}" fill="${mu}" font-size="11" text-anchor="middle">此处厚 ${f3(2 * xr)}</text>`;
+    o += `<text x="${W - 8}" y="${bot - 60}" fill="var(--ink)" font-size="12.5" text-anchor="end">盘铣刀外径 Ø${tool.D}</text><text x="${W - 8}" y="${bot - 43}" fill="${mu}" font-size="11.5" text-anchor="end">刀尖在外径上，往上为刀心方向</text>`;
+    o += `<text x="${W - 8}" y="${bot - 26}" fill="${mu}" font-size="11.5" text-anchor="end">槽底宽 ${f3(M.wbMin)}～${f3(M.wbMax)}</text><text x="${W - 8}" y="${bot - 9}" fill="${mu}" font-size="11.5" text-anchor="end">齿形角 ${M.amin.toFixed(1)}°～${M.amax.toFixed(1)}°</text>`;
+    svg.innerHTML = o;
+  }
+
+  // ---------- 加工过程 3D（WebGL） ----------
+  const cv = $('cv');
+  let gl = null, prog = null, meshes = [], line = null, rafId = 0;
+  const cam = { th: 1.2, ph: 0.55, dist: 30, view: 'near' }, an = { t: 0, playing: !(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches), spd: 1, last: 0 };
+  let sc3 = null;
+  try { gl = cv.getContext('webgl2', { antialias: true }); if (!gl) { gl = cv.getContext('webgl', { antialias: true }); if (gl && !gl.getExtension('OES_element_index_uint')) gl = null; } } catch (e) { gl = null; }
+  if (!gl) $('tag3d').textContent = '此浏览器不支持 WebGL，3D 视图不可用';
+  if (!an.playing) $('play').textContent = '播放';
+  if (gl) {
+    const VS = 'attribute vec3 aP;attribute vec3 aN;attribute vec3 aC;uniform mat4 uM;uniform mat4 uVP;varying vec3 vN;varying vec3 vW;varying vec3 vC;void main(){vec4 w=uM*vec4(aP,1.0);vW=w.xyz;vN=(uM*vec4(aN,0.0)).xyz;vC=aC;gl_Position=uVP*w;}';
+    const FS = 'precision highp float;varying vec3 vN;varying vec3 vW;varying vec3 vC;uniform vec3 uE;uniform float uFlat;uniform float uA;void main(){if(uFlat>0.5){gl_FragColor=vec4(vC,1.0);return;}vec3 N=normalize(vN);vec3 V=normalize(uE-vW);if(dot(N,V)<0.0)N=-N;vec3 L1=normalize(vec3(0.45,0.55,0.85));vec3 L2=normalize(vec3(-0.6,-0.7,0.25));vec3 L3=normalize(V+vec3(0.0,0.0,0.3));float d=0.62*max(dot(N,L1),0.0)+0.22*max(dot(N,L2),0.0)+0.28*max(dot(N,L3),0.0);float sp=pow(max(dot(N,normalize(L1+V)),0.0),40.0)*0.4;gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),uA);}';
+    const sh = (t, src) => { const x = gl.createShader(t); gl.shaderSource(x, src); gl.compileShader(x); return x; };
+    prog = gl.createProgram(); gl.attachShader(prog, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(prog, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(prog); gl.useProgram(prog); gl.enable(gl.DEPTH_TEST);
+    for (const n of ['aP', 'aN', 'aC']) prog[n] = gl.getAttribLocation(prog, n);
+    for (const n of ['uM', 'uVP', 'uE', 'uFlat', 'uA']) prog[n] = gl.getUniformLocation(prog, n);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+  }
+  const M4 = {
+    mul(a, b) { const o = new Float32Array(16); for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) { let s = 0; for (let k = 0; k < 4; k++) s += a[k * 4 + r] * b[c * 4 + k]; o[c * 4 + r] = s; } return o; },
+    persp(f, as, n, fa) { const t = 1 / Math.tan(f / 2), nf = 1 / (n - fa); return new Float32Array([t / as, 0, 0, 0, 0, t, 0, 0, 0, 0, (fa + n) * nf, -1, 0, 0, 2 * fa * n * nf, 0]); },
+    look(e, t, u) { let z = [e[0] - t[0], e[1] - t[1], e[2] - t[2]], l = Math.hypot(...z); z = z.map(v => v / l); let x = [u[1] * z[2] - u[2] * z[1], u[2] * z[0] - u[0] * z[2], u[0] * z[1] - u[1] * z[0]]; l = Math.hypot(...x); x = x.map(v => v / l); const y = [z[1] * x[2] - z[2] * x[1], z[2] * x[0] - z[0] * x[2], z[0] * x[1] - z[1] * x[0]]; const d = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; return new Float32Array([x[0], y[0], z[0], 0, x[1], y[1], z[1], 0, x[2], y[2], z[2], 0, -d(x, e), -d(y, e), -d(z, e), 1]); },
+    rx(t) { const c = Math.cos(t), s = Math.sin(t); return new Float32Array([1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, 0, 0, 0, 1]); },
+    rz(t) { const c = Math.cos(t), s = Math.sin(t); return new Float32Array([c, s, 0, 0, -s, c, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1]); },
+    tr(x, y, z) { return new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, x, y, z, 1]); },
+    I: new Float32Array([1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1])
+  };
+  const hexRGB = h => { const n = parseInt(h.replace('#', ''), 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
+  // 网格累积器：每个面片单独建顶点，法向按面片内平滑
+  function Acc() { this.p = []; this.c = []; this.i = []; }
+  Acc.prototype.grid = function (P, col) {   // P[i][j] = [x,y,z]
+    const b = this.p.length / 3, n = P.length, m = P[0].length;
+    for (const row of P) for (const q of row) { this.p.push(q[0], q[1], q[2]); this.c.push(col[0], col[1], col[2]); }
+    for (let i = 0; i + 1 < n; i++) for (let j = 0; j + 1 < m; j++) { const a = b + i * m + j; this.i.push(a, a + m, a + 1, a + 1, a + m, a + m + 1); }
+  };
+  function mkMesh(A) {
+    const pos = new Float32Array(A.p), idx = new Uint32Array(A.i), col = new Float32Array(A.c), nor = new Float32Array(pos.length);
+    for (let i = 0; i < idx.length; i += 3) {
+      const a = idx[i] * 3, b = idx[i + 1] * 3, c = idx[i + 2] * 3;
+      const ux = pos[b] - pos[a], uy = pos[b + 1] - pos[a + 1], uz = pos[b + 2] - pos[a + 2], vx = pos[c] - pos[a], vy = pos[c + 1] - pos[a + 1], vz = pos[c + 2] - pos[a + 2];
+      const nx = uy * vz - uz * vy, ny = uz * vx - ux * vz, nz = ux * vy - uy * vx;
+      for (const k of [a, b, c]) { nor[k] += nx; nor[k + 1] += ny; nor[k + 2] += nz; }
+    }
+    for (let i = 0; i < nor.length; i += 3) { const l = Math.hypot(nor[i], nor[i + 1], nor[i + 2]) || 1; nor[i] /= l; nor[i + 1] /= l; nor[i + 2] /= l; }
+    const buf = (d, t) => { const x = gl.createBuffer(); gl.bindBuffer(t, x); gl.bufferData(t, d, gl.STATIC_DRAW); return x; };
+    return { p: buf(pos, gl.ARRAY_BUFFER), n: buf(nor, gl.ARRAY_BUFFER), c: buf(col, gl.ARRAY_BUFFER), i: buf(idx, gl.ELEMENT_ARRAY_BUFFER), count: idx.length };
+  }
+  function freeAll() { for (const m of meshes) for (const k of ['p', 'n', 'c', 'i']) gl.deleteBuffer(m[k]); meshes = []; if (line) { for (const k of ['p', 'n', 'c']) gl.deleteBuffer(line[k]); line = null; } }
+  function build3d(s) {
+    if (!gl) return;
+    freeAll(); sc3 = null; if (!s) { req(); return; }
+    const { M, mc, tool, P, geo } = s, h = M.h, sT = mc.face * mc.open, tau = geo.pitch;
+    // 第 kk 个齿槽（相对第 1 槽）在第 1 槽坐标里的圆周角
+    const Dk = kk => -mc.adir * mc.idir * sT * kk * tau;
+    // 零件点：第 1 槽对正（A = A0）时的机床坐标
+    const pp = (r, ang, d) => [-mc.face * d, r * Math.cos(ang), sT * r * Math.sin(ang)];
+    const pv = (x, y, d, kk) => pp(Math.hypot(x, y), Math.atan2(y, x) + Dk(kk), d);
+    const k0 = mc.k1 - 1, k1 = Math.min(mc.k2 - 1, k0 + 119);
+    const A = new Acc(), cF = hexRGB('#A9AFB7'), cT = hexRGB('#80868E'), cW = hexRGB('#6A7078');
+    const nL = 22, nd = 12, Ls = [], Lw = [M.Lmin, M.Lmax];
+    for (let i = 0; i <= nL; i++) Ls.push(M.Lmin + (M.Lmax - M.Lmin) * i / nL);
+    const edgeAng = (side, L, d, kk) => Math.atan2(M.f(side, L, d).y, L) + Dk(kk);
+    const dBot = h + 3;
+    for (let kk = k0; kk <= k1; kk++) {
+      for (const sd of [-1, 1]) A.grid(Ls.map(L => { const r = []; for (let j = 0; j <= nd; j++) { const d = h * j / nd; r.push(pv(L, M.f(sd, L, d).y, d, kk)); } return r; }), cF);
+      A.grid(Ls.map(L => { const y0 = M.f(-1, L, h).y, y1 = M.f(1, L, h).y, r = []; for (let j = 0; j <= 3; j++) r.push(pv(L, y0 + (y1 - y0) * j / 3, h, kk)); return r; }), cF);
+      // 内外端面：齿槽轮廓往下拉到 dBot
+      for (const L of Lw) for (const sd of [-1, 1]) { const r1 = [], r2 = []; for (let j = 0; j <= nd; j++) { const d = h * j / nd, a = edgeAng(sd, L, d, kk); r1.push(pp(L, a, d)); r2.push(pp(L, a, dBot)); } A.grid([r1, r2], cW); }
+    }
+    // 齿顶面：相邻两槽之间（两端各加一个齿）
+    const order = []; for (let kk = k0; kk <= k1; kk++) order.push(kk);
+    order.sort((a, b) => Dk(a) - Dk(b));
+    const land = (aFn, bFn) => { A.grid(Ls.map(L => { const a0 = aFn(L), a1 = bFn(L), r = []; for (let j = 0; j <= 3; j++) r.push(pp(L, a0 + (a1 - a0) * j / 3, 0)); return r; }), cT);
+      for (const L of Lw) { const a0 = aFn(L), a1 = bFn(L), r1 = [], r2 = []; for (let j = 0; j <= 3; j++) { const a = a0 + (a1 - a0) * j / 3; r1.push(pp(L, a, 0)); r2.push(pp(L, a, dBot)); } A.grid([r1, r2], cW); } };
+    for (let q = 0; q + 1 < order.length; q++) { const ka = order[q], kb = order[q + 1]; land(L => edgeAng(1, L, 0, ka), L => edgeAng(-1, L, 0, kb)); }
+    const ends = [order[0], order[order.length - 1]];
+    land(L => edgeAng(-1, L, 0, ends[0]) - tau * 0.5, L => edgeAng(-1, L, 0, ends[0]));
+    land(L => edgeAng(1, L, 0, ends[1]), L => edgeAng(1, L, 0, ends[1]) + tau * 0.5);
+    meshes.push(mkMesh(A));
+    const nPart = meshes.length;
+    // 盘铣刀：刃口廓形绕刀轴（局部 z）回转；刀柄沿 +z
+    const R = tool.D / 2, rc = tool.rc, a = tool.t / 2 - rc, be = tool.beta, tb = Math.tan(be), Hr = val('t', 'Hr'), bb = Math.max(2 * (tool.t / 2 + Hr * tb) + 0.4, 3), rs = val('t', 'dsh') / 2;
+    const prof = [];   // (rho, w) 从刀柄一侧绕到另一侧
+    prof.push([rs, bb / 2], [R - Hr - 0.5, bb / 2], [R - Hr, tool.t / 2 + Hr * tb]);
+    for (let k = 0; k <= 8; k++) { const ang = (Math.PI / 2 - be) * (1 - k / 8); prof.push([R - rc + rc * Math.cos(ang), a + rc * Math.sin(ang)]); }
+    for (let k = 0; k <= 8; k++) { const ang = -(Math.PI / 2 - be) * k / 8; prof.push([R - rc + rc * Math.cos(ang), -a + rc * Math.sin(ang)]); }
+    prof.push([R - Hr, -(tool.t / 2 + Hr * tb)], [R - Hr - 0.5, -bb / 2], [rs, -bb / 2]);
+    const T = new Acc(), cC = hexRGB('#C4561C'), cS = hexRGB('#4D5157'), NT = 96;
+    const rev = (pr, col) => { const G = []; for (let i = 0; i <= NT; i++) { const t = 2 * Math.PI * i / NT, c = Math.cos(t), s2 = Math.sin(t); G.push(pr.map(q => [q[0] * c, q[0] * s2, q[1]])); } T.grid(G, col); };
+    rev(prof, cC);
+    rev([[0, bb / 2], [rs, bb / 2]], cS); rev([[0, -bb / 2], [rs, -bb / 2]], cS);
+    rev([[rs, bb / 2], [rs, bb / 2 + 40]], cS); rev([[rs, -bb / 2], [0, -bb / 2]], cS);
+    meshes.push(mkMesh(T));
+    // 动画用：第 k1 槽的每一刀（精简后的机床坐标）
+    const Ak = mc.A0 + mc.idir * k0 * s.pitchDeg;
+    const pass = P.passes.map(ps => { const q = FG.simplify(ps.pts, mc.tol, R).map(x => Object.assign({ S: x.S }, FG.toMachine(x, mc))); let L = 0; const cum = [0]; for (let k = 1; k < q.length; k++) { L += Math.hypot(q[k].X - q[k - 1].X, q[k].Y - q[k - 1].Y, q[k].Z - q[k - 1].Z, (q[k].A - q[k - 1].A) * 0.5); cum.push(L); } return { q, cum, L, side: ps.side, d: ps.d, kind: ps.kind, line: ps.pts.filter(x => x.S && x.S[0] >= M.Lmin && x.S[0] <= M.Lmax).map(x => pv(x.S[0], x.S[1], x.S[2], k0)) }; });
+    sc3 = { nPart, pass, Ak, mc, R, k0, h, Lmid: (M.Lmin + M.Lmax) / 2 };
+    $('scrub').max = String(pass.length * 100);
+    an.t = Math.min(an.t, pass.length - 1e-6);
+    req();
+  }
+  function req() { if (!rafId && gl) rafId = requestAnimationFrame(frame); }
+  function poseAt(t) {
+    const p = sc3.pass, i = Math.min(p.length - 1, Math.floor(t)), f = t - i, ps = p[i], tgt = f * ps.L;
+    let k = 1; while (k < ps.cum.length - 1 && ps.cum[k] < tgt) k++;
+    const a = ps.q[k - 1], b = ps.q[k] || a, u = (b === a || ps.cum[k] === ps.cum[k - 1]) ? 0 : (tgt - ps.cum[k - 1]) / (ps.cum[k] - ps.cum[k - 1]);
+    const L = (x, y) => x + Math.min(1, Math.max(0, u)) * (y - x);
+    return { i, ps, X: L(a.X, b.X), Y: L(a.Y, b.Y), Z: L(a.Z, b.Z), A: sc3.Ak + L(a.A, b.A) };
+  }
+  function frame(ts) {
+    rafId = 0; if (!gl) return;
+    const dpr = Math.min(2, window.devicePixelRatio || 1), w = cv.clientWidth, hh = cv.clientHeight;
+    if (cv.width !== Math.round(w * dpr) || cv.height !== Math.round(hh * dpr)) { cv.width = Math.round(w * dpr); cv.height = Math.round(hh * dpr); }
+    gl.viewport(0, 0, cv.width, cv.height); gl.clearColor(0.051, 0.055, 0.063, 1); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    if (!sc3 || !meshes.length) return;
+    const dt = an.last ? Math.min(0.05, (ts - an.last) / 1000) : 0; an.last = ts;
+    const N = sc3.pass.length;
+    if (an.playing) { an.t = (an.t + dt * 1.6 * an.spd) % N; $('scrub').value = String(Math.round(an.t * 100)); }
+    const p = poseAt(an.t), mc = sc3.mc;
+    const phi = mc.adir * (p.A - mc.A0) * FG.D2R;          // 零件相对第 1 槽对正位置实际转过的角度
+    const partM = M4.rx(phi), toolM = M4.tr(p.X, p.Y, p.Z);
+    const tip = [p.X - mc.face * sc3.R, p.Y, p.Z];
+    const tgt = cam.view === 'near' ? tip : [-mc.face * 2, 0, 0];
+    const dist = cam.view === 'near' ? cam.dist : Math.max(cam.dist, 1);
+    const eye = [tgt[0] + dist * Math.cos(cam.ph) * Math.cos(cam.th) * mc.face, tgt[1] + dist * Math.cos(cam.ph) * Math.sin(cam.th), tgt[2] + dist * Math.sin(cam.ph)];
+    const VP = M4.mul(M4.persp(0.62, w / Math.max(1, hh), dist * 0.01, dist * 40), M4.look(eye, tgt, [0, 0, 1]));
+    gl.uniformMatrix4fv(prog.uVP, false, VP); gl.uniform3fv(prog.uE, eye); gl.uniform1f(prog.uFlat, 0);
+    meshes.forEach((m, i) => {
+      const isTool = i >= sc3.nPart;
+      gl.uniformMatrix4fv(prog.uM, false, isTool ? toolM : partM);
+      // 刀具半透明（近景时能看到伸进齿槽里的刃口）
+      if (isTool && cam.view === 'near') { gl.enable(gl.BLEND); gl.depthMask(false); gl.uniform1f(prog.uA, 0.38); } else { gl.disable(gl.BLEND); gl.depthMask(true); gl.uniform1f(prog.uA, 1); }
+      for (const [a, b] of [['aP', m.p], ['aN', m.n], ['aC', m.c]]) { gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.enableVertexAttribArray(prog[a]); gl.vertexAttribPointer(prog[a], 3, gl.FLOAT, false, 0, 0); }
+      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.i); gl.drawElements(gl.TRIANGLES, m.count, gl.UNSIGNED_INT, 0);
+    });
+    gl.disable(gl.BLEND); gl.depthMask(true); gl.uniform1f(prog.uA, 1);
+    // 当前这一刀的刀尖接触轨迹
+    const ln = p.ps.line; if (ln.length > 1) {
+      const pos = new Float32Array(ln.flat()), col = new Float32Array(ln.length * 3), nor = new Float32Array(ln.length * 3);
+      for (let k = 0; k < ln.length; k++) { col.set([1, 0.48, 0.18], k * 3); nor.set([0, 0, 1], k * 3); }
+      if (!line) line = { p: gl.createBuffer(), n: gl.createBuffer(), c: gl.createBuffer() };
+      gl.uniformMatrix4fv(prog.uM, false, partM); gl.uniform1f(prog.uFlat, 1); gl.disable(gl.DEPTH_TEST);
+      for (const [a, b, d] of [['aP', line.p, pos], ['aN', line.n, nor], ['aC', line.c, col]]) { gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, d, gl.DYNAMIC_DRAW); gl.enableVertexAttribArray(prog[a]); gl.vertexAttribPointer(prog[a], 3, gl.FLOAT, false, 0, 0); }
+      gl.drawArrays(gl.LINE_STRIP, 0, ln.length); gl.enable(gl.DEPTH_TEST); gl.uniform1f(prog.uFlat, 0);
+    }
+    const ps = p.ps;
+    $('info3d').textContent = `第 ${mc.k1} 槽 · 第 ${p.i + 1}/${N} 刀（${ps.kind === 'bottom' ? '槽底' : (ps.side < 0 ? '左齿面' : '右齿面') + ' 层深 ' + ps.d.toFixed(2)}）· A ${p.A.toFixed(3)}°`;
+    if (an.playing) req();
+  }
+  // 交互：拖动旋转，双指 / 滚轮缩放
+  const ptrs = new Map(); let pinch0 = 0, dist0 = 0;
+  cv.addEventListener('pointerdown', e => { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); if (ptrs.size === 2) { const [a, b] = [...ptrs.values()]; pinch0 = Math.hypot(a[0] - b[0], a[1] - b[1]); dist0 = cam.dist; } });
+  cv.addEventListener('pointermove', e => {
+    if (!ptrs.has(e.pointerId)) return; const pr = ptrs.get(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ptrs.size === 1) { cam.th -= (e.clientX - pr[0]) * 0.008; cam.ph = Math.max(-1.45, Math.min(1.45, cam.ph + (e.clientY - pr[1]) * 0.008)); }
+    else if (ptrs.size === 2 && pinch0) { const [a, b] = [...ptrs.values()]; cam.dist = Math.max(2, dist0 * pinch0 / Math.max(1, Math.hypot(a[0] - b[0], a[1] - b[1]))); }
+    req();
+  });
+  const up = e => { ptrs.delete(e.pointerId); pinch0 = 0; };
+  cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+  cv.addEventListener('wheel', e => { e.preventDefault(); cam.dist = Math.max(2, cam.dist * Math.exp(e.deltaY * 0.0012)); req(); }, { passive: false });
+  $('play').addEventListener('click', () => { an.playing = !an.playing; an.last = 0; $('play').textContent = an.playing ? '暂停' : '播放'; req(); });
+  $('spd').addEventListener('click', () => { an.spd = an.spd === 1 ? 5 : an.spd === 5 ? 20 : 1; $('spd').textContent = '速度 ×' + an.spd; });
+  $('scrub').addEventListener('input', () => { if (!sc3) return; an.t = Math.min(sc3.pass.length - 1e-6, +$('scrub').value / 100); an.playing = false; $('play').textContent = '播放'; req(); });
+  document.querySelectorAll('[data-v]').forEach(b => b.addEventListener('click', () => {
+    cam.view = b.dataset.v; document.querySelectorAll('[data-v]').forEach(x => x.classList.toggle('on', x === b));
+    cam.dist = cam.view === 'near' ? (sc3 ? Math.max(20, sc3.h * 13) : 30) : (st ? st.M.Lmax * 3.6 : 250); if (cam.view === 'all') { cam.th = 0.9; cam.ph = 0.35; } else { cam.th = 1.2; cam.ph = 0.55; } req();
+  }));
+  window.addEventListener('resize', req);
+  window.__fg3d = { cam, an, get sc() { return sc3; }, req };
+
   // ---------- 输出 ----------
-  function download(text, name, crlf) {
-    const blob = new Blob([crlf ? text.replace(/\r?\n/g, '\r\n') : text], { type: 'text/plain' }), a = document.createElement('a');
+  function download(text, name, crlf, mime) {
+    const blob = new Blob([crlf ? text.replace(/\r?\n/g, '\r\n') : text], { type: mime || 'application/octet-stream' }), a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000); $('msg').textContent = '已下载 ' + name;
   }
   const base = () => 'facegear_D' + (st ? st.tool.D : '') + '_' + (st ? st.mc.ctl : '');
-  $('dlG').addEventListener('click', () => { if (!st) return; download(st.G.text, base() + (st.mc.ctl === 'siemens' ? '.mpf' : '.nc'), true); });
+  $('dlG').addEventListener('click', () => { if (!st) return; download(st.G.text, base() + (st.mc.ctl === 'siemens' ? '.mpf' : '.nc'), true, 'application/octet-stream'); });
   $('dlC').addEventListener('click', () => {
     if (!st) return;
     const { P, M, mc, tool } = st, out = ['刀序,类型,侧,层深d,半径L,刀心X槽,刀心Y槽,刀心d,摆角psi(°),机床X,机床Y,机床Z,机床A(第1槽)'];
     P.passes.forEach((ps, i) => { for (const q of FG.simplify(ps.pts, mc.tol, tool.D / 2)) { const m = FG.toMachine(q, mc); out.push([i + 1, ps.kind === 'bottom' ? '槽底' : '齿面', ps.side < 0 ? '左' : ps.side > 0 ? '右' : '中', q.d.toFixed(4), q.L.toFixed(4), q.C[0].toFixed(4), q.C[1].toFixed(4), q.C[2].toFixed(4), (q.psi * FG.R2D).toFixed(4), m.X.toFixed(4), m.Y.toFixed(4), m.Z.toFixed(4), (mc.A0 + m.A).toFixed(4)].join(',')); } });
     download('﻿' + out.join('\n'), base() + '_path.csv', false);
   });
-  $('dlD').addEventListener('click', () => { if (!st) return; download(rimDxf(st), 'disc_rim_D' + st.tool.D + '.dxf', true); });
+  $('dlD').addEventListener('click', () => { if (!st) return; download(rimDxf(st), 'disc_rim_D' + st.tool.D + '.dxf', true, 'application/dxf'); });
   $('ck').addEventListener('click', () => {
     if (!st) return; const s = st; $('prog').hidden = false; $('ck').disabled = true; $('ckres').innerHTML = '';
     FG.check(s.M, s.tool, s.P, { nL: 30, nd: 26, every: 2 }, r => {
       $('prog').hidden = true; $('ck').disabled = false;
       const ok = r.gouge > -0.002;
-      $('ckres').innerHTML = [['齿面过切（最小值）', f4(r.gouge), r.gouge > -0.002], ['齿面残留（最大值，含刀纹）', f4(r.left), r.left < 0.03], ['槽底过切', f4(r.gougeBottom), r.gougeBottom > -0.002], ['槽底残留', f4(r.leftBottom), r.leftBottom < 0.03],
+      $('ckres').innerHTML = [['齿面过切（最大，负值）', f4(r.gouge), r.gouge > -0.002], ['齿面多留（最大，含刀纹）', f4(r.left), r.left < 0.03], ['槽底过切', f4(r.gougeBottom), r.gougeBottom > -0.002], ['槽底多留', f4(r.leftBottom), r.leftBottom < 0.03],
         ['校核点 / 刀位数', r.n + ' / ' + r.poses, true]].map(q => `<div class="${q[2] ? 'ok' : 'bad'}"><span>${q[0]}</span><span>${q[1]}</span></div>`).join('') +
-        `<div class="resnote">在代表齿槽上，用全部刀位（隔一个取一个）对齿面 ${r.n} 个点逐点求刀体距离；负值为过切，正值为残留。额外留量也按目标面计。${ok ? '' : '有过切，请检查刀具参数或打开 A 轴随动。'}</div>`;
+        `<div class="resnote">目标面 = 模型齿面（导入模型时已含模型里的留量，再加“额外留量”）。在代表齿槽的齿面和槽底上取 ${r.n} 个点，用全部刀位逐点算刀体到点的距离：<b>过切</b>（负值）= 刀切进了目标面以内，伤到齿面；<b>多留</b>（正值，即残留）= 加工后实际表面比目标面多出来的厚度，主要是相邻两层之间刀尖圆角留下的刀纹（扇贝高度），以及槽底转角处刀尖圆角铣不到的地方。多留只是比目标多一点料、不会伤齿面，减小每层深度可以减小它。${ok ? '' : '有过切，请检查刀具参数或打开 A 轴随动。'}</div>`;
     }, v => { $('prog').firstElementChild.style.width = (v * 100).toFixed(0) + '%'; });
   });
   // 刀具刃口 DXF（R12）：横向为刀宽方向（刀轴方向），纵向为半径方向（刀尖在 0，往刀心为负）
