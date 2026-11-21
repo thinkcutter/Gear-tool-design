@@ -116,11 +116,13 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
 .back{font-size:12.5px;color:var(--accent);text-decoration:none;margin-left:auto}
 .stat{grid-column:1/-1;font-size:12.5px;line-height:1.6;color:var(--muted)}
 svg text{font-family:var(--f-ui)}
+
+.res div{min-width:0;column-gap:10px}.res div span:last-child{min-width:0;overflow-wrap:anywhere;text-align:right}
 @media(max-width:640px){.res{grid-template-columns:minmax(0,1fr)}.res div{flex-wrap:wrap;column-gap:8px}.res div span:first-child{white-space:normal}.res div span:last-child{white-space:normal;text-align:right;margin-left:auto;overflow-wrap:anywhere;min-width:0}.v3d .tag{display:none}.v3d .info{left:10px;text-align:left}}
 .v3d .info{position:absolute;top:8px;right:10px;font-size:11.5px;color:var(--ink);text-align:right;font-family:var(--f-ui);text-shadow:0 1px 2px #000}
 .busy{color:var(--accent);font-size:12.5px;margin-left:8px}
 table.vt{font-size:13px;margin-top:6px}
-table.vt td,table.vt th{padding:4px 8px}
+table.vt td,table.vt th{padding:4px 8px}table.vt th small{font-weight:400;opacity:.7}table.vt td:not(:first-child),table.vt th:not(:first-child){text-align:right}@media(max-width:640px){table.vt{font-size:12px}table.vt td,table.vt th{padding:4px 4px}table.vt td:first-child{white-space:normal}}
 table.vt td.ok{color:var(--ok)} table.vt td.bad{color:var(--warn)}
 .tblwrap2{overflow:auto;border:1px solid var(--grid);border-radius:4px}
 </style>
@@ -611,7 +613,8 @@ const SK = (() => {
       ['中心距 新 / 中 / 旧', f4(s0.A) + ' / ' + f4(B.st[1].A) + ' / ' + f4(s2.A)], ['刀齿顶宽 新 / 旧', f3(s0.tipW) + ' / ' + f3(s2.tipW)],
       ['分度圆处刀齿弧厚 新 / 旧', f3(s0.sc) + ' / ' + f3(s2.sc)], ['刃口有效高度', f3(s0.depth)],
       ['左侧后刀面导程', isFinite(FL.lead) ? f2(FL.lead) + '（分度圆螺旋角 ' + f3(FL.betaP) + '°）' : '—'], ['右侧后刀面导程', isFinite(FR.lead) ? f2(FR.lead) + '（' + f3(FR.betaP) + '°）' : '—'],
-      ['后刀面横截面 ≈ 渐开线', '基圆 Ø' + f3(2 * FL.rbF) + ' / Ø' + f3(2 * FR.rbF) + '，偏差 ' + um(FL.invDev) + ' / ' + um(FR.invDev) + ' µm'], ['导程拟合残差（重磨到底）', um(FL.errOld) + ' / ' + um(FR.errOld) + ' µm'],
+      ['后刀面横截面基圆 左 / 右', 'Ø' + f3(2 * FL.rbF) + ' / Ø' + f3(2 * FR.rbF)], ['横截面与渐开线偏差', um(FL.invDev) + ' / ' + um(FR.invDev) + ' µm'],
+      ['导程拟合残差（重磨到底）', um(FL.errOld) + ' / ' + um(FR.errOld) + ' µm'],
       ['切削速度（分度圆处）', f2(sp.v) + ' m/min'], ['工件转速', f2(sp.nw) + ' r/min']];
     if (st.Ag) {
       const mm = (a, k) => [Math.min(...a.map(q => q[k])), Math.max(...a.map(q => q[k]))];
@@ -629,12 +632,15 @@ const SK = (() => {
   function showVerify() {
     const { D, V, Vx, wp } = st, W = D.W;
     const nm = ['新刀', '重磨一半', '重磨到底'];
-    let h = '<tr><th>状态</th><th>齿形误差 左/右 µm</th><th>齿厚变化 µm</th><th>渐开线起始圆 Ø</th><th>齿根圆 Ø</th><th>齿顶棱边多切 µm</th><th>其他过切 µm</th></tr>';
-    V.forEach((v, j) => {
+    const cells = V.map((v, j) => {
       const okF = !(wp.dFf > 0) || (W.isInt ? 2 * v.formR >= wp.dFf : 2 * v.formR <= wp.dFf);
       const og = v.gouge < -0.001 && v.chamDepth < 0.001;
-      h += `<tr><td>${nm[j]}（退 ${f2(D.states[j].dlt)}）</td><td class="${Math.max(v.maxL, v.maxR) < 0.005 ? 'ok' : 'bad'}">${um(v.maxL)} / ${um(v.maxR)}</td><td>${um(v.dThick)}</td><td class="${okF ? 'ok' : 'bad'}">${f3(2 * v.formR)}</td><td>${f3(2 * v.rootR)}</td><td class="${v.chamDepth < 0.002 ? 'ok' : 'bad'}">${um(v.chamDepth)}</td><td class="${og ? 'bad' : 'ok'}">${og ? um(-v.gouge) : '0'}</td></tr>`;
+      return [[Math.max(v.maxL, v.maxR) < 0.005 ? 'ok' : 'bad', um(v.maxL) + ' / ' + um(v.maxR)], ['', um(v.dThick)], [okF ? 'ok' : 'bad', f3(2 * v.formR)],
+        ['', f3(2 * v.rootR)], [v.chamDepth < 0.002 ? 'ok' : 'bad', um(v.chamDepth)], [og ? 'bad' : 'ok', og ? um(-v.gouge) : '0']];
     });
+    const items = ['齿形误差 左/右 µm', '齿厚变化 µm', '渐开线起始圆 Ø', '齿根圆 Ø', '齿顶棱边多切 µm', '其他过切 µm'];
+    let h = '<tr><th>项目</th>' + nm.map((n, j) => `<th>${n}<br><small>退 ${f2(D.states[j].dlt)}</small></th>`).join('') + '</tr>';
+    items.forEach((it, k) => { h += `<tr><td>${it}</td>` + cells.map(c => `<td class="${c[k][0]}">${c[k][1]}</td>`).join('') + '</tr>'; });
     $('vt').innerHTML = h;
     $('vnote').innerHTML = `精确刃口（新刀）本身：齿形误差 ${um(Vx.maxL)} / ${um(Vx.maxR)} µm，齿厚变化 ${um(Vx.dThick)} µm，过切 ${um(Math.max(0, -Vx.gouge))} µm。表中为按“磨出的后刀面”得到的实际刃口；齿形误差在齿顶到渐开线起始圆之间（两端各让开一点）统计。齿厚变化为分度圆处，负值表示齿槽偏宽（${W.isInt ? '内齿齿厚' : '齿厚'}偏薄）。`;
   }
