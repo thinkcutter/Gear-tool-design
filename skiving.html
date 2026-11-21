@@ -149,7 +149,7 @@ textarea.meas{width:100%;box-sizing:border-box;min-height:96px;background:var(--
     <details class="more" id="dSet"><summary>安装（倾角、偏置）与刀体尺寸</summary><div class="grid" id="sgrid"></div>
       <div class="stat">倾角 κ：刀具轴绕切削点的切向（与工件轴、中心距方向都垂直）转动；偏置 e：刀具中心沿该切向移动。都为 0 就是常规安装（切削点在两轴公垂线上）。</div></details>
     <div class="stat" id="cstat"></div></section>
-  <section class="card"><h2>刀具外形尺寸（盘形，装心轴）</h2><div class="grid" id="bgrid"></div></section>
+  <section class="card"><h2>刀具外形尺寸</h2><div class="grid" id="bgrid"></div></section>
   <section class="card"><h2>工艺</h2><div class="grid" id="pgrid"></div></section>
   <section class="card"><h2>实测刀具 → 预测工件齿形</h2>
     <textarea class="meas" id="meas" spellcheck="false" placeholder="每行：刀具半径 ρ, 左侧偏差 µm, 右侧偏差 µm&#10;例：&#10;26.9, 1.2, -0.8&#10;25.0, 0.6, -0.3&#10;23.0, 0.0, 0.4"></textarea>
@@ -210,7 +210,7 @@ textarea.meas{width:100%;box-sizing:border-box;min-height:96px;background:var(--
     <p><b>重磨后调整</b>：刀具磨好后刃口就固定了，重磨后在机床上调整中心距、轴交角（可选偏置）和刀具—工件相位，使齿顶到渐开线起始圆之间左右齿面相对目标的偏差平方和最小（Gauss-Newton，数值求导），然后用精细模拟重新校核。</p>
     <p><b>切削分配</b>：径向切深从工件齿顶切到齿根；“等切除面积”按端面切除面积相等分配粗切（切深递减），最后一刀为精切余量。啮合长度 = 刃口在工件齿圈内的轴向范围，每刀行程 = 齿宽 + 啮合长度 + 两端安全距离，时间 = 行程 ÷（每工件转进给 × 工件转速）。</p>
     <p><b>干涉检查</b>：刀齿后部 —— 前刀面后面 0.2 mm 到刀齿长度范围内的后刀面点在运动中到已加工齿面的最小距离（负值 = 蹭齿面）；刀具齿根圆 —— 新刀、旧刀状态下刀体圆转一圈都不进入工件齿顶圆的最大直径；台肩 —— 刀具前后端圆、刀体、刀柄在切完最后一点时伸过齿端的最大轴向距离。</p>
-    <p><b>刀具外形图与 3D</b>：刀齿由两侧后刀面螺旋面、顶锥（顶刃后角）和前刀面围成，从前刀面一直到刀齿长度末端；刀体、内孔、键槽、背面沉孔按输入尺寸。正面为前刀面上的刃口及齿根，背面为刀齿末端截面（左右镜像），侧面为过刀齿中心和键槽的轴向剖视。刀具齿根圆默认取“不碰工件齿顶（留 0.1 m）且比刃口切削最低点低 0.3 m”；刃口计算范围以下的齿面按径向直线延伸到齿根。刀尖圆角只在参数表注明，图和 3D 中没有画出。3D 模型是封闭实体（每条边恰好两个三角形共用、法向朝外），可导出 STL；DXF 含轮廓、中心线、剖面线、尺寸和参数表，单位 mm。</p>
+    <p><b>刀具外形图与 3D</b>：刀齿由两侧后刀面螺旋面、顶锥（顶刃后角）和前刀面围成，从前刀面一直到刀齿长度末端；刀体、内孔、键槽、背面沉孔按输入尺寸。正面为前刀面上的刃口及齿根，背面为刀齿末端截面（左右镜像），侧面为过刀齿中心和键槽的轴向剖视。碗形刀具：齿部在前端（大端），后接过渡锥、圆角和顶部外圆，内部为前端内孔 + 内锥 + 螺栓面 + 内孔，未填的尺寸按外径比例自动取（参数表列出实际值）。刀具齿根圆默认取“不碰工件齿顶（留 0.1 m）且比刃口切削最低点低 0.3 m”；刃口计算范围以下的齿面按径向直线延伸到齿根。刀尖圆角只在参数表注明，图和 3D 中没有画出。3D 模型是封闭实体（每条边恰好两个三角形共用、法向朝外），可导出 STL；DXF 含轮廓、中心线、剖面线、尺寸和参数表，单位 mm。</p>
     <p><b>目前没有考虑</b>：进给量引起的走刀纹、切屑厚度与切削力、磨床的 NC 程序（与磨床型号有关，这里给出展成磨削的调整数据）。结果用于刀具设计和方案比较，正式制刀前建议再用实际磨削程序复核。</p>
   </section>
 </div>
@@ -895,9 +895,13 @@ const SK = (() => {
     ['mfHL', '试切实测 斜率偏差 左', 'µm', 0, 0.1], ['mfHR', '试切实测 斜率偏差 右', 'µm', 0, 0.1], ['mCalL', '试切实测 鼓形量 左', 'µm', 0, 0.1], ['mCalR', '试切实测 鼓形量 右', 'µm', 0, 0.1]];
   const H_DEF = [['sh', '台肩位置', 'sel', [['none', '无台肩'], ['exit', '出刀端'], ['entry', '进刀端']]], ['g', '台肩到齿端距离', 'mm', 5, 0.1], ['Ds', '台肩直径（内齿为孔径，外齿为外径）', 'mm', 0, 0.1]];
   const S_DEF = [['kap', '刀具倾角 κ', '°', 0, 0.5], ['e', '偏置 e', 'mm', 0, 0.1], ['Dh', '心轴螺母 / 刀柄直径（0 = 不查）', 'mm', 0, 0.5], ['Lh', '螺母 / 刀柄长度', 'mm', 40, 1]];
-  const B_DEF = [['Bc', '刀齿轴向长度（含可重磨量）', 'mm', 12, 0.5], ['B', '刀具总厚度（0 = 同齿长）', 'mm', 0, 0.5], ['d', '内孔直径（0 = 无孔）', 'mm', 31.743, 0.001],
-    ['kb', '键槽宽（0 = 无键槽）', 'mm', 0, 0.1], ['kt', '键槽深 t（自孔壁）', 'mm', 0, 0.1], ['dw', '刀体直径（0 = 同齿根）', 'mm', 0, 0.1],
-    ['d2', '背面沉孔直径（0 = 无）', 'mm', 0, 0.1], ['t2', '沉孔深度', 'mm', 0, 0.1], ['dfc', '刀具齿根圆直径（0 = 自动）', 'mm', 0, 0.01]];
+  const B_DEF = [['type', '刀具形式', 'sel', [['bowl', '碗形（螺栓压紧）'], ['disc', '盘形（装心轴）']]], ['Bc', '齿部轴向长度（含可重磨量）', 'mm', 10, 0.5],
+    ['H', '总高（0 = 自动）', 'mm', 0, 0.5], ['dB', '内孔直径（0 = 自动）', 'mm', 0, 0.001], ['Din', '前端内径（0 = 自动）', 'mm', 0, 0.1], ['aIn', '内锥半角（0 = 15°）', '°', 0, 0.5],
+    ['Hf', '螺栓面深度（自前端，0 = 自动）', 'mm', 0, 0.1], ['DN', '顶部外径（0 = 自动）', 'mm', 0, 0.1], ['Rn', '顶部圆角 R（0 = 自动）', 'mm', 0, 0.1], ['aT', '过渡锥与轴线夹角（0 = 45°）', '°', 0, 1],
+    ['B', '刀具总厚度（0 = 同齿长）', 'mm', 0, 0.5], ['d', '内孔直径（0 = 无孔）', 'mm', 31.743, 0.001], ['dw', '刀体直径（0 = 同齿根）', 'mm', 0, 0.1],
+    ['d2', '背面沉孔直径（0 = 无）', 'mm', 0, 0.1], ['t2', '沉孔深度', 'mm', 0, 0.1],
+    ['kb', '键槽宽（0 = 无键槽）', 'mm', 0, 0.1], ['kt', '键槽深 t（自孔壁）', 'mm', 0, 0.1], ['dfc', '刀具齿根圆直径（0 = 自动）', 'mm', 0, 0.01]];
+  const B_ONLY = { bowl: ['H', 'dB', 'Din', 'aIn', 'Hf', 'DN', 'Rn', 'aT'], disc: ['B', 'd', 'dw', 'd2', 't2'] };
   const P_DEF = [['adj', '重磨后调整', 'sel', [['AS', '调中心距 + 轴交角（推荐）'], ['A', '只调中心距'], ['ASE', '调中心距 + 轴交角 + 偏置'], ['none', '不调（中心距按齿根）']]],
     ['n', '切削次数（含精切）', '', 5, 1], ['fin', '精切余量（径向）', 'mm', 0.1, 0.01], ['mode', '切深分配', 'sel', [['area', '等切除面积（切深递减）'], ['depth', '等切深']]],
     ['faR', '粗切进给（每工件转）', 'mm', 0.3, 0.01], ['faF', '精切进给（每工件转）', 'mm', 0.1, 0.01], ['safe', '单边安全距离', 'mm', 1, 0.5]];
@@ -913,6 +917,8 @@ const SK = (() => {
     }
   }
   build('wgrid', W_DEF, 'w'); build('cgrid', C_DEF, 'c'); build('mgrid', M_DEF, 'm'); build('hgrid', H_DEF, 'h'); build('sgrid', S_DEF, 's'); build('pgrid', P_DEF, 'p'); build('bgrid', B_DEF, 'b');
+  const syncType = () => { const t = $('b_type').value; for (const [k, list] of Object.entries(B_ONLY)) for (const f of list) $('b_' + f).parentElement.hidden = k !== t; };
+  $('b_type').addEventListener('change', syncType); syncType();
   if (M_DEF.some(d => d[2] !== 'sel' && +$('m_' + d[0]).value)) $('dMod').open = true;
   if (+$('s_kap').value || +$('s_e').value) $('dSet').open = true;
   const val = (key, k) => { const el = $(key + '_' + k); return el.tagName === 'SELECT' ? el.value : parseFloat(el.value); };
@@ -1268,14 +1274,18 @@ const SK = (() => {
     const FL = D.flank.L, FR = D.flank.R, lowPhi = Math.max(FL.Phi[FL.Phi.length - 1].rho, FR.Phi[FR.Phi.length - 1].rho);
     const rootAuto = coll ? Math.min(coll.rCoreMax - 0.1 * mn, coll.rhoAct - 0.3 * mn) : lowPhi - 0.3 * mn;
     const rootC = bv.dfc > 0 ? bv.dfc / 2 : rootAuto;
-    const B = Math.max(Bc, bv.B > 0 ? bv.B : Bc), d = bv.d > 0 ? bv.d : 0, kb = d > 0 ? Math.max(0, bv.kb || 0) : 0, kt = kb > 0 ? Math.max(0, bv.kt || 0) : 0;
-    const rW = bv.dw > 0 ? bv.dw / 2 : rootC, r2 = bv.d2 > 0 ? bv.d2 / 2 : 0, t2 = r2 > 0 ? Math.max(0, Math.min(bv.t2 || 0, B - 0.5)) : 0;
+    const type = bv.type === 'disc' ? 'disc' : 'bowl', da = 2 * ra0, auto = (v, k) => v > 0 ? v : k * da;
+    const rootAt = w => rootC + Math.min(0, w) * tanE;                      // 齿根与齿顶同锥度（随重磨一起变小）
+    const bw = type === 'bowl' ? { H: auto(bv.H, 0.37), Din: auto(bv.Din, 0.664), aIn: (bv.aIn > 0 ? bv.aIn : 15) * DR, DN: auto(bv.DN, 0.694), Rn: auto(bv.Rn, 0.077), aT: (bv.aT > 0 ? bv.aT : 45) * DR, dB: auto(bv.dB, 0.309) } : null;
+    if (bw) bw.Hf = bv.Hf > 0 ? bv.Hf : 0.5 * bw.H;
+    let B = bw ? bw.H : Math.max(Bc, bv.B > 0 ? bv.B : Bc), d = bw ? bw.dB : bv.d > 0 ? bv.d : 0, kb = d > 0 ? Math.max(0, bv.kb || 0) : 0, kt = kb > 0 ? Math.max(0, bv.kt || 0) : 0;
+    const rW = bv.dw > 0 ? bv.dw / 2 : rootC + (-Bc) * tanE, r2 = bv.d2 > 0 ? bv.d2 / 2 : 0, t2 = r2 > 0 ? Math.max(0, Math.min(bv.t2 || 0, B - 0.5)) : 0;
     const err = [];
     if (rootC >= ra0 - 0.3 * mn) err.push('刀具齿根圆太大');
     if (coll && rootC > coll.rCoreMax + 1e-6) err.push(`刀具齿根圆 Ø${f3(2 * rootC)} 大于干涉允许的 Ø${f3(2 * coll.rCoreMax)}`);
     if (d && d / 2 + kt >= Math.min(rW, r2 || rW) - 0.5) err.push('内孔 / 键槽太大，壁厚不够');
-    if (rW > rootC + 1e-9) err.push('刀体直径不能大于刀具齿根圆');
-    if (r2 && (r2 <= d / 2 + kt || r2 >= rW)) err.push('背面沉孔直径应在内孔和刀体直径之间');
+    if (!bw && rW > rootC - Bc * tanE + 1e-9) err.push('刀体直径不能大于刀齿末端的齿根圆 Ø' + f3(2 * (rootC - Bc * tanE)));
+    if (!bw && r2 && (r2 <= d / 2 + kt || r2 >= rW)) err.push('背面沉孔直径应在内孔和刀体直径之间');
     const g = cp.gamma * DR, bc = cp.beta * DR, step = cp.rake === 'step' && Math.abs(bc) > 1e-9;
     const kF = step ? Math.tan(g) / Math.cos(bc) : Math.tan(g);              // 齿中心截面内前刀面斜率 dw/dρ
     const wFront = r => step ? -(ra0 - Math.max(r, rootC)) * kF : -(ra0 - r) * kF; // 齿中心截面的前刀面（阶梯前刀面在齿根以内取平面）
@@ -1291,7 +1301,7 @@ const SK = (() => {
     for (let j = 1; j < nT; j++) desc.push(['T', j / nT]);
     for (let j = fs.length - 1; j >= 0; j--) desc.push(['R', fs[j]]);
     for (let j = 1; j < nG; j++) desc.push(['G', j / nG]);
-    const flankPt = (sd, f, w) => { const F = sd === 'L' ? FL : FR, rho = rootC + f * (rtip(w) - rootC); return [rho, phiAt(F, rho) + w * F.ip]; };
+    const flankPt = (sd, f, w) => { const F = sd === 'L' ? FL : FR, r0 = rootAt(w), rho = r0 + f * (rtip(w) - r0); return [rho, phiAt(F, rho) + w * F.ip]; };
     // 某齿（k=0）的端面点 [ρ, θ, w]：mode 'rake' = 前刀面上（刃口及齿根）；'w' = w 为常数的截面；'wv' = 每个顶点给定 w（数组）
     function toothSlice(mode, wc) {
       const n = desc.length, out = new Array(n);
@@ -1299,7 +1309,7 @@ const SK = (() => {
       const pt = (i, w) => { const [k, f] = desc[i];
         if (k === 'L' || k === 'R') { const p = flankPt(k, f, w); return [p[0], p[1], w]; }
         const e = ends(w); if (k === 'T') return [rtip(w), e.tl[1] + (e.tr[1] - e.tl[1]) * f, w];
-        return [rootC, e.gr[1] + (e.gl[1] + tc - e.gr[1]) * f, w]; };
+        return [rootAt(w), e.gr[1] + (e.gl[1] + tc - e.gr[1]) * f, w]; };
       if (mode === 'w') return desc.map((_, i) => pt(i, wc));
       if (mode === 'wv') return desc.map((_, i) => pt(i, wc[i]));
       // 前刀面：齿面、齿顶点迭代 w = 前刀面(ρ, θ)；齿根弧在两侧齿根点之间按 w 线性过渡
@@ -1316,7 +1326,30 @@ const SK = (() => {
       const rs = Math.abs(s) > 1e-12 ? (kb / 2) / Math.abs(s) : Infinity, rt = (r0 + kt) / c, rr = Math.min(rs, rt);
       return rr > r0 && Math.abs(s) * r0 < kb / 2 ? rr : r0;
     };
-    return { frontW, D, cp, W, mn, ra0, tanE, zc, tc, Bc, B, d, kb, kt, rW, r2, t2, rootC, rootAuto, lowPhi, err, step, kF, g, bc, wFront, toothSlice, all, rtip, boreR, toothAng, FL, FR };
+    // 碗形刀体：轴向截面（x = −w，y = ρ），上半；up = true 时内孔取到键槽底
+    let bowlSect = null, bowlInfo = null;
+    if (bw) {
+      const rt = rtip(-Bc), rN = bw.DN / 2, rIn = bw.Din / 2, phi = bw.aT, xF = r => -wFront(r);
+      let Rn = bw.Rn; const tOf = R => (rt - rN + R * Math.cos(phi) - R) / Math.sin(phi);
+      if (rN >= rt) err.push(`颈部外径 Ø${f3(bw.DN)} 应小于刀齿末端外径 Ø${f3(2 * rt)}`);
+      if (tOf(Rn) < 0) Rn = Math.max(0, (rt - rN) / (1 - Math.cos(phi)) * 0.999);
+      const t = tOf(Rn), T1 = [Bc + t * Math.cos(phi), rt - t * Math.sin(phi)], C = [T1[0] + Rn * Math.sin(phi), rN + Rn];
+      if (!(bv.H > 0)) { bw.H = Math.max(0.37 * da, C[0] + Math.max(0.09 * da, 3)); B = bw.H; if (!(bv.Hf > 0)) bw.Hf = 0.5 * bw.H; }
+      const xin = xF(rIn), rFl = rIn - (bw.Hf - xin) * Math.tan(bw.aIn);
+      if (C[0] > bw.H - 0.5) err.push('总高不够：过渡锥和圆角已超出顶面，加大总高或减小过渡锥角');
+      if (rIn > rootAt(-Bc) - 1.5) err.push(`前端内径 Ø${f3(bw.Din)} 太大，刀齿下面壁太薄（刀齿末端齿根 Ø${f3(2 * rootAt(-Bc))}）`);
+      if (bw.Hf >= bw.H - 2) err.push('螺栓面深度太大，顶部壁太薄');
+      if (rFl <= d / 2 + (kb ? kt : 0) + 0.5) err.push(`螺栓面直径 Ø${f3(2 * rFl)} 不大于内孔，减小螺栓面深度或内锥角`);
+      const arc = []; { const a1 = Math.atan2(T1[1] - C[1], T1[0] - C[0]), a2 = -Math.PI / 2; for (let k = 0; k <= 12; k++) { const a = a1 + (a2 - a1) * k / 12; arc.push([C[0] + Rn * Math.cos(a), C[1] + Rn * Math.sin(a)]); } }
+      bowlInfo = { rt, rN, rIn, Rn, xin, rFl, T1, C, arc };
+      bowlSect = up => {
+        const ri = d ? (up && kb ? d / 2 + kt : d / 2) : 0, P = [[xin, rIn]];
+        if (step) P.push([xF(rootC), rootC]);
+        P.push([0, ra0], [Bc, rt], ...arc, [bw.H, rN], [bw.H, ri], [bw.Hf, ri], [bw.Hf, rFl]);
+        return P;
+      };
+    }
+    return { type, bw, bowlSect, bowlInfo, rootAt, frontW, D, cp, W, mn, ra0, tanE, zc, tc, Bc, B, d, kb, kt, rW, r2, t2, rootC, rootAuto, lowPhi, err, step, kF, g, bc, wFront, toothSlice, all, rtip, boreR, toothAng, FL, FR };
   }
 
   // ---------- 2D 绘图模型 ----------
@@ -1389,6 +1422,7 @@ const SK = (() => {
 
   // ---------- 三个视图 ----------
   function views(G, hk) {
+    if (G.type === 'bowl') return viewsBowl(G, hk);
     const { ra0, rootC, d, kb, kt, rW, r2, t2, B, Bc, zc, tc, D, cp } = G, K = D.K, h = Math.max(1.2, ra0 * 0.045) * (hk || 1), rot = Math.PI / 2 - G.toothAng;
     const ctr = (dr, R) => { dr.add({ t: 'line', a: [-R - 2 * h, 0], b: [R + 2 * h, 0], ly: 'CENTER' }).add({ t: 'line', a: [0, -R - 2 * h], b: [0, R + 2 * h], ly: 'CENTER' }); };
     const borePl = (mx) => { if (!d) return null; const pts = []; for (let k = 0; k < 720; k++) { const th = k * Math.PI / 360, r = G.boreR(th, Math.PI / 2); pts.push([mx * r * Math.cos(th), r * Math.sin(th)]); } return pts; };
@@ -1423,7 +1457,7 @@ const SK = (() => {
     };
     for (const up of [true, false]) { const P = sect(up); S.add({ t: 'pl', pts: P, closed: true, ly: 'OUTLINE' }).add({ t: 'hatch', pts: P, sp: Math.max(0.8, ra0 * 0.04) }); }
     S.add({ t: 'line', a: [-3 * h, 0], b: [B + 3 * h, 0], ly: 'CENTER' });
-    for (const s of [1, -1]) S.add({ t: 'line', a: [-G.wFront(rootC), s * rootC], b: [Bc, s * rootC], ly: 'HIDDEN' });
+    for (const s of [1, -1]) S.add({ t: 'line', a: [-G.wFront(rootC), s * rootC], b: [Bc, s * G.rootAt(-Bc)], ly: 'HIDDEN' });
     const xr = B + 4 * h;
     S.add({ t: 'dim', a: [0, -ra0], b: [B, -ra0], dir: 'h', at: -ra0 - 5 * h, s: f3(B), h });
     if (B > Bc + 1e-9) S.add({ t: 'dim', a: [0, ra0], b: [Bc, G.rtip(-Bc)], dir: 'h', at: ra0 + 3 * h, s: f3(Bc), h });
@@ -1447,11 +1481,59 @@ const SK = (() => {
     if (r2 > 0) Bk.add({ t: 'lead', p: L45(r2, -40 * DR), q: L45(ra0 + 4 * h, -40 * DR), s: `沉孔 Ø${f3(2 * r2)} 深 ${f3(t2)}`, h, dx: 1 });
     return { F, S, Bk, h };
   }
+  // 碗形刀具：正面、轴向剖视、背面（从顶面看）
+  function viewsBowl(G, hk) {
+    const { ra0, rootC, d, kb, kt, Bc, zc, D, cp, bw, bowlInfo: bi } = G, K = D.K, h = Math.max(1.2, ra0 * 0.045) * (hk || 1), rot = Math.PI / 2 - G.toothAng, H = bw.H;
+    const ctr = (dr, R) => { dr.add({ t: 'line', a: [-R - 2 * h, 0], b: [R + 2 * h, 0], ly: 'CENTER' }).add({ t: 'line', a: [0, -R - 2 * h], b: [0, R + 2 * h], ly: 'CENTER' }); };
+    const circ = r => { const o = []; for (let k = 0; k <= 180; k++) { const a = 2 * Math.PI * k / 180; o.push([r * Math.cos(a), r * Math.sin(a)]); } return o; };
+    const borePl = mx => { const pts = []; for (let k = 0; k < 720; k++) { const th = k * Math.PI / 360, r = G.boreR(th, Math.PI / 2); pts.push([mx * r * Math.cos(th), r * Math.sin(th)]); } return pts; };
+    const L45 = (r, a) => [r * Math.cos(a), r * Math.sin(a)];
+    // 正面：刃口与齿根、前端内孔、看进去的螺栓面边缘和内孔
+    const F = new Draw(), fr = G.all(G.toothSlice('rake'), rot).map(p => [p[0] * Math.cos(p[1]), p[0] * Math.sin(p[1])]);
+    ctr(F, ra0); F.add({ t: 'pl', pts: fr, closed: true, ly: 'OUTLINE' }).add({ t: 'pl', pts: circ(K.rc), closed: true, ly: 'CENTER' });
+    F.add({ t: 'pl', pts: circ(bi.rIn), closed: true, ly: 'OUTLINE' }).add({ t: 'pl', pts: circ(bi.rFl), closed: true, ly: 'OUTLINE' });
+    if (d) F.add({ t: 'pl', pts: borePl(1), closed: true, ly: 'OUTLINE' });
+    F.add({ t: 'lead', p: L45(ra0, 50 * DR), q: L45(ra0 + 4 * h, 50 * DR), s: `Ø${f3(2 * ra0)}（新刀外径）`, h, dx: 1 });
+    F.add({ t: 'lead', p: L45(K.rc, 140 * DR), q: L45(ra0 + 4 * h, 140 * DR), s: `分度圆 Ø${f3(2 * K.rc)}`, h, dx: -1 });
+    F.add({ t: 'lead', p: L45(rootC, -60 * DR), q: L45(ra0 + 4 * h, -60 * DR), s: `齿根 Ø${f3(2 * rootC)}`, h, dx: 1 });
+    F.add({ t: 'lead', p: L45(bi.rIn, -130 * DR), q: L45(ra0 + 4 * h, -130 * DR), s: `前端内径 Ø${f3(2 * bi.rIn)}`, h, dx: -1 });
+    F.add({ t: 'text', p: [0, -ra0 - 6 * h], s: `z = ${zc}，${cp.beta ? (cp.beta > 0 ? '右旋' : '左旋') + ' βc ' + Math.abs(cp.beta) + '°' : '直齿'}`, h, an: 'middle', ly: 'TEXT' });
+    // 侧面：轴向剖视，轴线竖直、刀齿（前刀面）在下、顶面在上；左半过键槽
+    const S = new Draw(), P2 = (sg, p) => [sg * p[1], p[0]];
+    for (const up of [true, false]) { const sg = up ? -1 : 1, P = G.bowlSect(up).map(p => P2(sg, p)); S.add({ t: 'pl', pts: P, closed: true, ly: 'OUTLINE' }).add({ t: 'hatch', pts: P, sp: Math.max(0.8, ra0 * 0.04) }); }
+    S.add({ t: 'line', a: [0, -3 * h], b: [0, H + 3 * h], ly: 'CENTER' });
+    for (const sg of [1, -1]) S.add({ t: 'line', a: [sg * rootC, -G.wFront(rootC)], b: [sg * G.rootAt(-Bc), Bc], ly: 'HIDDEN' });
+    const xF0 = Math.max(0, -G.wFront(bi.rIn)), yB = -Math.max(0, -G.wFront(0));
+    S.add({ t: 'dim', a: [-bi.rIn, xF0], b: [bi.rIn, xF0], dir: 'h', at: yB - 2.5 * h, s: `Ø${f3(2 * bi.rIn)}`, h });
+    S.add({ t: 'dim', a: [-bi.rFl, bw.Hf], b: [bi.rFl, bw.Hf], dir: 'h', at: yB - 5 * h, s: `Ø${f3(2 * bi.rFl)}`, h });
+    S.add({ t: 'dim', a: [-ra0, 0], b: [ra0, 0], dir: 'h', at: yB - 7.5 * h, s: `Ø${f3(2 * ra0)}`, h });
+    if (d) S.add({ t: 'dim', a: [-(kb ? d / 2 + kt : d / 2), H], b: [d / 2, H], dir: 'h', at: H + 2.5 * h, s: kb ? f3(d + kt) : `Ø${f3(d)}`, h });
+    S.add({ t: 'dim', a: [-bi.rN, H], b: [bi.rN, H], dir: 'h', at: H + 5 * h, s: `Ø${f3(2 * bi.rN)}`, h });
+    S.add({ t: 'dim', a: [-ra0, 0], b: [-bi.rN, H], dir: 'v', at: -ra0 - 5 * h, s: f3(H), h });
+    S.add({ t: 'dim', a: [-ra0, 0], b: [-bi.rt, Bc], dir: 'v', at: -ra0 - 2.2 * h, s: f3(Bc), h });
+    S.add({ t: 'lead', p: [bi.rt, Bc], q: [ra0 + 2 * h, Bc + 2.5 * h], s: `Ø${f3(2 * bi.rt)}`, h, dx: 1 });
+    S.add({ t: 'dim', a: [bi.rFl, bw.Hf], b: [bi.rIn, xF0], dir: 'v', at: ra0 + 5 * h, s: f3(bw.Hf - xF0), h });
+    if (d) S.add({ t: 'dim', a: [d / 2, bw.Hf], b: [d / 2, H], dir: 'v', at: d / 2 + 1.6 * h, s: f3(H - bw.Hf), h });
+    S.add({ t: 'lead', p: [-G.rtip(-Bc * 0.5), Bc * 0.5], q: [-ra0 - 3 * h, Bc + 6 * h], s: `αe ${cp.alphaE}°`, h, dx: -1 });
+    S.add({ t: 'lead', p: [-(ra0 + rootC) / 2, -G.wFront((ra0 + rootC) / 2)], q: [-ra0 - 2 * h, -4 * h], s: G.step ? `阶梯前刀面 γ ${cp.gamma}°` : (cp.gamma ? `前刀面 γ ${cp.gamma}°` : '平前刀面'), h, dx: -1 });
+    if (bi.Rn > 0) { const m = bi.arc[6]; S.add({ t: 'lead', p: [-m[1], m[0]], q: [-ra0 - 1 * h, H + 1.5 * h], s: `R${f2(bi.Rn)}`, h, dx: -1 }); }
+    { const p = [(bi.T1[1] + bi.rt) / 2, (bi.T1[0] + Bc) / 2]; S.add({ t: 'lead', p, q: [ra0 + 1 * h, H + 1.5 * h], s: `过渡锥 ${f2(bw.aT / DR)}°`, h, dx: 1 }); }
+    { const yy = (xF0 + bw.Hf) / 2, x = bi.rIn - (yy - xF0) * Math.tan(bw.aIn); S.add({ t: 'lead', p: [x, yy], q: [x * 0.45, yy - 1.2 * h], s: `内锥 ${f2(bw.aIn / DR)}°`, h, dx: -1 }); }
+    // 背面：从顶面往前看（左右镜像）
+    const Bk = new Draw(), fm = fr.map(p => [-p[0], p[1]]);
+    ctr(Bk, ra0); Bk.add({ t: 'pl', pts: fm, closed: true, ly: 'OUTLINE' }).add({ t: 'pl', pts: circ(bi.rt), closed: true, ly: 'OUTLINE' }).add({ t: 'pl', pts: circ(bi.rN), closed: true, ly: 'OUTLINE' });
+    if (d) Bk.add({ t: 'pl', pts: borePl(-1), closed: true, ly: 'OUTLINE' });
+    Bk.add({ t: 'lead', p: L45(bi.rt, 130 * DR), q: L45(ra0 + 4 * h, 130 * DR), s: `Ø${f3(2 * bi.rt)}（齿部末端）`, h, dx: -1 });
+    Bk.add({ t: 'lead', p: L45(bi.rN, 40 * DR), q: L45(ra0 + 4 * h, 40 * DR), s: `顶部 Ø${f3(2 * bi.rN)}`, h, dx: 1 });
+    if (d) Bk.add({ t: 'lead', p: L45(d / 2, -45 * DR), q: L45(ra0 + 4 * h, -45 * DR), s: `内孔 Ø${f3(d)}`, h, dx: 1 });
+    return { F, S, Bk, h };
+  }
   function paramRows(G) {
     const { D, cp, B, Bc, ra0, rootC, d, kb, kt } = G, BB = st.B, K = D.K;
     return [['齿数 zc', cp.z], ['法向模数 mn', D.W.mn], ['法向压力角 αn', D.wp.an + '°'], ['分度圆螺旋角 βc', `${Math.abs(cp.beta)}° ${cp.beta > 0 ? '右旋' : cp.beta < 0 ? '左旋' : ''}`],
       ['前刀面', `${G.step ? '阶梯' : cp.gamma ? '锥形' : '平面'}，前角 γ ${cp.gamma}°`], ['顶刃后角 αe', cp.alphaE + '°'], ['新刀外径', 'Ø' + f3(2 * ra0)], ['重磨到底外径', 'Ø' + f3(BB.st[2].da)],
-      ['可重磨量（轴向）', f3(cp.regrind)], ['齿根圆', 'Ø' + f3(2 * rootC)], ['刀齿长度 / 总厚', f3(Bc) + ' / ' + f3(B)], ['内孔', d ? 'Ø' + f3(d) + (kb ? `，键槽 ${f3(kb)} × ${f3(d + kt)}` : '') : '—'],
+      ['可重磨量（轴向）', f3(cp.regrind)], ['齿根圆', 'Ø' + f3(2 * rootC)], ['刀具形式', G.type === 'bowl' ? '碗形（螺栓压紧）' : '盘形（装心轴）'], ['齿部长度 / 总' + (G.type === 'bowl' ? '高' : '厚'), f3(Bc) + ' / ' + f3(B)], ['内孔', d ? 'Ø' + f3(d) + (kb ? `，键槽 ${f3(kb)} × ${f3(d + kt)}` : '') : '—'],
+      ...(G.type === 'bowl' ? [['前端内径 / 内锥半角', 'Ø' + f3(G.bw.Din) + ' / ' + f2(G.bw.aIn / DR) + '°'], ['螺栓面 深度 / 直径', f3(G.bw.Hf - Math.max(0, -G.wFront(G.bw.Din / 2))) + ' / Ø' + f3(2 * G.bowlInfo.rFl)], ['顶部外径 / 圆角 / 过渡锥', 'Ø' + f3(G.bw.DN) + ' / R' + f2(G.bowlInfo.Rn) + ' / ' + f2(G.bw.aT / DR) + '°']] : []),
       ['刀尖圆角', 'R' + (cp.rc0 || 0)], ['左 / 右后刀面导程', f2(Math.abs(D.flank.L.lead)) + ' / ' + f2(Math.abs(D.flank.R.lead))],
       ['轴交角 Σ / 中心距（新刀）', f3(BB.Sig) + '° / ' + f4(BB.st[0].A)], ['工件', `${D.wp.kind === 'int' ? '内齿' : '外齿'} mn${D.wp.mn} z${D.wp.z} αn${D.wp.an}° β${D.wp.beta}° x${D.wp.x}`]];
   }
@@ -1460,7 +1542,7 @@ const SK = (() => {
     let G; try { G = bodyGeom(); } catch (e) { $('bodyW').textContent = '外形计算出错：' + e.message; return; }
     st.G = G; $('bodyW').textContent = G.err.join('；');
     const hk = Math.min(1.9, Math.max(1, 560 / (($('vF').getBoundingClientRect().width) || 560))), V = views(G, hk); st.views = views(G);
-    toSVG(V.F, $('vF'), '正面（看前刀面，一个刀齿朝上）'); toSVG(V.S, $('vS'), '侧面：轴向剖视（上半过键槽，左为前刀面）'); toSVG(V.Bk, $('vB'), '背面（从后往前看）');
+    toSVG(V.F, $('vF'), '正面（看前刀面，一个刀齿朝上）'); toSVG(V.S, $('vS'), G.type === 'bowl' ? '侧面：轴向剖视（刀齿在下，左半过键槽）' : '侧面：轴向剖视（上半过键槽，左为前刀面）'); toSVG(V.Bk, $('vB'), '背面（从后往前看）');
     $('bodyT').innerHTML = paramRows(G).map(r => `<div><span>${r[0]}</span><span>${r[1]}</span></div>`).join('');
     $('bodyN').textContent = G.rootC === G.rootAuto && !(st.bv.dfc > 0) ? `刀具齿根圆按“不碰工件齿顶（留 0.1 m）且低于刃口切削最低点 0.3 m”自动取 Ø${f3(2 * G.rootC)}。刃口最低点以下的齿面按径向直线延伸到齿根。` : '';
     build3dBody();
@@ -1468,11 +1550,12 @@ const SK = (() => {
   // ---------- DXF ----------
   function bodyDXF() {
     const G = st.G, V = st.views; if (!G || !V) return;
-    const h = V.h, gap = 10 * h, sx = G.ra0 + gap + 10 * h, offs = [[0, 0], [sx + Math.max(0, G.wFront(0)) + 6 * h, 0], [2 * sx + G.B + 14 * h, 0]];
-    const ents = []; [V.F, V.S, V.Bk].forEach((dr, i) => { for (const e of expand(dr)) ents.push(shift(e, offs[i])); });
+    const h = V.h, gap = 8 * h, EX = [V.F, V.S, V.Bk].map(expand), BX = EX.map(e => polyBox({ e })), offs = []; let xr = 0;
+    BX.forEach((bb, i) => { const ox = i ? xr + gap - bb[0] : 0; offs.push([ox, 0]); xr = bb[2] + ox; });
+    const ents = []; EX.forEach((E, i) => { for (const e of E) ents.push(shift(e, offs[i])); });
     const tys = [['正面（看前刀面）', 0], ['侧面 轴向剖视', 1], ['背面', 2]];
-    for (const [s, i] of tys) ents.push({ t: 'text', p: [offs[i][0] + (i === 1 ? G.B / 2 : 0), G.ra0 + 12 * h], s, h: 1.3 * h, an: 'middle', ly: 'TEXT' });
-    const rows = paramRows(G); let y = -G.ra0 - 12 * h;
+    const yT = Math.max(...BX.map(b => b[3])) + 3 * h; for (const [s, i] of tys) ents.push({ t: 'text', p: [offs[i][0] + (BX[i][0] + BX[i][2]) / 2, yT], s, h: 1.3 * h, an: 'middle', ly: 'TEXT' });
+    const rows = paramRows(G); let y = Math.min(...BX.map(b => b[1])) - 4 * h;
     ents.push({ t: 'text', p: [-G.ra0, y], s: '滚插刀外形与参数（单位 mm）', h: 1.2 * h, an: 'start', ly: 'TEXT' }); y -= 2 * h;
     rows.forEach((r, i) => { const c = i % 2, yy = y - Math.floor(i / 2) * 1.8 * h; ents.push({ t: 'text', p: [-G.ra0 + c * 30 * h, yy], s: r[0] + '：' + r[1], h, an: 'start', ly: 'TEXT' }); });
     const f = v => (+v).toFixed(5), O = [];
@@ -1513,19 +1596,34 @@ const SK = (() => {
     const strip = (A, Bb, col, expect) => { const T = []; for (let i = 0; i < N; i++) { const j = (i + 1) % N; T.push([A[i], A[j], Bb[j]], [A[i], Bb[j], Bb[i]]); } groups.push({ T, col, expect }); };
     const tooth = [0.77, 0.34, 0.11], body = [0.42, 0.45, 0.49], rad = c => [c[0], c[1], 0], nrad = c => [-c[0], -c[1], 0];
     for (let s = 0; s < nS; s++) strip(rings[s], rings[s + 1], tooth, rad);
-    const fRoot0 = 0, fRoot = ang.map(th => { const r = G.rootC - 1e-4, t0 = th - rot; return [r * Math.cos(th), r * Math.sin(th), G.step ? G.frontW(G.rootC, t0) : G.wFront(G.rootC)]; }), fIn = circ(bore, wIn); strip(rings[0], fRoot, tooth, () => [0, 0, 1]); strip(fRoot, fIn, body, () => [0, 0, 1]);
+    const fRoot = ang.map(th => { const t0 = th - rot, w = G.step ? G.frontW(G.rootC, t0) : G.wFront(G.rootC), r = G.rootAt(w) - 1e-4; return [r * Math.cos(th), r * Math.sin(th), w]; }), fIn = G.type === 'bowl' ? circ(G.bowlInfo.rIn, wIn) : circ(bore, wIn); strip(rings[0], fRoot, tooth, () => [0, 0, 1]); strip(fRoot, fIn, body, () => [0, 0, 1]);
+    if (G.type === 'bowl') {
+      // 碗形：刀齿末端台阶 → 过渡锥 → 圆角 → 顶部外圆 → 顶面 → 内孔 → 螺栓面 → 内锥 → 前端内孔（与前刀面相接）
+      const bi = G.bowlInfo, bw = G.bw, sec = G.bowlSect(false);
+      const inPoly = (x, y) => { let c = false; for (let i = 0, j = sec.length - 1; i < sec.length; j = i++) { const a = sec[i], b = sec[j]; if ((a[1] > y) !== (b[1] > y) && x < (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0]) c = !c; } return c; };
+      const chain = [[Bc, bi.rt, 'c'], ...bi.arc.map(p => [p[0], p[1], 'c']), [bw.H, bi.rN, 'c'], [bw.H, 0, 'b'], [bw.Hf, 0, 'b'], [bw.Hf, bi.rFl, 'c']];
+      const R = chain.map(([x, y, k]) => k === 'b' ? circ(bore, -x) : circ(y, -x)); R.push(fIn);
+      strip(rings[nS], R[0], body, () => [0, 0, 1]);          // 齿槽在齿部末端的台阶面朝前（后面是更大的过渡锥）
+      const secPt = i => i < chain.length ? [chain[i][0], chain[i][2] === 'b' ? d / 2 : chain[i][1]] : [-wIn(bi.rIn), bi.rIn];
+      for (let i = 0; i + 1 < R.length; i++) {
+        const a = secPt(i), b = secPt(i + 1), dx = b[0] - a[0], dy = b[1] - a[1], l = Math.hypot(dx, dy) || 1; let n = [dy / l, -dx / l];
+        const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]; if (inPoly(m[0] + n[0] * 0.01, m[1] + n[1] * 0.01)) n = [-n[0], -n[1]];
+        strip(R[i], R[i + 1], body, c => { const r = Math.hypot(c[0], c[1]) || 1; return [n[1] * c[0] / r, n[1] * c[1] / r, -n[0]]; });
+      }
+    } else {
     let last = rings[nS], wb = -Bc;
     if (B > Bc + 1e-9) { const a = circ(rW, -Bc), b = circ(rW, -B); strip(last, a, body, () => [0, 0, -1]); strip(a, b, body, rad); last = b; wb = -B; }
     let bIn;
     if (r2 > 0) { const a = circ(r2, wb), b = circ(r2, wb + t2), c = circ(bore, wb + t2); strip(last, a, body, () => [0, 0, -1]); strip(a, b, body, nrad); strip(b, c, body, () => [0, 0, -1]); bIn = c; }
     else { const c = circ(bore, wb); strip(last, c, body, () => [0, 0, -1]); bIn = c; }
     if (d) strip(fIn, bIn, body, nrad);
+    }
     // 统一外法向
     const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], cr = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
     for (const g of groups) { let s = 0; for (const t of g.T) { const n = cr(sub(t[1], t[0]), sub(t[2], t[0])), c = [(t[0][0] + t[1][0] + t[2][0]) / 3, (t[0][1] + t[1][1] + t[2][1]) / 3, (t[0][2] + t[1][2] + t[2][2]) / 3], e = g.expect(c); s += n[0] * e[0] + n[1] * e[1] + n[2] * e[2]; } if (s < 0) g.T = g.T.map(t => [t[0], t[2], t[1]]); }
     // 体积（散度定理），用于自检
     let vol = 0; for (const g of groups) for (const t of g.T) vol += (t[0][0] * (t[1][1] * t[2][2] - t[1][2] * t[2][1]) - t[0][1] * (t[1][0] * t[2][2] - t[1][2] * t[2][0]) + t[0][2] * (t[1][0] * t[2][1] - t[1][1] * t[2][0])) / 6;
-    return { groups, vol, B };
+    return { groups, vol, B, flip: G.type === 'bowl' };
   }
   function stlBin(M) {
     const T = M.groups.flatMap(g => g.T), buf = new ArrayBuffer(84 + 50 * T.length), dv = new DataView(buf);
@@ -1562,15 +1660,17 @@ const SK = (() => {
     }
     const req2 = () => { if (!raf) raf = requestAnimationFrame(draw); };
     const preset = v => { const c = cam; c.tgt = ctr0.slice(); c.dist = R0 * 3.4;
-      if (v === 'front') { c.th = -Math.PI / 2; c.ph = Math.PI / 2 - 1e-4; } else if (v === 'back') { c.th = -Math.PI / 2; c.ph = -Math.PI / 2 + 1e-4; } else if (v === 'side') { c.th = 0; c.ph = 0; } else { c.th = -2.2; c.ph = 0.55; }
+      const f = v2 && v2.flip ? -1 : 1;
+      if (v === 'front') { c.th = -Math.PI / 2; c.ph = f * (Math.PI / 2 - 1e-4); } else if (v === 'back') { c.th = -Math.PI / 2; c.ph = -f * (Math.PI / 2 - 1e-4); } else if (v === 'side') { c.th = 0; c.ph = 0; } else { c.th = -2.2; c.ph = f * 0.5; }
       document.querySelectorAll('[data-b]').forEach(x => x.classList.toggle('on', x.dataset.b === v)); req2(); };
     v2 = { set(M) {
       const P = [], Nn = [], C = [];
-      for (const gr of M.groups) for (const t of gr.T) { const u = [t[1][0] - t[0][0], t[1][1] - t[0][1], t[1][2] - t[0][2]], v = [t[2][0] - t[0][0], t[2][1] - t[0][1], t[2][2] - t[0][2]], n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]], l = Math.hypot(...n) || 1; for (const p of t) { P.push(...p); Nn.push(n[0] / l, n[1] / l, n[2] / l); C.push(...gr.col); } }
+      const fl = !!M.flip, tf = p => fl ? [p[0], -p[1], -p[2]] : p;   // 碗形：绕 x 轴转 180°，刀齿朝下（与图纸一致）
+      for (const gr of M.groups) for (const t0 of gr.T) { const t = t0.map(tf), u = [t[1][0] - t[0][0], t[1][1] - t[0][1], t[1][2] - t[0][2]], v = [t[2][0] - t[0][0], t[2][1] - t[0][1], t[2][2] - t[0][2]], n = [u[1] * v[2] - u[2] * v[1], u[2] * v[0] - u[0] * v[2], u[0] * v[1] - u[1] * v[0]], l = Math.hypot(...n) || 1; for (const p of t) { P.push(...p); Nn.push(n[0] / l, n[1] / l, n[2] / l); C.push(...gr.col); } }
       if (bufs) for (const k of ['p', 'n', 'c']) g.deleteBuffer(bufs[k]);
       const mk = a => { const b = g.createBuffer(); g.bindBuffer(g.ARRAY_BUFFER, b); g.bufferData(g.ARRAY_BUFFER, new Float32Array(a), g.STATIC_DRAW); return b; };
       bufs = { p: mk(P), n: mk(Nn), c: mk(C) }; cnt = P.length / 3;
-      const first = R0 === 30 && !v2.inited; R0 = st.G.ra0; ctr0 = [0, 0, -M.B / 2]; if (first) { v2.inited = true; preset('iso'); } else req2();
+      const first = R0 === 30 && !v2.inited, chg = v2.flip !== !!M.flip; R0 = st.G.ra0; ctr0 = [0, 0, M.flip ? M.B / 2 : -M.B / 2]; v2.flip = !!M.flip; if (first || chg) { v2.inited = true; preset('iso'); } else req2();
     }, preset, req: req2, cam };
     const ptr = new Map(); let p0 = null;
     cv2.addEventListener('contextmenu', e => e.preventDefault());
