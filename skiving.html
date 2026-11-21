@@ -896,12 +896,14 @@ const SK = (() => {
   const H_DEF = [['sh', '台肩位置', 'sel', [['none', '无台肩'], ['exit', '出刀端'], ['entry', '进刀端']]], ['g', '台肩到齿端距离', 'mm', 5, 0.1], ['Ds', '台肩直径（内齿为孔径，外齿为外径）', 'mm', 0, 0.1]];
   const S_DEF = [['kap', '刀具倾角 κ', '°', 0, 0.5], ['e', '偏置 e', 'mm', 0, 0.1], ['Dh', '心轴螺母 / 刀柄直径（0 = 不查）', 'mm', 0, 0.5], ['Lh', '螺母 / 刀柄长度', 'mm', 40, 1]];
   const B_DEF = [['type', '刀具形式', 'sel', [['bowl', '碗形（螺栓压紧）'], ['disc', '盘形（装心轴）']]], ['Bc', '齿部轴向长度（含可重磨量）', 'mm', 10, 0.5],
-    ['H', '总高（0 = 自动）', 'mm', 0, 0.5], ['dB', '内孔直径（0 = 自动）', 'mm', 0, 0.001], ['Din', '前端内径（0 = 自动）', 'mm', 0, 0.1], ['aIn', '内锥半角（0 = 15°）', '°', 0, 0.5],
+    ['bore', '内孔直径', 'sel', [['auto', '自动（选标准孔径）'], ['16', 'Ø16'], ['19', 'Ø19'], ['20', 'Ø20'], ['22', 'Ø22'], ['25', 'Ø25'], ['27', 'Ø27'], ['31.75', 'Ø31.75（1¼″）'], ['32', 'Ø32'], ['40', 'Ø40'], ['44.45', 'Ø44.45（1¾″）'], ['50.8', 'Ø50.8（2″）'], ['custom', '自定义'], ['none', '无孔']]],
+    ['dCus', '自定义内孔直径', 'mm', 20, 0.001],
+    ['H', '总高（0 = 自动）', 'mm', 0, 0.5], ['Din', '前端内径（0 = 自动）', 'mm', 0, 0.1], ['aIn', '内锥半角（0 = 15°）', '°', 0, 0.5],
     ['Hf', '螺栓面深度（自前端，0 = 自动）', 'mm', 0, 0.1], ['DN', '顶部外径（0 = 自动）', 'mm', 0, 0.1], ['Rn', '顶部圆角 R（0 = 自动）', 'mm', 0, 0.1], ['aT', '过渡锥与轴线夹角（0 = 45°）', '°', 0, 1],
-    ['B', '刀具总厚度（0 = 同齿长）', 'mm', 0, 0.5], ['d', '内孔直径（0 = 无孔）', 'mm', 31.743, 0.001], ['dw', '刀体直径（0 = 同齿根）', 'mm', 0, 0.1],
+    ['B', '刀具总厚度（0 = 同齿长）', 'mm', 0, 0.5], ['dw', '刀体直径（0 = 同齿根）', 'mm', 0, 0.1],
     ['d2', '背面沉孔直径（0 = 无）', 'mm', 0, 0.1], ['t2', '沉孔深度', 'mm', 0, 0.1],
     ['kb', '键槽宽（0 = 无键槽）', 'mm', 0, 0.1], ['kt', '键槽深 t（自孔壁）', 'mm', 0, 0.1], ['dfc', '刀具齿根圆直径（0 = 自动）', 'mm', 0, 0.01]];
-  const B_ONLY = { bowl: ['H', 'dB', 'Din', 'aIn', 'Hf', 'DN', 'Rn', 'aT'], disc: ['B', 'd', 'dw', 'd2', 't2'] };
+  const B_ONLY = { bowl: ['H', 'Din', 'aIn', 'Hf', 'DN', 'Rn', 'aT'], disc: ['B', 'dw', 'd2', 't2'] };
   const P_DEF = [['adj', '重磨后调整', 'sel', [['AS', '调中心距 + 轴交角（推荐）'], ['A', '只调中心距'], ['ASE', '调中心距 + 轴交角 + 偏置'], ['none', '不调（中心距按齿根）']]],
     ['n', '切削次数（含精切）', '', 5, 1], ['fin', '精切余量（径向）', 'mm', 0.1, 0.01], ['mode', '切深分配', 'sel', [['area', '等切除面积（切深递减）'], ['depth', '等切深']]],
     ['faR', '粗切进给（每工件转）', 'mm', 0.3, 0.01], ['faF', '精切进给（每工件转）', 'mm', 0.1, 0.01], ['safe', '单边安全距离', 'mm', 1, 0.5]];
@@ -917,8 +919,8 @@ const SK = (() => {
     }
   }
   build('wgrid', W_DEF, 'w'); build('cgrid', C_DEF, 'c'); build('mgrid', M_DEF, 'm'); build('hgrid', H_DEF, 'h'); build('sgrid', S_DEF, 's'); build('pgrid', P_DEF, 'p'); build('bgrid', B_DEF, 'b');
-  const syncType = () => { const t = $('b_type').value; for (const [k, list] of Object.entries(B_ONLY)) for (const f of list) $('b_' + f).parentElement.hidden = k !== t; };
-  $('b_type').addEventListener('change', syncType); syncType();
+  const syncType = () => { const t = $('b_type').value; for (const [k, list] of Object.entries(B_ONLY)) for (const f of list) $('b_' + f).parentElement.hidden = k !== t; $('b_dCus').parentElement.hidden = $('b_bore').value !== 'custom'; };
+  $('b_type').addEventListener('change', syncType); $('b_bore').addEventListener('change', syncType); syncType();
   if (M_DEF.some(d => d[2] !== 'sel' && +$('m_' + d[0]).value)) $('dMod').open = true;
   if (+$('s_kap').value || +$('s_e').value) $('dSet').open = true;
   const val = (key, k) => { const el = $(key + '_' + k); return el.tagName === 'SELECT' ? el.value : parseFloat(el.value); };
@@ -1266,6 +1268,7 @@ const SK = (() => {
 
   // ==================== 刀具外形：尺寸图（正面 / 侧面剖视 / 背面）、DXF、3D、STL ====================
   const DR = Math.PI / 180;
+  const BORES = [16, 20, 25, 31.75, 44.45, 50.8];   // 自动选孔时用的常用刀具内孔（31.75 = 1¼″，44.45 = 1¾″，50.8 = 2″）
   // 外形几何（新刀，刀体坐标：w 为刀具轴，前刀面朝 +w，新刀刀尖圆在 w = 0）
   function bodyGeom() {
     const { D, cp, bv, coll } = st, W = D.W, K = D.K, mn = W.mn, S0 = D.states[0];
@@ -1278,7 +1281,12 @@ const SK = (() => {
     const rootAt = w => rootC + Math.min(0, w) * tanE;                      // 齿根与齿顶同锥度（随重磨一起变小）
     const bw = type === 'bowl' ? { H: auto(bv.H, 0.37), Din: auto(bv.Din, 0.664), aIn: (bv.aIn > 0 ? bv.aIn : 15) * DR, DN: auto(bv.DN, 0.694), Rn: auto(bv.Rn, 0.077), aT: (bv.aT > 0 ? bv.aT : 45) * DR, dB: auto(bv.dB, 0.309) } : null;
     if (bw) bw.Hf = bv.Hf > 0 ? bv.Hf : 0.5 * bw.H;
-    let B = bw ? bw.H : Math.max(Bc, bv.B > 0 ? bv.B : Bc), d = bw ? bw.dB : bv.d > 0 ? bv.d : 0, kb = d > 0 ? Math.max(0, bv.kb || 0) : 0, kt = kb > 0 ? Math.max(0, bv.kt || 0) : 0;
+    let B = bw ? bw.H : Math.max(Bc, bv.B > 0 ? bv.B : Bc), kbIn = Math.max(0, bv.kb || 0), ktIn = kbIn > 0 ? Math.max(0, bv.kt || 0) : 0;
+    // 内孔：常用标准孔径中选；自动时按外径比例取不大于比例值的最大标准孔径（再按壁厚往下调）
+    const boreAuto = bv.bore === 'auto' || bv.bore == null, boreLim = r => { let best = 0; for (const x of BORES) if (x <= r + 1e-9) best = x; return best || BORES[0]; };
+    let d = bv.bore === 'none' ? 0 : bv.bore === 'custom' ? (bv.dCus > 0 ? bv.dCus : 0) : boreAuto ? boreLim((bw ? 0.33 : 0.47) * da) : parseFloat(bv.bore) || 0;
+    if (!bw && boreAuto) { const lim = 2 * (Math.min(rootC - Bc * tanE, bv.dw > 0 ? bv.dw / 2 : Infinity, bv.d2 > 0 ? bv.d2 / 2 : Infinity) - 3 - ktIn); d = Math.min(d, boreLim(lim)); }
+    let kb = d > 0 ? kbIn : 0, kt = kb > 0 ? ktIn : 0;
     const rW = bv.dw > 0 ? bv.dw / 2 : rootC + (-Bc) * tanE, r2 = bv.d2 > 0 ? bv.d2 / 2 : 0, t2 = r2 > 0 ? Math.max(0, Math.min(bv.t2 || 0, B - 0.5)) : 0;
     const err = [];
     if (rootC >= ra0 - 0.3 * mn) err.push('刀具齿根圆太大');
@@ -1339,6 +1347,7 @@ const SK = (() => {
       if (C[0] > bw.H - 0.5) err.push('总高不够：过渡锥和圆角已超出顶面，加大总高或减小过渡锥角');
       if (rIn > rootAt(-Bc) - 1.5) err.push(`前端内径 Ø${f3(bw.Din)} 太大，刀齿下面壁太薄（刀齿末端齿根 Ø${f3(2 * rootAt(-Bc))}）`);
       if (bw.Hf >= bw.H - 2) err.push('螺栓面深度太大，顶部壁太薄');
+      if (boreAuto && d / 2 + (kb ? kt : 0) > rFl - 1.5) { d = boreLim(2 * (rFl - 1.5 - (kb ? kt : 0))); }
       if (rFl <= d / 2 + (kb ? kt : 0) + 0.5) err.push(`螺栓面直径 Ø${f3(2 * rFl)} 不大于内孔，减小螺栓面深度或内锥角`);
       const arc = []; { const a1 = Math.atan2(T1[1] - C[1], T1[0] - C[0]), a2 = -Math.PI / 2; for (let k = 0; k <= 12; k++) { const a = a1 + (a2 - a1) * k / 12; arc.push([C[0] + Rn * Math.cos(a), C[1] + Rn * Math.sin(a)]); } }
       bowlInfo = { rt, rN, rIn, Rn, xin, rFl, T1, C, arc };
@@ -1349,7 +1358,7 @@ const SK = (() => {
         return P;
       };
     }
-    return { type, bw, bowlSect, bowlInfo, rootAt, frontW, D, cp, W, mn, ra0, tanE, zc, tc, Bc, B, d, kb, kt, rW, r2, t2, rootC, rootAuto, lowPhi, err, step, kF, g, bc, wFront, toothSlice, all, rtip, boreR, toothAng, FL, FR };
+    return { boreAuto, type, bw, bowlSect, bowlInfo, rootAt, frontW, D, cp, W, mn, ra0, tanE, zc, tc, Bc, B, d, kb, kt, rW, r2, t2, rootC, rootAuto, lowPhi, err, step, kF, g, bc, wFront, toothSlice, all, rtip, boreR, toothAng, FL, FR };
   }
 
   // ---------- 2D 绘图模型 ----------
@@ -1532,7 +1541,7 @@ const SK = (() => {
     const { D, cp, B, Bc, ra0, rootC, d, kb, kt } = G, BB = st.B, K = D.K;
     return [['齿数 zc', cp.z], ['法向模数 mn', D.W.mn], ['法向压力角 αn', D.wp.an + '°'], ['分度圆螺旋角 βc', `${Math.abs(cp.beta)}° ${cp.beta > 0 ? '右旋' : cp.beta < 0 ? '左旋' : ''}`],
       ['前刀面', `${G.step ? '阶梯' : cp.gamma ? '锥形' : '平面'}，前角 γ ${cp.gamma}°`], ['顶刃后角 αe', cp.alphaE + '°'], ['新刀外径', 'Ø' + f3(2 * ra0)], ['重磨到底外径', 'Ø' + f3(BB.st[2].da)],
-      ['可重磨量（轴向）', f3(cp.regrind)], ['齿根圆', 'Ø' + f3(2 * rootC)], ['刀具形式', G.type === 'bowl' ? '碗形（螺栓压紧）' : '盘形（装心轴）'], ['齿部长度 / 总' + (G.type === 'bowl' ? '高' : '厚'), f3(Bc) + ' / ' + f3(B)], ['内孔', d ? 'Ø' + f3(d) + (kb ? `，键槽 ${f3(kb)} × ${f3(d + kt)}` : '') : '—'],
+      ['可重磨量（轴向）', f3(cp.regrind)], ['齿根圆', 'Ø' + f3(2 * rootC)], ['刀具形式', G.type === 'bowl' ? '碗形（螺栓压紧）' : '盘形（装心轴）'], ['齿部长度 / 总' + (G.type === 'bowl' ? '高' : '厚'), f3(Bc) + ' / ' + f3(B)], ['内孔', d ? 'Ø' + (+d.toFixed(3)) + (G.boreAuto ? '（自动选的标准孔径）' : '') + (kb ? `，键槽 ${f3(kb)} × ${f3(d + kt)}` : '') : '—'],
       ...(G.type === 'bowl' ? [['前端内径 / 内锥半角', 'Ø' + f3(G.bw.Din) + ' / ' + f2(G.bw.aIn / DR) + '°'], ['螺栓面 深度 / 直径', f3(G.bw.Hf - Math.max(0, -G.wFront(G.bw.Din / 2))) + ' / Ø' + f3(2 * G.bowlInfo.rFl)], ['顶部外径 / 圆角 / 过渡锥', 'Ø' + f3(G.bw.DN) + ' / R' + f2(G.bowlInfo.Rn) + ' / ' + f2(G.bw.aT / DR) + '°']] : []),
       ['刀尖圆角', 'R' + (cp.rc0 || 0)], ['左 / 右后刀面导程', f2(Math.abs(D.flank.L.lead)) + ' / ' + f2(Math.abs(D.flank.R.lead))],
       ['轴交角 Σ / 中心距（新刀）', f3(BB.Sig) + '° / ' + f4(BB.st[0].A)], ['工件', `${D.wp.kind === 'int' ? '内齿' : '外齿'} mn${D.wp.mn} z${D.wp.z} αn${D.wp.an}° β${D.wp.beta}° x${D.wp.x}`]];
