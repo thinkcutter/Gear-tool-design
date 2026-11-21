@@ -125,6 +125,13 @@ table.vt{font-size:13px;margin-top:6px}
 table.vt td,table.vt th{padding:4px 8px}table.vt th small{font-weight:400;opacity:.7}table.vt td:not(:first-child),table.vt th:not(:first-child){text-align:right}@media(max-width:640px){table.vt{font-size:12px}table.vt td,table.vt th{padding:4px 4px}table.vt td:first-child{white-space:normal}}
 table.vt td.ok{color:var(--ok)} table.vt td.bad{color:var(--warn)}
 .tblwrap2{overflow:auto;border:1px solid var(--grid);border-radius:4px}
+details.more{grid-column:1/-1;margin-top:10px;border-top:1px solid var(--grid);padding-top:8px}
+details.more>summary{cursor:pointer;font-size:12.5px;color:var(--accent);list-style:none;padding:2px 0}
+details.more>summary::before{content:'▸ '}details.more[open]>summary::before{content:'▾ '}
+details.more>.grid{margin-top:8px}
+textarea.meas{width:100%;box-sizing:border-box;min-height:96px;background:var(--bg2,#16181B);color:var(--ink);border:1px solid var(--grid);border-radius:4px;font:12.5px/1.5 var(--f-mono,monospace);padding:6px 8px;resize:vertical}
+.sum{font-size:12.5px;line-height:1.7;color:var(--muted);margin-top:6px}.sum b{color:var(--ink);font-weight:500}
+.ok2{color:var(--ok)}.bad2{color:var(--warn)}
 </style>
 <div class="app">
 <header>
@@ -133,8 +140,21 @@ table.vt td.ok{color:var(--ok)} table.vt td.bad{color:var(--warn)}
   <a class="back" href="index.html">← 返回铣刀计算</a>
 </header>
 <div class="side">
-  <section class="card"><h2>工件</h2><div class="grid" id="wgrid"></div></section>
-  <section class="card"><h2>滚插刀</h2><div class="grid" id="cgrid"></div><div class="stat" id="cstat"></div></section>
+  <section class="card"><h2>工件</h2><div class="grid" id="wgrid"></div>
+    <details class="more" id="dMod"><summary>齿形修形 / 试切补偿</summary><div class="grid" id="mgrid"></div>
+      <div class="stat">量都是法向 µm。修形：“+”表示比标准渐开线多去材料；斜率修形以齿顶端相对起始端计，分度圆处为 0（不改齿厚）。试切补偿：填试切工件的实测偏差（“+”= 实体多；鼓形“+”= 中部凸），程序把它反向加到目标齿形上重新求刃口。左 / 右与下面校核表、误差图的左右齿面一致。</div></details>
+    <details class="more"><summary>台肩（干涉检查）</summary><div class="grid" id="hgrid"></div></details>
+  </section>
+  <section class="card"><h2>滚插刀</h2><div class="grid" id="cgrid"></div>
+    <details class="more" id="dSet"><summary>安装（倾角、偏置）与刀体尺寸</summary><div class="grid" id="sgrid"></div>
+      <div class="stat">倾角 κ：刀具轴绕切削点的切向（与工件轴、中心距方向都垂直）转动；偏置 e：刀具中心沿该切向移动。都为 0 就是常规安装（切削点在两轴公垂线上）。</div></details>
+    <div class="stat" id="cstat"></div></section>
+  <section class="card"><h2>工艺</h2><div class="grid" id="pgrid"></div></section>
+  <section class="card"><h2>实测刀具 → 预测工件齿形</h2>
+    <textarea class="meas" id="meas" spellcheck="false" placeholder="每行：刀具半径 ρ, 左侧偏差 µm, 右侧偏差 µm&#10;例：&#10;26.9, 1.2, -0.8&#10;25.0, 0.6, -0.3&#10;23.0, 0.0, 0.4"></textarea>
+    <div class="tools" style="margin-top:6px"><button class="btn acc" id="measGo">预测</button><span class="cap" id="measMsg"></span></div>
+    <div class="stat">偏差为新刀刃口在端面投影内的法向偏差（刀具测量机报告），“+”= 刀齿实体多（齿更厚）。按设计安装切削，给出工件齿形和齿厚。</div>
+    <div id="measRes"></div></section>
 </div>
 <div class="main">
   <section class="card"><h2>基本参数 <span class="busy" id="busy"></span></h2><div class="res" id="res"></div><div class="warn" id="warn"></div></section>
@@ -143,6 +163,13 @@ table.vt td.ok{color:var(--ok)} table.vt td.bad{color:var(--warn)}
     <div class="cap" id="vnote"></div>
     <svg class="dw" id="errSvg" viewBox="0 0 640 260" style="margin-top:8px"></svg>
   </section>
+  <section class="card" id="cAdj"><h2>重磨后调整数据（机床设定）</h2>
+    <div class="tblwrap2"><table class="vt" id="adjT"></table></div><div class="cap" id="adjNote"></div></section>
+  <section class="card"><h2>切削分配与加工时间</h2>
+    <div class="tblwrap2"><table class="vt" id="planT"></table></div><div class="sum" id="planS"></div></section>
+  <section class="card"><h2>干涉检查</h2><div class="res" id="collR" style="grid-template-columns:minmax(0,1fr)"></div><div class="warn" id="collW"></div></section>
+  <section class="card"><h2>磨刀数据</h2>
+    <div class="tblwrap2"><table class="vt" id="grT"></table></div><div class="cap" id="grN"></div></section>
   <section class="card"><h2>加工过程 3D</h2>
     <div class="v3d"><canvas id="cv"></canvas><span class="tag">拖动旋转 · 双指缩放</span><span class="info" id="info3d"></span>
       <div class="bar"><button class="btn acc" id="play">暂停</button><button class="btn on" data-v="near">切削区近景</button><button class="btn" data-v="all">全景</button><button class="btn" id="spd">速度 ×1</button></div></div>
@@ -164,7 +191,12 @@ table.vt td.ok{color:var(--ok)} table.vt td.bad{color:var(--warn)}
     <p><b>轴交角</b>：内齿 Σ = β<sub>刀</sub> − β<sub>工件</sub>，外齿 Σ = −(β<sub>刀</sub> + β<sub>工件</sub>)，右旋为正。直齿工件要用斜齿刀，斜齿工件可以用直齿刀。</p>
     <p><b>后刀面与重磨</b>：顶刃后角 α<sub>e</sub> 使刀尖圆随重磨变小，中心距随之调整以保持齿根圆。分别求出新刀、重磨一半、重磨到底三个状态的精确刃口，每侧后刀面取一个螺旋面（一个导程 + 一条横截面廓形，便于磨削）：导程用新、旧刃口拟合，廓形取三个状态里最窄的包络，保证整个寿命内都不过切。再用“新位置的前刀面 ∩ 这个后刀面”得到实际刃口，切削模拟给出重磨后的齿形误差。</p>
     <p><b>校核方法</b>：把刃口加密到 0.01 mm，按运动每 0.02° 取一个位置，映射到工件端面，按半径分格求到左右齿面的最小法向距离：0 = 切到理论齿面，正值 = 没切到（多留），负值 = 过切。另外用平行轴的极限情况（Σ = 0，相当于插齿刀）检验过求解程序：刃口与理论渐开线的偏差在 1 µm 以内，齿厚与无侧隙啮合公式一致到 0.03 µm。</p>
-    <p><b>目前没有考虑</b>：刀具倾角（额外偏置）、进给量引起的走刀纹、刀具与工件台肩的干涉。结果用于刀具设计和方案比较，正式制刀前建议再用实际磨削程序或 CAM 复核。</p>
+    <p><b>倾角、偏置</b>：刀具姿态 = 先绕中心距方向转 Σ，再绕切削点切向转 κ；刀具中心沿切向偏 e。刃口仍按包络求，中心距按“实际刀尖（含刀尖圆角）切得最深处正好到齿根圆”迭代求出，工件相位让齿槽对准最深点。</p>
+    <p><b>修形与试切补偿</b>：把修形量（法向）加到目标齿面上，再按包络求刃口，所以刀具直接切出修形齿形；校核里的误差是相对修形后的目标。试切补偿把实测偏差原样加进目标（实体多的地方多去），斜率、鼓形补偿都以分度圆为零点，不改变齿厚。</p>
+    <p><b>重磨后调整</b>：刀具磨好后刃口就固定了，重磨后在机床上调整中心距、轴交角（可选偏置）和刀具—工件相位，使齿顶到渐开线起始圆之间左右齿面相对目标的偏差平方和最小（Gauss-Newton，数值求导），然后用精细模拟重新校核。</p>
+    <p><b>切削分配</b>：径向切深从工件齿顶切到齿根；“等切除面积”按端面切除面积相等分配粗切（切深递减），最后一刀为精切余量。啮合长度 = 刃口在工件齿圈内的轴向范围，每刀行程 = 齿宽 + 啮合长度 + 两端安全距离，时间 = 行程 ÷（每工件转进给 × 工件转速）。</p>
+    <p><b>干涉检查</b>：刀齿后部 —— 前刀面后面 0.2 mm 到刀齿长度范围内的后刀面点在运动中到已加工齿面的最小距离（负值 = 蹭齿面）；刀具齿根圆 —— 新刀、旧刀状态下刀体圆转一圈都不进入工件齿顶圆的最大直径；台肩 —— 刀具前后端圆、刀体、刀柄在切完最后一点时伸过齿端的最大轴向距离。</p>
+    <p><b>目前没有考虑</b>：进给量引起的走刀纹、切屑厚度与切削力、磨床的 NC 程序（与磨床型号有关，这里给出展成磨削的调整数据）。结果用于刀具设计和方案比较，正式制刀前建议再用实际磨削程序复核。</p>
   </section>
 </div>
 </div>
@@ -190,12 +222,41 @@ const SK = (() => {
     // 半齿角（齿中心在 π/z + k·2π/z，齿槽中心在 0）
     const half = isInt ? R => st / (2 * r) - inv(at) + inv(Math.acos(Math.min(1, rb / Math.max(R, rb))))
                        : R => st / (2 * r) + inv(at) - inv(Math.acos(Math.min(1, rb / Math.max(R, rb))));
-    return { kind: p.kind, isInt, mn: p.mn, z: p.z, an, be, mt, at, r, rb, ra, rf, st, kw, tau, half, b: p.b || 20 };
+    const W = { kind: p.kind, isInt, mn: p.mn, z: p.z, an, be, mt, at, r, rb, ra, rf, st, kw, tau, half, b: p.b || 20 };
+    W.mod = mkMod(W, p);
+    return W;
+  }
+  // 齿形修形（目标齿面相对标准渐开线多去的材料，法向，mm；左右分开）。展开长度 L = √(R² − rb²)。
+  // m：{ Ca, dCa, CaShape, Cf, dCf, CfShape, Cal, fHL, fHR, cmp:{ fHL, fHR, CalL, CalR } }，量都是 µm；dFf 为评定起点（渐开线起始圆）
+  function mkMod(W, p) {
+    const m = p.mod || {}, c = m.cmp || {}, um = x => (+x || 0) / 1000;
+    const any = [m.Ca, m.Cf, m.Cal, m.fHL, m.fHR, c.fHL, c.fHR, c.CalL, c.CalR].some(x => Math.abs(+x || 0) > 0);
+    const Lof = R => Math.sqrt(Math.max(0, R * R - W.rb * W.rb));
+    const rForm = p.dFf > 0 ? p.dFf / 2 : (W.isInt ? W.rf - 0.35 * W.mn : Math.max(W.rb, W.rf + 0.35 * W.mn));
+    const Lt = Lof(W.ra), Ls = Lof(rForm), Lp = Lof(W.r), Lm = (Lt + Ls) / 2, hl = (Lt - Ls) / 2;
+    const info = { any, Lt, Ls, Lp, rForm };
+    if (!any) return Object.assign(info, { L: () => 0, R: () => 0 });
+    if (Math.abs(hl) < 1e-6) throw new Error('评定范围（齿顶到渐开线起始圆）太短，无法定义修形');
+    const LCa = m.dCa > 0 ? Lof(m.dCa / 2) : Lt - (Lt - Ls) / 3, LCf = m.dCf > 0 ? Lof(m.dCf / 2) : Ls + (Lt - Ls) / 3;
+    const shp = (x, k) => x <= 0 ? 0 : (k === 'arc' ? x * x : x);
+    const up = (Lp - Lm) / hl;
+    const f = sd => R => {
+      const L = Lof(Math.max(R, W.rb)); let d = 0;
+      if (m.Ca) d += um(m.Ca) * shp((L - LCa) / (Lt - LCa), m.CaShape);
+      if (m.Cf) d += um(m.Cf) * shp((L - LCf) / (Ls - LCf), m.CfShape);
+      const u = (L - Lm) / hl;
+      if (m.Cal) d += um(m.Cal) * u * u;
+      d += (um(sd === 'L' ? m.fHL : m.fHR) + um(sd === 'L' ? c.fHL : c.fHR)) * (L - Lp) / (Lt - Ls);
+      const cc = um(sd === 'L' ? c.CalL : c.CalR); if (cc) d += cc * ((1 - u * u) - (1 - up * up));
+      return d;
+    };
+    return Object.assign(info, { L: f('L'), R: f('R') });
   }
   // 横截面内到实体的“有符号距离”（>0 在实体外），θ 已按螺旋映射到 z = 0 截面
   function sdWork(W, R, th) {
     let d = th - W.tau / 2; d -= Math.round(d / W.tau) * W.tau;       // 相对最近齿中心的角度
-    const hf = W.half(R), cosA = W.rb / Math.max(R, W.rb);
+    let hf = W.half(R); const cosA = W.rb / Math.max(R, W.rb);
+    if (W.mod.any) hf -= (d < 0 ? W.mod.R(R) : W.mod.L(R)) / (R * cosA);   // d<0：齿槽右侧齿面（校核里的“右”）
     const sFlank = R * (Math.abs(d) - hf) * cosA;                    // >0 在齿外
     if (!W.isInt) { const sTip = R - W.ra, sRoot = R - W.rf; return Math.min(sRoot, Math.max(sFlank, sTip)); }
     const sTip = W.ra - R, sRoot = W.rf - R; return Math.min(sRoot, Math.max(sFlank, sTip));
@@ -204,20 +265,47 @@ const SK = (() => {
   // ---------------- 运动 ----------------
   // 固定坐标 = 工件 φw=0 时的坐标，工件轴 Z。刀具轴过 (A,0,0)，方向 kc = (0,−sinΣ,cosΣ)。
   // 内齿：切削区在刀具 +x 侧（刀具在工件里面），Σ = βc − βw，φc = +zw/zc·φw；外齿：切削区在 −x 侧，Σ = −(βc + βw)，φc = −zw/zc·φw。
-  function setup(W, C) {
-    const bc = C.beta * D2R, Sig = W.isInt ? bc - W.be : -(bc + W.be);
+  // set：{ kap 刀具倾角°（绕切削点切向 Y 轴）, e 偏置 mm（沿 Y）, dSig 轴交角附加量° }。刀具姿态 Q = Ry(κ)·Rx(Σ)，刀具中心 (A, e, 0)。
+  function setup(W, C, set) {
+    set = set || {};
+    const bc = C.beta * D2R, Sig0 = W.isInt ? bc - W.be : -(bc + W.be), Sig = Sig0 + (set.dSig || 0) * D2R;
     const i = (W.isInt ? 1 : -1) * W.z / C.z;
     const rc = C.z * W.mn / (2 * Math.cos(bc));
-    return { Sig, i, rc, cs: Math.cos(Sig), sn: Math.sin(Sig), side: W.isInt ? 0 : PI };
+    const kap = (set.kap || 0) * D2R, c = Math.cos(Sig), s = Math.sin(Sig), ck = Math.cos(kap), sk = Math.sin(kap);
+    const Q = [[ck, sk * s, sk * c], [0, c, -s], [-sk, ck * s, ck * c]];
+    return { Sig, Sig0, i, rc, cs: c, sn: s, kap, e: set.e || 0, Q, kc: [Q[0][2], Q[1][2], Q[2][2]], side: W.isInt ? 0 : PI };
+  }
+  // 刀具坐标点（已转过刀具转角）→ 固定坐标
+  const toFix = (K, A, u1, v1, w) => { const Q = K.Q; return [A + Q[0][0] * u1 + Q[0][1] * v1 + Q[0][2] * w, K.e + Q[1][0] * u1 + Q[1][1] * v1 + Q[1][2] * w, Q[2][0] * u1 + Q[2][1] * v1 + Q[2][2] * w]; };
+  const dirFix = (K, u1, v1, w) => { const Q = K.Q; return [Q[0][0] * u1 + Q[0][1] * v1 + Q[0][2] * w, Q[1][0] * u1 + Q[1][1] * v1 + Q[1][2] * w, Q[2][0] * u1 + Q[2][1] * v1 + Q[2][2] * w]; };
+  // 刀尖圆在固定坐标里切得最深的位置 ψ*，以及让该处正好切到工件齿根圆的中心距（内齿取最大半径，外齿取最小半径）
+  function place(W, K, ra, A0) {
+    const sg = W.isInt ? 1 : -1;
+    const Rof = (A, ps) => { const p = toFix(K, A, ra * Math.cos(ps), ra * Math.sin(ps), 0); return [hyp(p[0], p[1]), p]; };
+    let A = A0 ?? (W.isInt ? W.rf - ra : W.rf + ra), ps = W.isInt ? 0 : PI;
+    for (let it = 0; it < 8; it++) {
+      // ψ：先 1° 粗扫 ±90°，再黄金分割
+      let bp = ps, bv = -Infinity;
+      for (let k = -90; k <= 90; k++) { const q = ps + k * D2R, v = sg * Rof(A, q)[0]; if (v > bv) { bv = v; bp = q; } }
+      let a = bp - D2R, b = bp + D2R; const gr = 0.6180339887;
+      for (let j = 0; j < 50; j++) { const c1 = b - gr * (b - a), c2 = a + gr * (b - a); if (sg * Rof(A, c1)[0] > sg * Rof(A, c2)[0]) b = c2; else a = c1; }
+      ps = (a + b) / 2;
+      const [R, p] = Rof(A, ps), dRdA = p[0] / R;
+      const dA = (W.rf - R) / dRdA; A += dA;
+      if (Math.abs(dA) < 1e-10) break;
+    }
+    // 相位：让工件齿槽中心对着最深点（固定坐标里的位置角，减去螺旋），倾角/偏置为 0 时为 0
+    const P = Rof(A, ps)[1], ph0 = Math.atan2(P[1], P[0]) - W.kw * P[2];
+    return { A, side: ps, ph0 };
   }
   // 刀具坐标点 (u,v,w)（刀具转角 0 时）在工件转角 φw 时，映射到工件横截面 (R, θ')
   function mapPt(W, K, A, u, v, w, phw) {
     const pc = K.i * phw, c = Math.cos(pc), s = Math.sin(pc);
-    const u1 = u * c - v * s, v1 = u * s + v * c;
-    const X = A + u1, Y = v1 * K.cs - w * K.sn, Z = v1 * K.sn + w * K.cs;
+    const u1 = u * c - v * s, v1 = u * s + v * c, Q = K.Q;
+    const X = A + Q[0][0] * u1 + Q[0][1] * v1 + Q[0][2] * w, Y = K.e + Q[1][0] * u1 + Q[1][1] * v1 + Q[1][2] * w, Z = Q[2][0] * u1 + Q[2][1] * v1 + Q[2][2] * w;
     const cw = Math.cos(phw), sw = Math.sin(phw);
     const xw = X * cw + Y * sw, yw = -X * sw + Y * cw;
-    const R = hyp(xw, yw), th = Math.atan2(yw, xw) - W.kw * Z;
+    const R = hyp(xw, yw), th = Math.atan2(yw, xw) - W.kw * Z - (K.ph0 || 0);
     return [R, th, xw, yw, Z];
   }
 
@@ -240,9 +328,12 @@ const SK = (() => {
   // ---------------- 刃口：前刀面上“永不进入工件实体”区域的边界 ----------------
   // D(ρ,θ) = min_φ sd(点在运动中的位置)；刃口为 D = 0。
   function makeD(W, K, A, RK) {
-    const span = 40 * D2R, st = 0.12 * D2R;
-    return (rho, th) => {
-      const u = rho * Math.cos(th), v = rho * Math.sin(th), w = RK.w(rho, th);
+    return (rho, th) => minSd(W, K, A, rho * Math.cos(th), rho * Math.sin(th), RK.w(rho, th), th);
+  }
+  // 刀具上一点 (u,v,w) 在运动中到工件实体的最小有符号距离（窗口：转到切削区 ±40°）
+  function minSd(W, K, A, u, v, w, th, spanDeg) {
+    const span = (spanDeg || 40) * D2R;
+    {
       // 该点转到切削区所需刀具转角
       let pc0 = K.side - th; pc0 -= Math.round(pc0 / (2 * PI)) * 2 * PI;
       // 两级搜索：先每 0.8° 粗扫，再在接近最小值的极小点附近每 0.08° 细扫，最后黄金分割细化（避免进刀、出刀两个极小值取错）
@@ -261,7 +352,23 @@ const SK = (() => {
         for (const [f, p] of [[bv, bp], [f1, c1], [f2, c2]]) if (f < fm) { fm = f; pm = p; }
       }
       return { d: fm, pc: pm };
-    };
+    }
+  }
+  // 实际刀尖（刃口折线，含刀尖圆角）在运动中切到的最深半径
+  function tipExt(W, K, A, E, ra, rc0) {
+    const P = densify(polyFrom(E.L.filter(Boolean), E.R.filter(Boolean), E.rake, rc0 || 0), 0.02);
+    if (!P.length) return { R: NaN };
+    const sg = W.isInt ? 1 : -1; let best = -Infinity, bR = NaN, bX = 0;
+    for (const p of P) {
+      if (hyp(p[0], p[1]) < ra - 0.5 * W.mn) continue;
+      const th = Math.atan2(p[1], p[0]), rho = hyp(p[0], p[1]);
+      for (let k = -600; k <= 600; k++) {
+        const ps = K.side - th + k * 0.05 * D2R, c = Math.cos(th + ps), s = Math.sin(th + ps);
+        const Q = toFix(K, A, rho * c, rho * s, p[2]), R = hyp(Q[0], Q[1]);
+        if (sg * R > best) { best = sg * R; bR = R; bX = Q[0] / R; }
+      }
+    }
+    return { R: bR, dRdA: bX };
   }
   // 求一个刀齿的刃口：ρ 从刀尖往下，每个 ρ 在齿中心两侧用二分法找 D = 0
   function edge(W, C, K, A, ra, nRho, depth) {
@@ -305,23 +412,26 @@ const SK = (() => {
     opt = opt || {};
     const R0 = Math.min(W.ra, W.rf) - 0.05, R1 = Math.max(W.ra, W.rf) + 0.05, dR = opt.dR || 0.005, nb = Math.ceil((R1 - R0) / dR);
     const eL = new Float64Array(nb).fill(Infinity), eR = new Float64Array(nb).fill(Infinity);
-    let gouge = Infinity, rootR = W.isInt ? -Infinity : Infinity, gAt = null;
-    const stp = (opt.step || 0.02) * D2R, span = 40 * D2R;
+    const tLo = new Float64Array(nb).fill(Infinity), tHi = new Float64Array(nb).fill(-Infinity);
+    let gouge = Infinity, rootR = W.isInt ? -Infinity : Infinity, gAt = null, zLo = Infinity, zHi = -Infinity;
+    const stp = (opt.step || 0.02) * D2R, span = (opt.span || 40) * D2R, ph = opt.ph || 0, md = W.mod.any;
     for (const p of pts) {
       const th = Math.atan2(p[1], p[0]);
       let pc0 = K.side - th; pc0 -= Math.round(pc0 / (2 * PI)) * 2 * PI;
       for (let pc = pc0 - span; pc <= pc0 + span; pc += stp) {
         const m = mapPt(W, K, A, p[0], p[1], p[2], pc / K.i), R = m[0];
-        const sd = sdWork(W, R, m[1]); if (sd < gouge) { gouge = sd; gAt = [R, m[1], p[0], p[1], p[2]]; }
+        const sd = sdWork(W, R, m[1] - ph); if (sd < gouge) { gouge = sd; gAt = [R, m[1], p[0], p[1], p[2]]; }
+        if (W.isInt ? R >= W.ra : R <= W.ra) { if (m[4] < zLo) zLo = m[4]; if (m[4] > zHi) zHi = m[4]; }
         if (R < R0 || R > R1) continue;
-        let t = m[1]; t -= Math.round(t / W.tau) * W.tau;                // 齿槽中心在 0
+        let t = m[1] - ph; t -= Math.round(t / W.tau) * W.tau;                // 齿槽中心在 0
         const hf = W.half(R), ca = W.rb / Math.max(R, W.rb), lim = W.tau / 2 - hf;
-        const dr = (lim - t) * R * ca, dl = (t + lim) * R * ca;
+        const dr = (lim - t) * R * ca + (md ? W.mod.R(R) : 0), dl = (t + lim) * R * ca + (md ? W.mod.L(R) : 0);
         const k = Math.floor((R - R0) / dR); if (dr < eR[k]) eR[k] = dr; if (dl < eL[k]) eL[k] = dl;
+        if (t < tLo[k]) tLo[k] = t; if (t > tHi[k]) tHi[k] = t;
         if (Math.abs(t) < 0.3 * lim) rootR = W.isInt ? Math.max(rootR, R) : Math.min(rootR, R);
       }
     }
-    return { R0, dR, nb, eL, eR, gouge, rootR, gAt };
+    return { R0, dR, nb, eL, eR, tLo, tHi, gouge, rootR, gAt, zLo, zHi };
   }
   // 刃口折线（含刀尖圆弧），用于模拟和输出
   function edgePolyline(E, rcTip) {
@@ -348,21 +458,30 @@ const SK = (() => {
   };
   function design(wp, cp, opt) {
     opt = opt || {};
-    const W = work(wp), K = setup(W, cp);
+    const W = work(wp), set = opt.set || cp.set || {}, K = setup(W, cp, set);
     if (Math.abs(K.Sig) < 1e-6 && !opt.allowZeroSigma) throw new Error('轴交角 Σ = 0：刀具和工件螺旋角配成了平行轴，没有切削速度。直齿工件请用斜齿刀（βc ≠ 0），斜齿工件可以用直齿刀');
     const hw = Math.abs(W.rf - W.ra);
     const ra0 = cp.da0 > 0 ? cp.da0 / 2 : K.rc + Math.abs(W.rf - W.r);
     const ae = cp.alphaE * D2R, g = (cp.rake === 'step' ? 0 : cp.gamma) * D2R;
-    const Aof = ra => W.isInt ? W.rf - ra : W.rf + ra;
-    if (W.isInt && Aof(ra0) <= 0) throw new Error('刀具太大：新刀外径 ≥ 工件齿根圆，放不进内齿圈');
+    if (W.isInt && W.rf - ra0 <= 0) throw new Error('刀具太大：新刀外径 ≥ 工件齿根圆，放不进内齿圈');
+    // 新刀：求切得最深的位置（参与切削的刀齿中心角）和中心距；重磨后的状态沿用同一个刀齿角，只重新求中心距
+    const pl0 = place(W, K, ra0); K.side = pl0.side;
+    const Kof = ra => { const q = place(W, K, ra); return Object.assign({}, K, { ph0: q.ph0, A: q.A }); };
+    if (W.isInt && pl0.A <= 0) throw new Error('刀具太大：新刀外径 ≥ 工件齿根圆，放不进内齿圈');
     const Lr = Math.max(0, cp.regrind || 0), list = [0, Lr / 2, Lr];
     const states = [];
     for (const dlt of list) {
       const ra = ra0 - dlt * Math.tan(ae) / (1 - Math.tan(ae) * Math.tan(g));
-      const A = Aof(ra);
-      const E = edge(W, cp, K, A, ra, opt.nRho || 36, hw + 0.2 * W.mn);
+      const Ks = Kof(ra); let A = Ks.A;
+      let E = edge(W, cp, Ks, A, ra, opt.nRho || 36, hw + 0.2 * W.mn);
+      // 有倾角/偏置时，阶梯前刀面刀尖棱上各点的轴向位置不同，最深点不一定在刀齿中心：按实际刀尖棱修正中心距，使齿根正好切到 rf
+      if (Ks.kap || Ks.e) for (let it = 0; it < 3; it++) {
+        const Rx = tipExt(W, Ks, A, E, ra, cp.rc0); if (!isFinite(Rx.R)) break;
+        const dA = (W.rf - Rx.R) / Rx.dRdA; if (Math.abs(dA) < 2e-5) break;
+        A += dA; Ks.A = A; E = edge(W, cp, Ks, A, ra, opt.nRho || 36, hw + 0.2 * W.mn);
+      }
       const wTip = -dlt - (ra0 - ra) * Math.tan(g);          // 刀体坐标里本次刀尖圆所在轴向位置
-      states.push({ dlt, ra, A, E, wTip });
+      states.push({ dlt, ra, A, E, wTip, K: Ks });
       if (Lr === 0) { states.push(states[0], states[0]); break; }
     }
     // ---- 后刀面（每侧一个螺旋面 θ = Φ(ρ) + w/p）：用新刀、旧刀两个精确刃口拟合导程 ----
@@ -423,7 +542,7 @@ const SK = (() => {
       }
       S.act = act;
     }
-    return { W, K, cp, wp, ra0, states, hw, flank };
+    return { W, K, cp, wp, set, ra0, states, hw, flank };
   }
   // 由刃口点列做折线（刀尖用圆弧连，可带刀尖圆角 rc0：在端面投影里与刀尖圆、刃口都相切）
   function polyFrom(Ls, Rs, RK, rc0) {
@@ -460,11 +579,13 @@ const SK = (() => {
   }
   // 校核一个状态：生成齿形误差、齿厚误差、过切、齿根、渐开线起始圆
   // formLim：渐开线有效段在齿根一侧的终点（不给就按本状态自己算：从齿顶往下，误差 < 2 µm 的连续段）
-  function verify(D, S, useAct, formLim) {
-    const W = D.W, K = D.K;
+  // o：{ K, A, ph 相位(rad), pts 刃口折线(覆盖), coarse }
+  function verify(D, S, useAct, formLim, o) {
+    o = o || {};
+    const W = D.W, K = o.K || S.K || D.K, A = o.A ?? S.A;
     const Ls = useAct ? S.act.L : S.E.L.filter(Boolean), Rs = useAct ? S.act.R : S.E.R.filter(Boolean);
-    const P = densify(polyFrom(Ls, Rs, S.E.rake, D.cp.rc0 || 0), 0.01);
-    const G = simulate(W, K, S.A, P, { step: 0.02 });
+    const P = o.pts || densify(polyFrom(Ls, Rs, S.E.rake, D.cp.rc0 || 0), o.coarse ? 0.02 : 0.01);
+    const G = simulate(W, K, A, P, { step: o.coarse ? 0.05 : 0.02, ph: o.ph || 0 });
     const tipR = W.ra, mg = 0.08 * W.mn, toRoot = W.isInt ? 1 : -1;      // 从齿顶往齿根：内齿半径增大，外齿减小
     const prof = [];
     for (let k = 0; k < G.nb; k++) { const R = G.R0 + (k + 0.5) * G.dR; if ((R - tipR) * toRoot < 0.003 || (W.rf - R) * toRoot < 0.003) continue; prof.push([R, G.eL[k], G.eR[k]]); }
@@ -473,7 +594,7 @@ const SK = (() => {
     if (formR == null) { formR = null; for (const q of prof) { if ((q[0] - tipR) * toRoot < mg) continue; const e = Math.max(Math.abs(q[1]), Math.abs(q[2])); if (!(e < 0.002)) break; formR = q[0]; } }
     // 齿顶棱边被多切的区域：从齿顶往齿根，两侧误差 < −2 µm 的连续段
     let chamEnd = tipR, chamDepth = 0;
-    for (const q of prof) { const e = Math.min(q[1], q[2]); if (!(e < -0.002)) break; chamEnd = q[0]; chamDepth = Math.max(chamDepth, -e); }
+    if (!o.noCham) for (const q of prof) { const e = Math.min(q[1], q[2]); if (!(e < -0.002)) break; chamEnd = q[0]; chamDepth = Math.max(chamDepth, -e); }
     const from = W.isInt ? Math.max(chamEnd, tipR) + 0.02 : Math.min(chamEnd, tipR) - 0.02;
     let mxL = 0, mxR = 0, loL = Infinity, hiL = -Infinity, loR = Infinity, hiR = -Infinity, n = 0;
     for (const q of prof) {
@@ -485,22 +606,29 @@ const SK = (() => {
     const kp = Math.floor((W.r - G.R0) / G.dR), eP = (G.eL[kp] + G.eR[kp]);
     return { G, prof, formR, n, maxL: mxL, maxR: mxR, FaL: hiL - loL, FaR: hiR - loR,
       chamH: Math.abs(chamEnd - tipR), chamDepth, gouge: G.gouge, rootR: G.rootR,
-      dThick: isFinite(eP) ? -eP / Math.cos(W.at) : NaN };
+      dThick: isFinite(eP) ? eP / Math.cos(W.at) : NaN, A, ph: o.ph || 0 };
   }
   // 实际前角、后角（ISO 3002 工作参考系，在切出该点的瞬间）
   function angles(D, S) {
-    const W = D.W, K = D.K, out = { L: [], R: [] };
-    const toFixed = (u, v, w, pc) => { const c = Math.cos(pc), s = Math.sin(pc), u1 = u * c - v * s, v1 = u * s + v * c; return [S.A + u1, v1 * K.cs - w * K.sn, v1 * K.sn + w * K.cs]; };
-    const dirFixed = (u, v, w, pc) => { const c = Math.cos(pc), s = Math.sin(pc), u1 = u * c - v * s, v1 = u * s + v * c; return [u1, v1 * K.cs - w * K.sn, v1 * K.sn + w * K.cs]; };
-    const kc = [0, -K.sn, K.cs];
+    const W = D.W, K = S.K || D.K, out = { L: [], R: [] };
+    const toFixed = (u, v, w, pc) => { const c = Math.cos(pc), s = Math.sin(pc); return toFix(K, S.A, u * c - v * s, u * s + v * c, w); };
+    const dirFixed = (u, v, w, pc) => { const c = Math.cos(pc), s = Math.sin(pc); return dirFix(K, u * c - v * s, u * s + v * c, w); };
+    const kc = K.kc;
     const cr = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]], dot = (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2], nz = a => { const l = hyp(...a); return a.map(x => x / l); };
     let vsign = 0;
     for (const sd of ['L', 'R']) {
       const E = S.E[sd].filter(Boolean), F = D.flank[sd], sg = sd === 'L' ? -1 : 1;
       for (let k = 1; k + 1 < E.length; k++) {
-        const q = E[k], a = E[k - 1], b = E[k + 1];
+        // 切线用相距 ≥ 0.02 mm 的前后点（自适应加密处点很密，相邻点差分会被数值噪声放大）
+        const P3 = x => [x.rho * Math.cos(x.th), x.rho * Math.sin(x.th), x.w], q = E[k], q3 = P3(q);
+        let ia = k - 1, ib = k + 1;
+        while (ia > 0 && hyp(...P3(E[ia]).map((v, j) => v - q3[j])) < 0.02) ia--;
+        while (ib < E.length - 1 && hyp(...P3(E[ib]).map((v, j) => v - q3[j])) < 0.02) ib++;
+        const a = E[ia], b = E[ib];
+        { const u = P3(a).map((v, j) => q3[j] - v), w2 = P3(b).map((v, j) => v - q3[j]), cu = (u[0] * w2[0] + u[1] * w2[1] + u[2] * w2[2]) / (hyp(...u) * hyp(...w2) || 1);
+          if (cu < Math.cos(8 * D2R)) continue; }          // 刃口拐角处（切线不唯一）不计前后角
         const P = toFixed(q.rho * Math.cos(q.th), q.rho * Math.sin(q.th), q.w, q.pc);
-        const vc = cr(kc.map(x => x * K.i), [P[0] - S.A, P[1], P[2]]), vw = cr([0, 0, 1], P);
+        const vc = cr(kc.map(x => x * K.i), [P[0] - S.A, P[1] - K.e, P[2]]), vw = cr([0, 0, 1], P);
         let v = nz([vc[0] - vw[0], vc[1] - vw[1], vc[2] - vw[2]]);
         const t = nz(dirFixed(b.rho * Math.cos(b.th) - a.rho * Math.cos(a.th), b.rho * Math.sin(b.th) - a.rho * Math.sin(a.th), b.w - a.w, q.pc));
         const nR = (() => { const n = S.E.rake.n(q.rho, q.th); return nz(dirFixed(n[0], n[1], n[2], q.pc)); })();
@@ -513,8 +641,9 @@ const SK = (() => {
         nF = nz(dirFixed(nF[0], nF[1], nF[2], q.pc));
         let qh = nz(cr(v, t)); if (dot(qh, nF) > 0) qh = qh.map(x => -x);
         const gam = Math.atan2(dot(nR, qh), dot(nR, v)) * R2D, alp = Math.atan2(-dot(nF, v), -dot(nF, qh)) * R2D;
-        // 该点切出的工件半径
+        // 该点切出的工件半径；只统计切渐开线齿面的那段（刃口末端贴着工件齿顶圆的点不切齿面，不计）
         const m = mapPt(W, K, S.A, q.rho * Math.cos(q.th), q.rho * Math.sin(q.th), q.w, q.pc / K.i);
+        if (W.isInt ? m[0] < W.ra + 0.005 : m[0] > W.ra - 0.005) continue;
         out[sd].push({ rho: q.rho, Rw: m[0], gam, alp });
       }
     }
@@ -522,14 +651,194 @@ const SK = (() => {
     return out;
   }
   // 切削速度（分度圆接触点的相对速度），刀具转速 nc r/min
+  // 在新刀刃口上切出工件分度圆的那一点计算
   function speed(D, nc) {
-    const W = D.W, K = D.K, S = D.states[0];
-    const P = W.isInt ? [W.r, 0, 0] : [W.r, 0, 0];
-    const oc = 2 * PI * nc / 60, ow = oc / K.i;
-    const kc = [0, -K.sn, K.cs];
-    const vc = [kc[1] * P[2] - kc[2] * P[1], kc[2] * (P[0] - S.A) - kc[0] * P[2], kc[0] * P[1] - kc[1] * (P[0] - S.A)].map(x => x * oc);
+    const W = D.W, S = D.states[0], K = S.K || D.K;
+    const E = S.E.L.filter(Boolean); let q = E[0], bd = Infinity;
+    for (const x of E) if (Math.abs(x.Rw - W.r) < bd) { bd = Math.abs(x.Rw - W.r); q = x; }
+    const c = Math.cos(q.pc), s = Math.sin(q.pc), u = q.rho * Math.cos(q.th), v = q.rho * Math.sin(q.th);
+    const P = toFix(K, S.A, u * c - v * s, u * s + v * c, q.w), C = [S.A, K.e, 0];
+    const oc = 2 * PI * nc / 60, ow = oc / K.i, kc = K.kc, d = [P[0] - C[0], P[1] - C[1], P[2] - C[2]];
+    const vc = [kc[1] * d[2] - kc[2] * d[1], kc[2] * d[0] - kc[0] * d[2], kc[0] * d[1] - kc[1] * d[0]].map(x => x * oc);
     const vw = [-P[1] * ow, P[0] * ow, 0];
     return { v: hyp(vc[0] - vw[0], vc[1] - vw[1], vc[2] - vw[2]) * 60 / 1000, nw: nc / Math.abs(K.i) };
+  }
+
+
+
+  // ---------------- 切削分配与加工时间 ----------------
+  // o：{ n 总刀数, fin 精切余量（径向 mm，0 = 不单列精切）, mode 'depth' 等切深 | 'area' 等切除面积, faR/faF 粗/精切每工件转轴向进给 mm, nc 刀具转速, safe 单边安全距离 mm }
+  function cutPlan(D, o) {
+    const W = D.W, S = D.states[0], K = S.K || D.K, sg = W.isInt ? 1 : -1;
+    const P = densify(polyFrom(S.act.L, S.act.R, S.E.rake, D.cp.rc0 || 0), 0.03);
+    const H = Math.abs(W.rf - W.ra), Aof = d => S.A - sg * (H - d);
+    const area = (d, span) => {
+      const G = simulate(W, K, Aof(d), P, { step: 0.05, dR: 0.01, span });
+      let a = 0;
+      for (let k = 0; k < G.nb; k++) { const R = G.R0 + (k + 0.5) * G.dR; if (W.isInt ? R < W.ra : R > W.ra) continue; if (G.tHi[k] > G.tLo[k]) a += (G.tHi[k] - G.tLo[k]) * R * G.dR; }
+      return { a, G };
+    };
+    const n = Math.max(1, Math.round(o.n || 1)), fin = n > 1 ? Math.max(0, Math.min(o.fin || 0, H * 0.5)) : 0;
+    const nr = fin > 0 ? n - 1 : n, Hr = H - fin;
+    let dep = [];
+    if (o.mode === 'area' && nr > 1) {
+      const grid = []; for (let j = 0; j <= 16; j++) { const d = Hr * j / 16; grid.push([d, j ? area(d).a : 0]); }
+      const Sr = grid[16][1];
+      for (let k = 1; k <= nr; k++) { const tgt = Sr * k / nr; let d = Hr; for (let j = 1; j <= 16; j++) if (grid[j][1] >= tgt) { const [d0, s0] = grid[j - 1], [d1, s1] = grid[j]; d = d0 + (d1 - d0) * (tgt - s0) / ((s1 - s0) || 1); break; } dep.push(k === nr ? Hr : d); }
+    } else for (let k = 1; k <= nr; k++) dep.push(Hr * k / nr);
+    if (fin > 0) dep.push(H);
+    const full = area(H, 60), Le = full.G.zHi - full.G.zLo;
+    const nw = (o.nc || 1000) / Math.abs(K.i), b = W.b, safe = o.safe ?? 1;
+    let prev = 0, prevD = 0, T = 0; const passes = [];
+    for (let k = 0; k < dep.length; k++) {
+      const d = dep[k], a = k === dep.length - 1 ? full.a : area(d).a, isF = fin > 0 && k === dep.length - 1;
+      const fa = isF ? (o.faF || 0.1) : (o.faR || 0.2), t = (b + Le + 2 * safe) / (fa * nw);
+      passes.push({ k: k + 1, d, dd: d - prevD, A: Aof(d), dS: a - prev, fa, t, fin: isF }); T += t; prev = a; prevD = d;
+    }
+    for (const q of passes) q.share = q.dS / full.a;
+    // 理论齿槽面积（齿顶圆到齿根圆之间，按渐开线齿面，不计齿根过渡）
+    let Sa = 0; const r0 = Math.min(W.ra, W.rf), r1 = Math.max(W.ra, W.rf); for (let j = 0; j < 400; j++) { const R = r0 + (r1 - r0) * (j + 0.5) / 400; Sa += (W.tau - 2 * W.half(R)) * R * (r1 - r0) / 400; }
+    return { H, passes, Le, zLo: full.G.zLo, zHi: full.G.zHi, T, nw, Sfull: full.a, Sgap: Sa, travel: b + Le + 2 * safe };
+  }
+
+  // ---------------- 干涉检查 ----------------
+  // o：{ Bc 刀齿轴向长度（含可重磨量）, Dh 刀体/刀柄直径, Lh 刀柄长度, g 台肩到齿端距离, Ds 台肩直径（0 = 无台肩）, shoulder 'exit' | 'entry' }
+  function collide(D, o) {
+    const W = D.W, cp = D.cp, out = { back: [] };
+    const Bc = Math.max(o.Bc || 0, (cp.regrind || 0) + 1), tanE = Math.tan(cp.alphaE * D2R);
+    // (1) 刀齿后部（前刀面后面的齿体）在已加工齿槽里是否蹭到齿面：齿体 = 两侧后刀面螺旋面 + 顶锥
+    for (const j of [0, 2]) {
+      const S = D.states[j], K = S.K || D.K; let mn = Infinity, at = null;
+      const dep = [0.2, 0.5, 1, 2, 3, 5, 8, 12, 16, 20].filter(x => x <= Bc + S.wTip + 1e-9);
+      for (const sd of ['L', 'R']) {
+        const F = D.flank[sd], lo = F.Phi[F.Phi.length - 1].rho;
+        for (const dz of dep) {
+          const top = D.ra0 + (S.wTip - dz) * tanE;
+          for (let m = 0; m <= 9; m++) {
+            const rho = top - 1e-3 - (top - 1e-3 - lo) * m / 9, phi = interpBy(F.Phi, 'rho', rho, q => q.phi); if (!isFinite(phi)) continue;
+            // 前刀面后方 dz 处的后刀面点（机床坐标）：w = 前刀面 w − dz，θ = Φ + (w + wTip)/p − wTip·tanβc/rc
+            let th = phi, w = 0; for (let it = 0; it < 30; it++) { w = S.E.rake.w(rho, th) - dz; th = phi + (w + S.wTip) * F.ip - S.wTip * F.hx; }
+            const r = minSd(W, K, S.A, rho * Math.cos(th), rho * Math.sin(th), w, th);
+            if (r.d < mn) { mn = r.d; at = { sd, dz, rho }; }
+          }
+        }
+      }
+      out.back.push({ dlt: S.dlt, min: mn, at });
+    }
+    // (2) 刀体（齿根以下的圆盘）、刀柄 与 工件齿顶的径向余量；(3) 台肩
+    // 刀具齿根圆（刀体）允许的最大半径：新、旧两个状态下，刀体圆在前刀面处和刀齿末端处转一圈都不进入工件齿顶圆
+    const ringR = (S, r, wb) => { const K = S.K || D.K, w = wb - S.wTip; let mx = -Infinity, mnn = Infinity; for (let k = 0; k < 360; k++) { const t = k * D2R, P = toFix(K, S.A, r * Math.cos(t), r * Math.sin(t), w), R = hyp(P[0], P[1]); mx = Math.max(mx, R); mnn = Math.min(mnn, R); } return W.isInt ? W.ra - mx : mnn - W.ra; };
+    const okR = r => Math.min(...[0, 2].map(j => Math.min(ringR(D.states[j], r, D.states[j].wTip), ringR(D.states[j], r, -Bc))));
+    let lo = 0.2 * D.ra0, hi = D.ra0; for (let it = 0; it < 50; it++) { const m = (lo + hi) / 2; if (okR(m) > 0) lo = m; else hi = m; }
+    out.rCoreMax = lo;
+    // 刃口参与切削的最低点（切出工件齿顶圆的那一点）
+    out.rhoAct = Math.max(...['L', 'R'].map(sd => { const e = D.states[2].E[sd].filter(Boolean); const x = interpBy(e, 'Rw', W.ra, q => q.rho); return isFinite(x) ? x : e[e.length - 1].rho; }));
+    const S = D.states[0], K = S.K || D.K;
+    const rCore = Math.min(out.rCoreMax, D.flank.L.Phi[D.flank.L.Phi.length - 1].rho, D.flank.R.Phi[D.flank.R.Phi.length - 1].rho);
+    const ring = (r, w) => { const a = []; for (let k = 0; k < 360; k++) { const t = k * D2R, P = toFix(K, S.A, r * Math.cos(t), r * Math.sin(t), w); a.push([hyp(P[0], P[1]), P[2]]); } return a; };
+    const core = ring(rCore, 0).concat(ring(rCore, -Bc)), hub = o.Dh > 0 ? ring(o.Dh / 2, -Bc).concat(ring(o.Dh / 2, -Bc - (o.Lh || 0))) : [];
+    const marg = arr => arr.length ? (W.isInt ? W.ra - Math.max(...arr.map(q => q[0])) : Math.min(...arr.map(q => q[0])) - W.ra) : NaN;
+    out.core = marg(core); out.hub = marg(hub); out.rCore = rCore; out.Bc = Bc;
+    // 切削点轴向范围（局部）
+    const P = densify(polyFrom(S.act.L, S.act.R, S.E.rake, cp.rc0 || 0), 0.03), G = simulate(W, K, S.A, P, { step: 0.05, dR: 0.01, span: 60 });
+    out.zLo = G.zLo; out.zHi = G.zHi;
+    if (o.Ds > 0) {
+      const body = ring(S.ra, 0).concat(ring(S.ra - Bc * tanE, -Bc), core, hub);
+      const hit = q => W.isInt ? q[0] > o.Ds / 2 : q[0] < o.Ds / 2;
+      const hs = body.filter(hit);
+      out.need = hs.length ? (o.shoulder === 'entry' ? Math.max(...hs.map(q => G.zHi - q[1])) : Math.max(...hs.map(q => q[1] - G.zLo))) : 0;
+      out.ok = out.need <= (o.g || 0);
+    }
+    return out;
+  }
+
+  // ---------------- 磨刀数据 ----------------
+  function grindData(D) {
+    const cp = D.cp, out = { flank: {} };
+    for (const sd of ['L', 'R']) {
+      const F = D.flank[sd], rb = F.rbF, hi = F.Phi[0].rho, lo = F.Phi[F.Phi.length - 1].rho;
+      const xi = r => r > rb ? Math.sqrt(r * r - rb * rb) / rb * R2D : 0;
+      out.flank[sd] = { db: 2 * rb, lead: F.lead, hand: F.ip > 0 ? '右旋' : F.ip < 0 ? '左旋' : '直', betaB: Math.atan(rb * Math.abs(F.ip)) * R2D, betaP: F.betaP,
+        dHi: 2 * hi, dLo: 2 * lo, xiHi: xi(hi), xiLo: xi(Math.max(lo, rb)), dev: F.invDev, rbOk: lo > rb };
+    }
+    const g = cp.gamma * D2R, bc = cp.beta * D2R;
+    out.rake = cp.rake === 'step' && Math.abs(bc) > 1e-9 ? { kind: '阶梯（每齿一个平面）', nAxis: Math.acos(Math.cos(g) * Math.cos(bc)) * R2D, beta: cp.beta, gamma: cp.gamma }
+      : { kind: cp.gamma ? '锥面（内凹）' : '平面', cone: 90 - cp.gamma, gamma: cp.gamma };
+    out.tip = { alphaE: cp.alphaE, d0: 2 * D.ra0, d2: 2 * D.states[2].ra, regrind: cp.regrind };
+    return out;
+  }
+
+  // ---------------- 实测刀具 → 预测工件齿形 ----------------
+  // rows：[{ rho 刀具半径, dL, dR 端面投影内刃口法向偏差 µm（+ = 刀齿实体多、齿更厚）}]
+  function measured(D, rows, formLim) {
+    const S = D.states[0], toothAng = (S.K || D.K).side;
+    rows = rows.filter(r => isFinite(r.rho)).sort((a, b) => b.rho - a.rho);
+    const dev = (rho, k) => { if (!rows.length) return 0; if (rho >= rows[0].rho) return rows[0][k]; const n = rows.length - 1; if (rho <= rows[n].rho) return rows[n][k]; for (let j = 0; j < n; j++) if (rho <= rows[j].rho && rho >= rows[j + 1].rho) { const t = (rho - rows[j].rho) / (rows[j + 1].rho - rows[j].rho); return rows[j][k] + t * (rows[j + 1][k] - rows[j][k]); } return 0; };
+    const et = [-Math.sin(toothAng), Math.cos(toothAng)];
+    const shift = (E, k, sg) => E.map((q, j) => {
+      const a = E[Math.max(0, j - 1)], b = E[Math.min(E.length - 1, j + 1)];
+      const tx = b.rho * Math.cos(b.th) - a.rho * Math.cos(a.th), ty = b.rho * Math.sin(b.th) - a.rho * Math.sin(a.th), l = hyp(tx, ty) || 1;
+      let nx = -ty / l, ny = tx / l; if ((nx * et[0] + ny * et[1]) * sg < 0) { nx = -nx; ny = -ny; }
+      const d = dev(q.rho, k) / 1000, x = q.rho * Math.cos(q.th) + d * nx, y = q.rho * Math.sin(q.th) + d * ny;
+      return { rho: hyp(x, y), th: Math.atan2(y, x) };
+    });
+    const L = shift(S.act.L, 'dL', -1), R = shift(S.act.R, 'dR', 1);
+    const P = densify(polyFrom(L, R, S.E.rake, D.cp.rc0 || 0), 0.01);
+    return verify(D, S, true, formLim, { pts: P, noCham: true });
+  }
+
+  // ---------------- 重磨后调整数据优化 ----------------
+  // 对一个状态（实际刃口不变），在机床上调整：中心距 A（必调）、轴交角附加量 dΣ、偏置 e，以及刀具与工件的相位（解析求最优）；
+  // 目标：齿顶（让开棱边）到渐开线起始圆之间，左右齿面相对目标齿面的法向偏差平方和最小（同时也就把齿厚拉回）。
+  // vars：'A' | 'AS' | 'ASE'
+  function optimize(D, S, vars, formLim) {
+    const W = D.W, cp = D.cp, set0 = D.set || {}, Kb = S.K || D.K;
+    const P = densify(polyFrom(S.act.L, S.act.R, S.E.rake, cp.rc0 || 0), 0.02);
+    const nv = vars === 'ASE' ? 3 : vars === 'AS' ? 2 : 1, h = [0.004, 0.04, 0.02];
+    const tipR = W.ra, toRoot = W.isInt ? 1 : -1, mg = 0.02;          // 从齿顶 0.02 mm 起算（与校核一致，齿顶棱边也不许多切）
+    const Kx = x => { if (nv === 1) return Kb; const K = setup(W, cp, { kap: set0.kap, e: (set0.e || 0) + (x[2] || 0), dSig: (set0.dSig || 0) + x[1] }); K.side = Kb.side; K.ph0 = Kb.ph0; return K; };
+    const res = x => {
+      const K = Kx(x), G = simulate(W, K, S.A + x[0], P, { step: 0.05, dR: 0.01 });
+      const rows = [];
+      for (let k = 0; k < G.nb; k++) {
+        const R = G.R0 + (k + 0.5) * G.dR;
+        if ((R - tipR) * toRoot < mg || (R - formLim) * toRoot > -0.05) continue;
+        rows.push([R * W.rb / Math.max(R, W.rb), G.eL[k], G.eR[k]]);
+      }
+      let num = 0, den = 0; for (const [c, l, r] of rows) if (isFinite(l) && isFinite(r)) { num += c * (l - r); den += 2 * c * c; }
+      const ph = den ? num / den : 0, out = [];
+      for (const [c, l, r] of rows) { out.push(isFinite(l) ? l - ph * c : 0.05, isFinite(r) ? r + ph * c : 0.05); }
+      return { r: out, ph, K };
+    };
+    const cost = r => r.reduce((a, b) => a + b * b, 0);
+    let x = [0, 0, 0].slice(0, nv), cur = res(x), c0 = cost(cur.r), lam = 1e-3;
+    const base = { x: x.slice(), ph: cur.ph, cost: c0 };
+    for (let it = 0; it < 6; it++) {
+      const J = [];
+      for (let j = 0; j < nv; j++) { const xp = x.slice(); xp[j] += h[j]; const rp = res(xp).r; J.push(rp.map((v, k) => (v - cur.r[k]) / h[j])); }
+      const N = Array.from({ length: nv }, (_, a) => Array.from({ length: nv }, (_, b) => J[a].reduce((s, v, k) => s + v * J[b][k], 0)));
+      const g = J.map(col => col.reduce((s, v, k) => s + v * cur.r[k], 0));
+      let ok = false;
+      for (let tr = 0; tr < 6 && !ok; tr++) {
+        const M = N.map((row, a) => row.map((v, b) => v + (a === b ? lam * (N[a][a] || 1) : 0)));
+        const dx = solve(M, g.map(v => -v)); if (!dx) { lam *= 10; continue; }
+        const xn = x.map((v, j) => v + dx[j]);
+        if (nv > 1 && Math.abs(xn[1]) > 3) { lam *= 10; continue; }
+        const rn = res(xn), cn = cost(rn.r);
+        if (cn < c0) { x = xn; cur = rn; const imp = (c0 - cn) / c0; c0 = cn; lam = Math.max(lam / 10, 1e-6); ok = true; if (imp < 0.005) it = 99; }
+        else lam *= 10;
+      }
+      if (!ok) break;
+    }
+    const K = cur.K, A = S.A + x[0];
+    const V = verify(D, S, true, formLim, { K, A, ph: cur.ph });
+    return { A, dA: x[0], dSig: nv > 1 ? x[1] : 0, de: nv > 2 ? x[2] : 0, Sig: K.Sig * R2D, e: K.e, ph: cur.ph, K, V };
+  }
+  function solve(M, b) {
+    const n = b.length, a = M.map((r, i) => r.concat([b[i]]));
+    for (let c = 0; c < n; c++) { let p = c; for (let r = c + 1; r < n; r++) if (Math.abs(a[r][c]) > Math.abs(a[p][c])) p = r; if (Math.abs(a[p][c]) < 1e-30) return null; [a[c], a[p]] = [a[p], a[c]];
+      for (let r = 0; r < n; r++) if (r !== c) { const f = a[r][c] / a[c][c]; for (let k = c; k <= n; k++) a[r][k] -= f * a[c][k]; } }
+    return a.map((r, i) => r[n] / r[i]);
   }
 
   // ---------------- 汇总：基本参数 ----------------
@@ -547,7 +856,7 @@ const SK = (() => {
     return out;
   }
 
-  return { basics, work, sdWork, setup, mapPt, rake, makeD, edge, design, simulate, edgePolyline, densify, polyFrom, verify, angles, speed, inv, D2R, R2D };
+  return { optimize, cutPlan, collide, grindData, measured, basics, work, sdWork, setup, place, mapPt, toFix, dirFix, minSd, rake, makeD, edge, design, simulate, edgePolyline, densify, polyFrom, verify, angles, speed, interpBy, inv, D2R, R2D };
 })();
 // ==== SK-CORE-END ====
 
@@ -565,6 +874,15 @@ const SK = (() => {
   const C_DEF = [['z', '刀具齿数 zc', '', 23, 1], ['beta', '刀具螺旋角 βc（右旋 +）', '°', 20, 0.1], ['rake', '前刀面', 'sel', [['step', '阶梯前刀面（垂直刀齿螺旋）'], ['cone', '锥形 / 平前刀面']]],
     ['gamma', '前角 γ', '°', 5, 0.5], ['alphaE', '顶刃后角 αe', '°', 5, 0.5], ['da0', '新刀外径（0 = 自动）', 'mm', 0, 0.01], ['regrind', '可重磨量（轴向）', 'mm', 2, 0.1],
     ['rc0', '刀尖圆角', 'mm', 0.2, 0.01], ['nc', '刀具转速', 'r/min', 1000, 10]];
+  const M_DEF = [['Ca', '齿顶修缘量 Ca', 'µm', 0, 0.5], ['dCa', '修缘起始直径（0 = 自动）', 'mm', 0, 0.01], ['CaShape', '齿顶修缘形状', 'sel', [['lin', '直线'], ['arc', '圆弧']]],
+    ['Cf', '齿根修缘量 Cf', 'µm', 0, 0.5], ['dCf', '齿根修缘起始直径（0 = 自动）', 'mm', 0, 0.01], ['Cal', '齿形鼓形量 Cα', 'µm', 0, 0.5],
+    ['fHL', '齿形斜率修形 左', 'µm', 0, 0.5], ['fHR', '齿形斜率修形 右', 'µm', 0, 0.5],
+    ['mfHL', '试切实测 斜率偏差 左', 'µm', 0, 0.1], ['mfHR', '试切实测 斜率偏差 右', 'µm', 0, 0.1], ['mCalL', '试切实测 鼓形量 左', 'µm', 0, 0.1], ['mCalR', '试切实测 鼓形量 右', 'µm', 0, 0.1]];
+  const H_DEF = [['sh', '台肩位置', 'sel', [['none', '无台肩'], ['exit', '出刀端'], ['entry', '进刀端']]], ['g', '台肩到齿端距离', 'mm', 5, 0.1], ['Ds', '台肩直径（内齿为孔径，外齿为外径）', 'mm', 0, 0.1]];
+  const S_DEF = [['kap', '刀具倾角 κ', '°', 0, 0.5], ['e', '偏置 e', 'mm', 0, 0.1], ['Bc', '刀齿轴向长度（含可重磨量）', 'mm', 12, 0.5], ['Dh', '刀体 / 刀柄直径（0 = 不查）', 'mm', 0, 0.5], ['Lh', '刀柄长度', 'mm', 40, 1]];
+  const P_DEF = [['adj', '重磨后调整', 'sel', [['AS', '调中心距 + 轴交角（推荐）'], ['A', '只调中心距'], ['ASE', '调中心距 + 轴交角 + 偏置'], ['none', '不调（中心距按齿根）']]],
+    ['n', '切削次数（含精切）', '', 5, 1], ['fin', '精切余量（径向）', 'mm', 0.1, 0.01], ['mode', '切深分配', 'sel', [['area', '等切除面积（切深递减）'], ['depth', '等切深']]],
+    ['faR', '粗切进给（每工件转）', 'mm', 0.3, 0.01], ['faF', '精切进给（每工件转）', 'mm', 0.1, 0.01], ['safe', '单边安全距离', 'mm', 1, 0.5]];
   function build(gid, defs, key) {
     const g = $(gid); store[key] = store[key] || {};
     for (const d of defs) {
@@ -576,7 +894,9 @@ const SK = (() => {
       el.addEventListener('input', on); el.addEventListener('change', on);
     }
   }
-  build('wgrid', W_DEF, 'w'); build('cgrid', C_DEF, 'c');
+  build('wgrid', W_DEF, 'w'); build('cgrid', C_DEF, 'c'); build('mgrid', M_DEF, 'm'); build('hgrid', H_DEF, 'h'); build('sgrid', S_DEF, 's'); build('pgrid', P_DEF, 'p');
+  if (M_DEF.some(d => d[2] !== 'sel' && +$('m_' + d[0]).value)) $('dMod').open = true;
+  if (+$('s_kap').value || +$('s_e').value) $('dSet').open = true;
   const val = (key, k) => { const el = $(key + '_' + k); return el.tagName === 'SELECT' ? el.value : parseFloat(el.value); };
   const later = (() => { let t = 0; return () => { clearTimeout(t); t = setTimeout(run, 450); }; })();
   let st = null, job = 0;
@@ -587,17 +907,28 @@ const SK = (() => {
       if (my !== job) return;
       const wp = {}; for (const d of W_DEF) wp[d[0]] = val('w', d[0]);
       const cp = {}; for (const d of C_DEF) cp[d[0]] = val('c', d[0]);
+      const m = {}; for (const d of M_DEF) m[d[0]] = val('m', d[0]);
+      wp.mod = { Ca: m.Ca, dCa: m.dCa, CaShape: m.CaShape, Cf: m.Cf, dCf: m.dCf, CfShape: 'lin', Cal: m.Cal, fHL: m.fHL, fHR: m.fHR, cmp: { fHL: m.mfHL, fHR: m.mfHR, CalL: m.mCalL, CalR: m.mCalR } };
+      const sv = {}; for (const d of S_DEF) sv[d[0]] = val('s', d[0]);
+      cp.set = { kap: sv.kap || 0, e: sv.e || 0 };
+      const pv = {}; for (const d of P_DEF) pv[d[0]] = val('p', d[0]);
+      const hv = {}; for (const d of H_DEF) hv[d[0]] = val('h', d[0]);
       if (!(wp.mn > 0 && wp.z > 3 && cp.z > 3)) { $('busy').textContent = ''; $('warn').textContent = '参数不完整'; return; }
       let D;
       try { D = SK.design(wp, cp); } catch (e) { $('busy').textContent = ''; $('warn').textContent = e.message; $('res').innerHTML = ''; return; }
-      st = { D, wp, cp, B: SK.basics(D), V: [], Vx: null, Ag: null };
+      st = { D, wp, cp, sv, pv, hv, B: SK.basics(D), V: [], Vx: null, Ag: null, O: null, plan: null, coll: null };
+      $('cAdj').hidden = pv.adj === 'none'; $('measRes').innerHTML = ''; $('measMsg').textContent = '';
       showBasics(); drawTooth(); build3d();
       // 分步：校核与角度（避免页面卡住）
       const steps = [() => { st.Vx = SK.verify(D, D.states[0], false); },
         () => { st.V[0] = SK.verify(D, D.states[0], true, st.Vx.formR); }, () => { const a = SK.verify(D, D.states[1], false); st.V[1] = SK.verify(D, D.states[1], true, a.formR); st.V[1].formEx = a.formR; },
         () => { const a = SK.verify(D, D.states[2], false); st.V[2] = SK.verify(D, D.states[2], true, a.formR); st.V[2].formEx = a.formR; }, () => { st.Ag = SK.angles(D, D.states[0]); }];
+      if (pv.adj !== 'none') { st.O = []; for (const j of [0, 1, 2]) steps.push(() => { st.O[j] = SK.optimize(D, D.states[j], pv.adj, j ? st.V[j].formEx : st.Vx.formR); }); }
+      steps.push(() => { st.plan = SK.cutPlan(D, { n: pv.n, fin: pv.fin, mode: pv.mode, faR: pv.faR, faF: pv.faF, nc: cp.nc, safe: pv.safe }); },
+        () => { st.coll = SK.collide(D, { Bc: sv.Bc, Dh: sv.Dh, Lh: sv.Lh, g: hv.g, Ds: hv.sh === 'none' ? 0 : hv.Ds, shoulder: hv.sh }); st.gr = SK.grindData(D); });
       let k = 0;
-      const next = () => { if (my !== job) return; if (k >= steps.length) { $('busy').textContent = ''; showVerify(); drawAngles(); drawErr(); showBasics(); return; }
+      const next = () => { if (my !== job) return; if (k === 5) { showVerify(); drawAngles(); drawErr(); showBasics(); }
+        if (k >= steps.length) { $('busy').textContent = ''; showVerify(); drawAngles(); drawErr(); showBasics(); showAdj(); showPlan(); showColl(); showGrind(); return; }
         $('busy').textContent = '校核中 ' + (k + 1) + '/' + steps.length + '…';
         try { steps[k++](); } catch (e) { $('busy').textContent = ''; $('warn').textContent = '校核出错：' + e.message; return; }
         setTimeout(next, 0); };
@@ -616,6 +947,8 @@ const SK = (() => {
       ['后刀面横截面基圆 左 / 右', 'Ø' + f3(2 * FL.rbF) + ' / Ø' + f3(2 * FR.rbF)], ['横截面与渐开线偏差', um(FL.invDev) + ' / ' + um(FR.invDev) + ' µm'],
       ['导程拟合残差（重磨到底）', um(FL.errOld) + ' / ' + um(FR.errOld) + ' µm'],
       ['切削速度（分度圆处）', f2(sp.v) + ' m/min'], ['工件转速', f2(sp.nw) + ' r/min']];
+    if (K.kap || K.e) rows.splice(1, 0, ['刀具倾角 κ / 偏置 e', f2(K.kap * 180 / Math.PI) + '° / ' + f3(K.e)]);
+    if (W.mod.any) rows.push(['目标齿形修形', '已加入（评定 Ø' + f3(2 * W.mod.rForm) + ' → Ø' + f3(2 * W.ra) + '）']);
     if (st.Ag) {
       const mm = (a, k) => [Math.min(...a.map(q => q[k])), Math.max(...a.map(q => q[k]))];
       const gL = mm(st.Ag.L, 'gam'), gR = mm(st.Ag.R, 'gam'), aL = mm(st.Ag.L, 'alp'), aR = mm(st.Ag.R, 'alp');
@@ -642,7 +975,7 @@ const SK = (() => {
     let h = '<tr><th>项目</th>' + nm.map((n, j) => `<th>${n}<br><small>退 ${f2(D.states[j].dlt)}</small></th>`).join('') + '</tr>';
     items.forEach((it, k) => { h += `<tr><td>${it}</td>` + cells.map(c => `<td class="${c[k][0]}">${c[k][1]}</td>`).join('') + '</tr>'; });
     $('vt').innerHTML = h;
-    $('vnote').innerHTML = `精确刃口（新刀）本身：齿形误差 ${um(Vx.maxL)} / ${um(Vx.maxR)} µm，齿厚变化 ${um(Vx.dThick)} µm，过切 ${um(Math.max(0, -Vx.gouge))} µm。表中为按“磨出的后刀面”得到的实际刃口；齿形误差在齿顶到渐开线起始圆之间（两端各让开一点）统计。齿厚变化为分度圆处，负值表示齿槽偏宽（${W.isInt ? '内齿齿厚' : '齿厚'}偏薄）。`;
+    $('vnote').innerHTML = `精确刃口（新刀）本身：齿形误差 ${um(Vx.maxL)} / ${um(Vx.maxR)} µm，齿厚变化 ${um(Vx.dThick)} µm，过切 ${um(Math.max(0, -Vx.gouge))} µm。表中为按“磨出的后刀面”得到的实际刃口；齿形误差在齿顶到渐开线起始圆之间（两端各让开一点）统计。齿厚变化为分度圆处端面弧齿厚，正值 = 齿厚（齿槽窄），负值 = 齿薄（齿槽宽）。${W.mod.any ? '齿形误差是相对修形后的目标齿形。' : ''}`;
   }
   // ---------- 图：刀齿端面投影 ----------
   function drawTooth() {
@@ -686,7 +1019,7 @@ const SK = (() => {
   }
   // ---------- 图：齿形误差 ----------
   function drawErr() {
-    const svg = $('errSvg'), V = st.V, W0 = st.D.W; if (!V[0]) return;
+    const svg = $('errSvg'), W0 = st.D.W, V = st.O && st.O[2] ? st.O.map(o => o.V) : st.V; if (!V[0]) return;
     const pts = []; const lim = (v, R) => W0.isInt ? R >= W0.ra + 0.02 && R <= v.formR : R <= W0.ra - 0.02 && R >= v.formR;
     const ser = V.map(v => v.prof.filter(q => lim(v, q[0]) && isFinite(q[1]) && isFinite(q[2])));
     const xs = ser.flat().map(q => q[0]), ys = ser.flat().flatMap(q => [q[1] * 1000, q[2] * 1000]);
@@ -696,11 +1029,78 @@ const SK = (() => {
     let o = `<rect x="${l}" y="${t}" width="${W - l - r}" height="${H - t - b}" fill="none" stroke="#2F3237"/><line x1="${l}" x2="${W - r}" y1="${Y(0)}" y2="${Y(0)}" stroke="#5D6268"/>`;
     for (let k = 0; k <= 4; k++) { const v = y0 + (y1 - y0) * k / 4; o += `<text x="${l - 5}" y="${Y(v) + 4}" fill="#9EA3A9" font-size="10.5" text-anchor="end">${v.toFixed(1)}</text>`; }
     for (let k = 0; k <= 4; k++) { const v = x0 + (x1 - x0) * k / 4; o += `<text x="${X(v)}" y="${H - b + 15}" fill="#9EA3A9" font-size="10.5" text-anchor="middle">Ø${(2 * v).toFixed(2)}</text>`; }
-    o += `<text x="12" y="${t + 10}" fill="#9EA3A9" font-size="10.5">µm</text><text x="${(W + l) / 2}" y="${H - 6}" fill="#9EA3A9" font-size="11" text-anchor="middle">工件直径（正值 = 多留，负值 = 过切）</text>`;
+    o += `<text x="12" y="${t + 10}" fill="#9EA3A9" font-size="10.5">µm</text><text x="${(W + l) / 2}" y="${H - 6}" fill="#9EA3A9" font-size="11" text-anchor="middle">工件直径（正值 = 多留，负值 = 过切）${st.O && st.O[2] ? '　按重磨后调整的设定' : ''}</text>`;
     const cols = ['#4FC3F7', '#FFD166', '#7FD19B'], nm = ['新刀', '重磨一半', '重磨到底'];
     ser.forEach((s, j) => { for (const [k, d] of [[1, ''], [2, '5 3']]) o += `<path d="${s.map((q, i) => (i ? 'L' : 'M') + X(q[0]).toFixed(1) + ' ' + Y(q[k] * 1000).toFixed(1)).join('')}" fill="none" stroke="${cols[j]}" stroke-width="1.5" stroke-dasharray="${d}"/>`; o += `<text x="${W - r - 4}" y="${t + 14 + j * 13}" fill="${cols[j]}" font-size="10.5" text-anchor="end">${nm[j]}（实线左 / 虚线右）</text>`; });
     svg.innerHTML = o;
   }
+  // ---------- 重磨后调整 ----------
+  function showAdj() {
+    if (!st.O || !st.O[2]) { $('adjT').innerHTML = ''; $('adjNote').textContent = ''; return; }
+    const { D, V, O, pv } = st, nm = ['新刀', '重磨一半', '重磨到底'], R2D = 180 / Math.PI;
+    const e0 = (D.set && D.set.e) || 0, mx = v => Math.max(v.maxL, v.maxR);
+    const rows = [['中心距（按齿根）', j => f4(D.states[j].A)], ['中心距（调整后）', j => f4(O[j].A)], ['轴交角 Σ', j => f3(O[j].Sig) + '°'],
+      ...(pv.adj === 'ASE' ? [['偏置 e', j => f3(O[j].e)]] : []), ['相位（工件转角）', j => (O[j].ph * R2D * 3600).toFixed(1) + '″'],
+      ['齿形误差 不调 → 调整 µm', j => um(mx(V[j])) + ' → ' + um(mx(O[j].V)), j => mx(O[j].V) < 0.005 ? 'ok' : 'bad'],
+      ['齿厚变化 不调 → 调整 µm', j => um(V[j].dThick) + ' → ' + um(O[j].V.dThick)], ['齿顶棱边多切（调整后）µm', j => um(O[j].V.chamDepth), j => O[j].V.chamDepth < 0.002 ? 'ok' : 'bad'],
+      ['齿根圆 Ø（调整后）', j => f3(2 * O[j].V.rootR)]];
+    let h = '<tr><th>项目</th>' + nm.map((n, j) => `<th>${n}<br><small>退 ${f2(D.states[j].dlt)}</small></th>`).join('') + '</tr>';
+    for (const r of rows) h += `<tr><td>${r[0]}</td>` + [0, 1, 2].map(j => `<td class="${r[2] ? r[2](j) : ''}">${r[1](j)}</td>`).join('') + '</tr>';
+    $('adjT').innerHTML = h;
+    $('adjNote').textContent = '刀具磨好后刃口固定，重磨后在机床上按此表设定（相位一般由机床对齿自动找正，列出供参考）。齿根圆随中心距略有变化，请对照齿根公差。误差图显示的是调整后的结果。';
+  }
+  // ---------- 切削分配 ----------
+  function showPlan() {
+    const P = st.plan; if (!P) return;
+    let h = '<tr><th>刀次</th><th>累计切深</th><th>本刀切深</th><th>中心距</th><th>切除面积</th><th>进给</th><th>时间</th></tr>';
+    for (const q of P.passes) h += `<tr><td>${q.k}${q.fin ? ' 精' : ''}</td><td>${f3(q.d)}</td><td>${f3(q.dd)}</td><td>${f4(q.A)}</td><td>${(q.share * 100).toFixed(1)}%</td><td>${f2(q.fa)}</td><td>${(q.t * 60).toFixed(1)} s</td></tr>`;
+    $('planT').innerHTML = h;
+    $('planS').innerHTML = `全齿深（径向）<b>${f3(P.H)}</b> mm；刃口在齿圈内的轴向啮合长度 <b>${f2(P.Le)}</b> mm，每刀行程 <b>${f2(P.travel)}</b> mm；工件转速 <b>${f2(P.nw)}</b> r/min；切削时间合计 <b>${(P.T * 60).toFixed(1)} s</b>（不含快速退回与换向）。端面切除面积 ${f3(P.Sfull)} mm²/齿槽（理论渐开线齿槽 ${f3(P.Sgap)}，差值为齿根过渡）。`;
+  }
+  // ---------- 干涉 ----------
+  function showColl() {
+    const C = st.coll, W = st.D.W; if (!C) return;
+    const rows = [], Wn = [];
+    for (const b of C.back) { const ok = b.min > -0.001; rows.push([`刀齿后部最小间隙（${b.dlt ? '重磨到底' : '新刀'}）`, `<span class="${ok ? 'ok2' : 'bad2'}">${um(b.min)} µm</span>${b.at ? `（${b.at.sd === 'L' ? '左' : '右'}侧，前刀面后 ${b.at.dz} mm，ρ ${f3(b.at.rho)}）` : ''}`]); if (!ok) Wn.push(`${b.dlt ? '重磨到底' : '新刀'}刀齿后部蹭已加工齿面：加大顶刃后角，或缩短刀齿长度`); }
+    const okC = C.rCoreMax < C.rhoAct;
+    rows.push(['刀具齿根圆直径最大允许', 'Ø' + f3(2 * C.rCoreMax)], ['刃口切削最低点直径（重磨到底）', `<span class="${okC ? 'ok2' : 'bad2'}">Ø${f3(2 * C.rhoAct)}</span>`]);
+    if (!okC) Wn.push('刀具齿根圆放不下：刃口需要切到的最低点已低于刀体允许的最大半径，减小刀具外径或刀齿数');
+    if (isFinite(C.hub)) { rows.push(['刀柄径向余量', `<span class="${C.hub > 0 ? 'ok2' : 'bad2'}">${f3(C.hub)} mm</span>`]); if (C.hub <= 0) Wn.push('刀柄会碰到工件齿顶'); }
+    rows.push(['切削点轴向范围（相对刀具中心）', f2(C.zLo) + ' ～ ' + f2(C.zHi) + ' mm']);
+    if (C.need != null) { rows.push([`台肩所需最小距离（${st.hv.sh === 'entry' ? '进刀端' : '出刀端'}）`, `<span class="${C.ok ? 'ok2' : 'bad2'}">${f2(C.need)} mm</span>（给定 ${f2(st.hv.g)}）`]); if (!C.ok) Wn.push('台肩距离不够，刀具切完最后一点前会碰台肩'); }
+    $('collR').innerHTML = rows.map(r => `<div><span>${r[0]}</span><span>${r[1]}</span></div>`).join('');
+    $('collW').textContent = Wn.join('；');
+  }
+  // ---------- 磨刀数据 ----------
+  function showGrind() {
+    const G = st.gr, C = st.coll; if (!G) return;
+    const F = G.flank, rows = [['基圆直径 db', s => f3(F[s].db)], ['基圆螺旋角 βb', s => f3(F[s].betaB) + '°'], ['导程 / 旋向', s => f2(Math.abs(F[s].lead)) + ' ' + F[s].hand],
+      ['分度圆螺旋角', s => f3(Math.abs(F[s].betaP)) + '°'], ['展成范围 Ø', s => f3(C ? 2 * C.rhoAct : F[s].dLo) + ' → ' + f3(F[s].dHi)],
+      ['展开角范围', s => { const rb = F[s].db / 2, xi = r => r > rb ? Math.sqrt(r * r - rb * rb) / rb * 180 / Math.PI : 0; return f2(xi(C ? C.rhoAct : F[s].dLo / 2)) + '° → ' + f2(F[s].xiHi) + '°'; }],
+      ['横截面与渐开线偏差', s => um(F[s].dev) + ' µm']];
+    let h = '<tr><th>后刀面</th><th>左侧</th><th>右侧</th></tr>';
+    for (const r of rows) h += `<tr><td>${r[0]}</td><td>${r[1]('L')}</td><td>${r[1]('R')}</td></tr>`;
+    $('grT').innerHTML = h;
+    const R = G.rake;
+    const lowB = C ? ['L', 'R'].filter(s => C.rhoAct < F[s].db / 2).map(s => s === 'L' ? '左' : '右') : [];
+    $('grN').innerHTML = (lowB.length ? `<span class="bad2">${lowB.join('、')}侧刃口的切削段最低点（Ø${f3(2 * C.rhoAct)}）低于该侧后刀面基圆，基圆以下一段不能用平面砂轮展成，这一段需成形磨削，或调整刀具参数（齿数、外径、螺旋角）后再看。</span><br>` : '') + `后刀面：每侧为渐开线螺旋面，可用平面砂轮展成磨削 —— 砂轮工作平面与刀具基圆柱相切，平面内母线与刀具轴线成基圆螺旋角 βb，刀具每转 Δφ 平面相对移动 rb·Δφ，同时按导程轴向移动。横截面与渐开线的偏差可修整到砂轮上或忽略（小于 1 µm 时）。` +
+      `<br>前刀面：${R.kind}${R.nAxis != null ? `，每齿平面法向与刀具轴线夹角 ${f3(R.nAxis)}°（螺旋角 ${R.beta}°、前角 ${R.gamma}°）` : R.gamma ? `，锥面母线与端面夹角 ${f2(R.gamma)}°` : ''}；每次重磨沿刀具轴向磨去。` +
+      `<br>顶刃：外圆锥半角 αe = ${G.tip.alphaE}°，新刀 Ø${f3(G.tip.d0)} → 重磨到底 Ø${f3(G.tip.d2)}（可重磨量 ${G.tip.regrind} mm）。磨床 NC 程序与机床有关，这里不生成。`;
+  }
+  // ---------- 实测刀具 ----------
+  $('measGo').addEventListener('click', () => {
+    if (!st || !st.Vx) { $('measMsg').textContent = '请等计算完成'; return; }
+    const rows = $('meas').value.split(/\n/).map(l => l.trim()).filter(l => l && !/^[#a-zA-Z\u4e00-\u9fa5]/.test(l)).map(l => l.split(/[,，;\s\t]+/).map(Number)).filter(a => a.length >= 3 && a.every(isFinite)).map(a => ({ rho: a[0], dL: a[1], dR: a[2] }));
+    if (rows.length < 2) { $('measMsg').textContent = '至少两行有效数据'; return; }
+    $('measMsg').textContent = '计算中…';
+    setTimeout(() => {
+      try {
+        const v = SK.measured(st.D, rows, st.Vx.formR), v0 = st.V[0];
+        $('measRes').innerHTML = `<div class="res" style="margin-top:8px"><div><span>预测齿形误差 左 / 右</span><span>${um(v.maxL)} / ${um(v.maxR)} µm（设计 ${um(v0.maxL)} / ${um(v0.maxR)}）</span></div><div><span>预测齿厚变化</span><span>${um(v.dThick)} µm（设计 ${um(v0.dThick)}）</span></div><div><span>齿根圆 Ø</span><span>${f3(2 * v.rootR)}</span></div></div><div class="stat">齿厚偏差可由中心距补偿；齿形误差含刀具偏差的形状部分。</div>`;
+        $('measMsg').textContent = '';
+      } catch (e) { $('measMsg').textContent = '出错：' + e.message; }
+    }, 20);
+  });
   // ---------- 加工过程 3D（WebGL） ----------
   const cv = $('cv');
   let gl = null, prog = null, meshes = [], rafId = 0, sc3 = null;
@@ -778,7 +1178,7 @@ const SK = (() => {
     disk(0, rRoot, -(S.ra - rRoot) * Math.tan((cp.rake === 'step' ? 0 : cp.gamma) * Math.PI / 180), cS); disk(rRoot * 0.35, rRoot, -Lt, cS);
     meshes.push(mkMesh(T));
     const prevKind = sc3 && sc3.kind;
-    sc3 = { nPart: 1, W, K, A: S.A, b, i: K.i, kind: prevKind };
+    sc3 = { nPart: 1, W, K: S.K || K, A: S.A, b, i: K.i, kind: prevKind, ph0: (S.K && S.K.ph0) || 0 };
     if (sc3.kind !== W.kind) setView(cam.view);
     sc3.kind = W.kind;
     req();
@@ -804,7 +1204,8 @@ const SK = (() => {
     // 工件每秒转 15°；刀具轴向进给：每工件转一圈 1.5 mm（演示用），在齿宽内往复
     const phw0 = an.t * 15 * Math.PI / 180, travel = b + 6, zf = ((an.t * 15 / 360 * 1.5) % (2 * travel)), z = (zf < travel ? zf : 2 * travel - zf) - travel / 2;
     const phw = phw0 + W.kw * z, phc = K.i * phw0;
-    const partM = M4.rz(phw), toolM = M4.mul(M4.tr(A, 0, z), M4.mul(M4.rx(K.Sig), M4.rz(phc)));
+    const Q = K.Q, Qm = new Float32Array([Q[0][0], Q[1][0], Q[2][0], 0, Q[0][1], Q[1][1], Q[2][1], 0, Q[0][2], Q[1][2], Q[2][2], 0, 0, 0, 0, 1]);
+    const partM = M4.rz(phw + (sc3.ph0 || 0)), toolM = M4.mul(M4.tr(A, K.e || 0, z), M4.mul(Qm, M4.rz(phc)));
     const tgt = cam.view === 'near' ? [W.r, 0, z] : [W.isInt ? 0 : A / 2, 0, 0];
     const eye = [tgt[0] + cam.dist * Math.cos(cam.ph) * Math.cos(cam.th), tgt[1] + cam.dist * Math.cos(cam.ph) * Math.sin(cam.th), tgt[2] + cam.dist * Math.sin(cam.ph)];
     const VP = M4.mul(M4.persp(0.62, w / Math.max(1, hh), cam.dist * 0.01, cam.dist * 40), M4.look(eye, tgt, [0, 0, 1]));
@@ -818,7 +1219,7 @@ const SK = (() => {
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, m.i); gl.drawElements(gl.TRIANGLES, m.count, gl.UNSIGNED_INT, 0);
     });
     gl.disable(gl.BLEND); gl.depthMask(true);
-    $('info3d').textContent = `Σ ${(K.Sig * 180 / Math.PI).toFixed(2)}° · 中心距 ${A.toFixed(3)} · 进给位置 z ${z.toFixed(1)}`;
+    $('info3d').textContent = `Σ ${(K.Sig * 180 / Math.PI).toFixed(2)}°${K.kap ? ' · 倾角 ' + (K.kap * 180 / Math.PI).toFixed(1) + '°' : ''}${K.e ? ' · 偏置 ' + K.e.toFixed(2) : ''} · 中心距 ${A.toFixed(3)} · 进给位置 z ${z.toFixed(1)}`;
     if (an.playing) req();
   }
   const ptrs = new Map(); let pinch0 = 0, dist0 = 0;
@@ -861,6 +1262,7 @@ const SK = (() => {
       `刀具：zc ${cp.z}  βc ${cp.beta}°  ${cp.rake === 'step' ? '阶梯前刀面' : '锥形/平前刀面'} γ ${cp.gamma}°  顶刃后角 ${cp.alphaE}°  刀尖圆角 R${cp.rc0}`,
       `轴交角 Σ ${f3(B.Sig)}°  新刀外径 Ø${f3(B.st[0].da)}  中心距 ${f4(B.st[0].A)}`, `可重磨量 ${cp.regrind}：旧刀外径 Ø${f3(B.st[2].da)}  中心距 ${f4(B.st[2].A)}`,
       `左侧后刀面导程 ${f2(D.flank.L.lead)}（分度圆螺旋角 ${f3(D.flank.L.betaP)}°），右侧 ${f2(D.flank.R.lead)}（${f3(D.flank.R.betaP)}°）`,
+      ...(D.K.kap || D.K.e ? [`安装：刀具倾角 κ ${f2(D.K.kap * 180 / Math.PI)}°  偏置 e ${f3(D.K.e)}`] : []), ...(D.W.mod.any ? ['目标齿形含修形 / 试切补偿（见计算页）'] : []),
       'FLANK_SECTION：后刀面在刀尖端面（w = 0）的横截面廓形，按各侧导程做螺旋面即为后刀面', 'EDGE_NEW：新刀刃口在端面的投影（锥形 / 阶梯前刀面上的刃口不在同一端面内）'];
     for (const t of lines) { E.push('0', 'TEXT', '8', 'NOTES', '10', f(x), '20', f(y), '40', f(th), '1', dxfStr(t), '7', 'CN'); y -= th * 1.7; }
     const lay = [['0', 7], ['FLANK_SECTION', 1], ['EDGE_NEW', 4], ['CENTER', 8], ['NOTES', 2]];
