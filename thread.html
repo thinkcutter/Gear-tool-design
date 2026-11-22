@@ -621,9 +621,9 @@ const fillPresets = (id, def) => { $(id).innerHTML = PRESETS.map((p, i) => `<opt
       txt(g, A.x, A.y - rr - 1.6, `α = ${sp.b1 + sp.b2}°`, { fs: 2.4, fill: 'var(--accent)' });
     } else {
       arcMark(g, A.x, A.y, rr, -90 - sp.b2, -90, { w: 0.35 }); arcMark(g, A.x, A.y, rr * 0.75, -90, -90 + sp.b1, { w: 0.35, stroke: 'var(--blue)' });
-      txt(g, A.x - rr * Math.sin(sp.b2 * D2R) - 1, A.y - rr * Math.cos(sp.b2 * D2R) + 1.2, `${sp.b2}°`, { fs: 2.3, fill: 'var(--accent)', anchor: 'end' });
+      txt(g, A.x - rr * Math.sin(sp.b2 * D2R) - 1, A.y - rr * Math.cos(sp.b2 * D2R) - 0.6, `${sp.b2}°`, { fs: 2.3, fill: 'var(--accent)', anchor: 'end' });
       txt(g, A.x + 1.2, A.y - rr * 0.75 - 1.4, `${sp.b1}°`, { fs: 2.3, fill: 'var(--blue)', anchor: 'start' });
-      if (k === 'HA') { txt(g, 31, yA - 6, '钉尖方向 →', { fs: 2.2, fill: 'var(--muted)', anchor: 'end' }); txt(g, -31, yA - 6, '← 钉头方向', { fs: 2.2, fill: 'var(--muted)', anchor: 'start' });
+      if (k === 'HA') { txt(g, 31, yA - 1.2, '钉尖方向 →', { fs: 2.2, fill: 'var(--muted)', anchor: 'end' }); txt(g, -31, yA - 1.2, '← 钉头方向', { fs: 2.2, fill: 'var(--muted)', anchor: 'start' });
         txt(g, A.x - 9, top - 1.4, '前侧（35°）', { fs: 2, fill: 'var(--accent)', anchor: 'end' }); txt(g, A.x + 4, top - 1.4, '后侧（3°）', { fs: 2, fill: 'var(--blue)', anchor: 'start' }); }
       else { txt(g, A.x - 9, top - 1.4, '非承载面 30°', { fs: 2, fill: 'var(--accent)', anchor: 'end' }); txt(g, A.x + 4, top - 1.4, '承载面 3°', { fs: 2, fill: 'var(--blue)', anchor: 'start' }); }
     }
@@ -818,7 +818,7 @@ const fillPresets = (id, def) => { $(id).innerHTML = PRESETS.map((p, i) => `<opt
     txt(svg, cx, 31, nm, { fs: 2.4, attr: { 'font-weight': 700 } }); txt(svg, cx, 34.4, sz, { fs: 2.1, fill: 'var(--muted)' });
     const sp = pr.sp, h = sp.ra - sp.rf, yM = yA + h * 0.45, xL = cx - sp.wc / 2 - h * 0.45 * Math.tan(sp.b1 * D2R), xR = cx + sp.wc / 2 + h * 0.45 * Math.tan(sp.b2 * D2R);
     if (tp === 'Tr') { arrow(svg, xL - 6, yM, xL - 0.6, yM, 'a9', { stroke: 'var(--red)', w: 0.5 }); arrow(svg, xR + 6, yM, xR + 0.6, yM, 'a9b', { stroke: 'var(--blue)', w: 0.5 }); txt(svg, cx, yA - 4, '两个方向都能推', { fs: 2.1, fill: 'var(--muted)' }); }
-    else { arrow(svg, xL - 7, yM, xL - 0.6, yM, 'a9', { stroke: 'var(--red)', w: 0.6 }); txt(svg, xL - 3.6, yM - 1.8, tp === 'B' ? '载荷' : '拔出力', { fs: 2, fill: 'var(--red)' });
+    else { arrow(svg, xL - 7, yM, xL - 0.6, yM, 'a9', { stroke: 'var(--red)', w: 0.6 }); txt(svg, xL - 3.6, yM - 1.8, tp === 'B' ? '载荷' : '抗拔力', { fs: 2, fill: 'var(--red)' });
       if (tp !== 'B') txt(svg, cx, yA - 4, '← 钉头　钉尖 →', { fs: 2.1, fill: 'var(--muted)' }); else txt(svg, cx, yA - 4, '单方向承受大力', { fs: 2.1, fill: 'var(--muted)' }); }
   });
 }

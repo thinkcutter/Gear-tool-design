@@ -927,11 +927,12 @@ function wormPair(svg, o) {
     arrow(g, O[0] + v1, O[1], O[0] + v1, O[1] - v1 * Math.tan(gr), 'a9b', { stroke: 'var(--blue)', w: 0.6 });
     arrow(g, O[0], O[1], O[0] + v1, O[1] - v1 * Math.tan(gr), 'a9a', { stroke: 'var(--accent)', w: 0.7 });
     txt(g, O[0] + v1 / 2, O[1] + 3, 'v₁ 蜗杆圆周速度', { fs: 2.4, fill: 'var(--red)' });
-    txt(g, O[0] + v1 + 1.5, O[1] - v1 * Math.tan(gr) / 2, 'v₂ 蜗轮速度', { fs: 2.4, fill: 'var(--blue)', anchor: 'start' });
-    txt(g, O[0] + v1 / 2 - 2, O[1] - v1 * Math.tan(gr) / 2 - 3, 'vₛ 滑动速度', { fs: 2.4, fill: 'var(--accent)', anchor: 'end' });
+    txt(g, O[0] + v1 + 1.5, O[1] - v1 * Math.tan(gr) / 2, '−v₂', { fs: 2.4, fill: 'var(--blue)', anchor: 'start' });
+    txt(g, O[0] + v1 / 2 - 2, O[1] - v1 * Math.tan(gr) / 2 - 3, 'vₛ = v₁ − v₂ 滑动速度', { fs: 2.4, fill: 'var(--accent)', anchor: 'end' });
     arcMark(g, O[0], O[1], 9, -G, 0, { stroke: 'var(--ink)' }); txt(g, O[0] + 10.5, O[1] - 1.5, 'γ', { fs: 2.5, math: true, anchor: 'start' });
     txt(g, 99, 5.5, `vₛ / v₁ = 1 / cos γ = ${(1 / Math.cos(gr)).toFixed(3)}`, { fs: 2.4, anchor: 'end' });
     txt(g, 99, 9.2, `v₂ / v₁ = tan γ = ${Math.tan(gr).toFixed(3)}`, { fs: 2.4, anchor: 'end' });
+    txt(g, 2, 40.5, '蜗轮齿的速度 v₂ 沿轴向朝下；滑动速度是两者的相对速度 v₁ − v₂，沿螺纹方向', { fs: 2.1, fill: 'var(--blue)', anchor: 'start' });
     txt(g, 2, 44, '展开的蜗杆分度圆柱面（灰条为螺纹方向，横向为圆周、竖向为轴向）', { fs: 2.1, fill: 'var(--muted)', anchor: 'start' });
   };
   $('i9').oninput = draw; draw();

@@ -770,7 +770,7 @@ const FG = (() => {
     const fd = Math.round(mc.F), ss = Math.round(mc.S);
     const head = ['FACE GEAR / FACE TOOTH DISC MILLING - LAYERED, A-AXIS SWIVEL', `GROOVES ${mc.k1}-${mc.k2}, PITCH ${meta.pitchDeg.toFixed(5)} DEG, A0=${mc.A0}`,
       `DISC D${tool.D} TIP ${tool.t} CORNER R${tool.rc} SIDE ${(tool.beta * R2D).toFixed(1)} DEG`, 'TOOL POINT = DISC CENTRE ON AXIS, MID-PLANE OF EDGE',
-      `WORK ZERO: X0 = TOOTH TIP FACE (FACE TO ${mc.face > 0 ? '+X' : '-X'}), Y0 Z0 = A-AXIS CENTRE`, `LAYER ${meta.dz} MM, ${seq.length} PASSES PER GROOVE, TOL ${tol} MM`];
+      `WORK ZERO: X0 = TOOTH TIP FACE, FACING ${mc.face > 0 ? '+X' : '-X'}, Y0 Z0 = A-AXIS CENTRE`, `LAYER ${meta.dz} MM, ${seq.length} PASSES PER GROOVE, TOL ${tol} MM`];
     let pathPts = 0; for (const s of seq) pathPts += s.pts.length;
     const body = Aexpr => {
       for (const s of seq) {
