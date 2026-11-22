@@ -2163,6 +2163,21 @@ if (typeof module !== 'undefined') module.exports = HX;
     }
     { const dP = m * P.z, fr = dP < 18 ? 20 : dP < 30 ? 30 : dP < 50 ? 40 : dP < 100 ? 50 : dP < 200 ? 60 : dP < 500 ? 80 : NaN;
       rows.push(['径向跳动 F<sub>r</sub>（2006 版表 8 / 新版表 7 推荐值，分度圆 d = ' + dP.toFixed(1) + '）', isNaN(fr) ? '表 8 只到 d < 500' : fr + ' µm']); }
+    { // DIN 5480-1 表 5 与 7.1 节：齿侧定心时根圆的理论值（hfP 0.55m）和偏差，与所选配合无关（毂按 9H、轴按 11a 计算）；标准图 6 数据框 120×3×38 毂 df2 = 120 + 0.76 已核对
+      const T9 = dinTable(dB, m, 9, 'H'), T11 = dinTable(dB, m, 11, 'a'), meth = lastFV.meth || (isInt ? 'b' : 'h');
+      if (T9 && T11) {
+        if (isInt) {
+          const A2 = 0.2 * m + 1.73 * (T9.A + T9.TG) / 1000, add = meth === 's' ? 0.2 * m : 0;
+          rows.push(['毂根圆 d<sub>f2</sub>（表 5：理论值按 h<sub>fP</sub> 0.55m，偏差 A<sub>df2</sub> = 0.2m + 1.73(A<sub>e</sub> + T<sub>G</sub>)，按 9H）', f3(dB) + ' + ' + A2.toFixed(3) + '（' + f3(dB) + ' ~ ' + f3(dB + A2) + '）']);
+          if (add) rows.push(['插齿毂按加工方法的根圆（理论值 + 0.2m，偏差减 0.2m）', f3(dB + add) + ' + ' + (A2 - add).toFixed(3)]);
+        } else {
+          const d1 = dB - 2.2 * m, A1 = 0.2 * m + 1.73 * (-T11.A + T11.TG) / 1000, sub = meth === 'h' ? 0.1 * m : meth === 's' ? 0.2 * m : 0;
+          rows.push(['轴根圆 d<sub>f1</sub>（表 5：理论值按 h<sub>fP</sub> 0.55m，切削加工偏差 A<sub>df1</sub> = −(0.2m + 1.73(−A<sub>s</sub> + T<sub>G</sub>))，按 11a）', f3(d1) + ' − ' + A1.toFixed(3) + '（' + f3(d1 - A1) + ' ~ ' + f3(d1) + '）']);
+          if (meth === 'r') rows.push(['冷滚压轴根圆（7.1 节：理论值 − 0.58m；表 5 偏差最大 −0.76m）', f3(d1 - 0.58 * m) + '（最小 ' + f3(d1 - 0.76 * m) + '，精确值按 DIN 5480-16 的滚压方法计算）']);
+          else if (sub) rows.push([(meth === 'h' ? '滚齿' : '插齿') + '轴按加工方法的根圆（理论值 − ' + (meth === 'h' ? '0.1' : '0.2') + 'm，偏差绝对值减同量）', f3(d1 - sub) + ' − ' + (A1 - sub).toFixed(3)]);
+        }
+      }
+    }
     let note = '', bad = false;
     if (qaInfo && qaInfo.fromThk) {
       const dLo = isInt ? PI * m - qaInfo.sMax : qaInfo.sMin, dHi = isInt ? PI * m - qaInfo.sMin : qaInfo.sMax, tol = 0.002, w = isInt ? '齿槽宽' : '齿厚';
