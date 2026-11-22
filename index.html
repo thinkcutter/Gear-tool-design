@@ -4409,7 +4409,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       const Rd = Math.max(R.Dc / 2, hTot + 5), gen = C.slice(1).reverse().map(q => [-q[0], Rd - q[1]]).concat(C.map(q => [q[0], Rd - q[1]]));
       const rIn = Math.min(...gen.map(q => q[1])) * 0.55, prof = gen.concat([[gen[gen.length - 1][0], rIn], [gen[0][0], rIn], gen[0]]);
       R.tp = { a: [1, 0, 0], C: [0, Rd, 0] }; hxRevolve(prof, [0, Rd, 0], [1, 0, 0], tin, sh, gen.length);
-      scene.hxR = Math.max(R.yT, 0.35 * Rd);   // 视角要看得到刀盘
+
     } else {
       const sec = C.slice(1).reverse().map(q => [-q[0], q[1]]).concat(C.map(q => [q[0], q[1]])), tp = hTot * 2.2;
       hxPrism(sec.concat([[sec[sec.length - 1][0], tp], [sec[0][0], tp]]), z1 - Math.min(Lz * 0.25, 3 * R.yT), z1 + 2 * R.yT, tin, sh, 'xy');
@@ -4675,7 +4675,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     if (!gl) return;
     freeMeshes(); const R = hxR; scene.hx = true; scene.slot = false; scene.disc = false;
     const steel = col3('--g3d', '#B3BAC2'), hi = col3('--hl3d', '#7599BD'), capC = col3('--cap3d', '#CCD1D9'), tin = col3('--cut3d', '#DBA829'), sh = col3('--shank3d', '#8C949E');
-    if (R.kind === 'rack') { rackBuild3D(R, steel, hi, capC, tin, sh); hxView('tool'); requestDraw(); return; }
+    if (R.kind === 'rack') { rackBuild3D(R, steel, hi, capC, tin, sh); hxView('tool'); if (R.tool === 'disc') { cam.tgt = [0, R.yT * 1.5, 0]; cam.dist = Math.max(R.yT * 6, R.Dc * 0.9); } requestDraw(); return; }
     if (R.kind === 'form') {
       // 回转体零件 + 棱体刀
       const P = R.part, M = 96, pos = [], col = [], idx = [];
