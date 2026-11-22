@@ -3599,8 +3599,8 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   const HXF = {
     worm: [
       ['h_wt', '齿形', 'sel', [['ZA', 'ZA 阿基米德'], ['ZN', 'ZN 法向直廓'], ['ZI', 'ZI 渐开线'], ['ZK', 'ZK 锥面包络']]],
-      ['h_mx', '轴向模数 mx', 'mm', 4], ['h_z1', '头数 z1', '', 2], ['h_d1', '分度圆直径 d1', 'mm', 40],
-      ['h_al', '压力角 αx', '°', 20], ['h_hand', '旋向', 'sel', [['R', '右旋'], ['L', '左旋']]],
+      ['h_mx', '轴向模数 mx', 'mm', 4], ['h_mb', '模数基准', 'sel', [['x', '轴向模数 mx'], ['n', '法向模数 mn（KHK 法向制）']]], ['h_z1', '头数 z1', '', 2], ['h_d1', '分度圆直径 d1', 'mm', 40],
+      ['h_al', '压力角 αx', '°', 20], ['h_alb', 'ZA 压力角基准', 'sel', [['x', '轴向 αx（GB/T 10085 / DIN 3975）'], ['n', '法向 αn（KHK、JIS 常用）']], '', 'za'], ['h_hand', '旋向', 'sel', [['R', '右旋'], ['L', '左旋']]],
       ['h_ha', '齿顶高系数 ha*', '', 1], ['h_cc', '顶隙系数 c*', '', 0.2], ['h_rho', '齿根圆角系数 ρf*', '', 0.3],
       ['h_sx', '分度圆轴向齿厚 sx', 'mm 0=πm/2', '0', 'tx'], ['h_da', '齿顶圆 da1', '0=自动', '0', 'tx'], ['h_df', '齿根圆 df1', '0=自动', '0', 'tx'],
       ['h_D0', 'ZK 生成刀具直径', '0=自动', 0, '', 'zk'], ['h_wdp', '三针量棒直径 dp', 'mm 0=最佳', 0], ['h_L', '螺纹长度', 'mm（3D）', 60],
@@ -3608,7 +3608,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     wheel: [
       ['h_wt', '配对蜗杆齿形', 'sel', [['ZA', 'ZA 阿基米德'], ['ZN', 'ZN 法向直廓'], ['ZI', 'ZI 渐开线'], ['ZK', 'ZK 锥面包络']]],
       ['h_mx', '模数 m', 'mm', 4], ['h_z1', '蜗杆头数 z1', '', 2], ['h_d1', '蜗杆分度圆直径 d1', 'mm', 40],
-      ['h_al', '压力角 αx', '°', 20], ['h_hand', '旋向', 'sel', [['R', '右旋'], ['L', '左旋']]],
+      ['h_al', '压力角 αx', '°', 20], ['h_alb', 'ZA 压力角基准', 'sel', [['x', '轴向 αx（GB/T 10085 / DIN 3975）'], ['n', '法向 αn（KHK、JIS 常用）']], '', 'za'], ['h_hand', '旋向', 'sel', [['R', '右旋'], ['L', '左旋']]],
       ['h_ha', '齿顶高系数 ha*', '', 1], ['h_cc', '顶隙系数 c*', '', 0.2], ['h_rho', '滚刀齿顶圆角系数', '', 0.3],
       ['h_D0', 'ZK 生成刀具直径', '0=自动', 0, '', 'zk'],
       ['h_z2', '蜗轮齿数 z2', '', 40], ['h_x2', '蜗轮变位系数 x2', '', 0],
@@ -3666,6 +3666,8 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     h_te: '大径上牙顶平台的轴向宽度。', h_tr1: '齿槽左下角（牙底与左侧牙侧之间）的圆角半径。两侧圆角正好占满牙底时就是整圆弧牙底。', h_tr2: '齿槽右下角的圆角半径。',
     h_trc: '大于 0 时牙顶两角也由车刀车出圆角（全牙型车刀，刀具覆盖一个螺距）；0 = 牙顶由外圆车削得到，车刀只切齿槽。',
     h_tn: '螺纹头数（线数）。', h_L: '只影响 3D 显示。',
+    h_mb: '蜗杆模数按轴向（GB/T 10085 等，常用）还是法向（KHK 法向制）给出。法向制：sinγ = mn·z1/d1，mx = mn/cosγ（KHK 算例 mn 2.5、z1=1、d1=37 → γ 3.87429°、mx 2.505726）。',
+    h_alb: 'ZA 蜗杆的压力角在轴向截面定义还是法向截面定义。GB/T 10085、DIN 3975 的 ZA 蜗杆一般给轴向压力角 αx = 20°；KHK、JIS 资料常给法向压力角 αn = 20°，程序按 tanαx = tanαn/cosγ 换算（KHK 表 5.24 算例 mx2、z1=1、d1=31：αn 20° → αx 20.03827°）。',
     h_wdp: '三针（量棒）直径，0 = 取最佳直径 dp* = 轴向齿距 /(2cosαx)，量棒在分度圆（螺纹为中径）处与齿面相切。程序给出两种读数：简化式按齿条近似、不计导程角（KHK 表 5.24 的 a-1 式、螺纹三针常用式）；精确值按真实螺旋面计算，量棒为直圆柱、自动转到最深位置，已与 KHK 齿轮技术资料两个蜗杆算例核对一致（35.3345、42.6897）。导程角越大两者差得越多，检测以精确值为准。',
     h_wt: 'ZA 阿基米德：轴向截面齿形为直线，车刀前刀面过轴线车出，最常用。ZN 法向直廓：齿槽法平面内为直线，车刀前刀面放在螺旋法平面内，多头大导程蜗杆常用。ZI 渐开线：端面为渐开线，可磨削，精度高，车削时左右齿面各用一把刀，前刀面与基圆相切。ZK 锥面包络：由双锥面盘形铣刀或砂轮按导程角安装铣/磨出来，齿形由刀具决定。',
     h_mx: '蜗杆轴向模数 mx（= 配对蜗轮端面模数），按图纸填写。', h_z1: '蜗杆头数（螺纹线数）。', h_d1: '蜗杆分度圆直径 d1 = q·mx（q 为直径系数）。',
@@ -3741,8 +3743,9 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     const v = id => ($(id) ? $(id).value : '');
     const show = (cls, on) => document.querySelectorAll('.hx-' + cls).forEach(e => e.hidden = !on);
     if (type === 'worm' || type === 'wheel') {
-      show('zk', v('h_wt') === 'ZK');
-      const lab = $('h_al').closest('.f').querySelector('label'); keepHint(lab, (v('h_wt') === 'ZA' ? '轴向压力角 αx' : v('h_wt') === 'ZK' ? '刀具齿形角 α0' : '法向压力角 αn') + '<b>°</b>');
+      show('zk', v('h_wt') === 'ZK'); show('za', v('h_wt') === 'ZA');
+      if ($('h_mb')) keepHint($('h_mx').closest('.f').querySelector('label'), (v('h_mb') === 'n' ? '法向模数 mn' : '轴向模数 mx') + '<b>mm</b>');
+      const lab = $('h_al').closest('.f').querySelector('label'); keepHint(lab, (v('h_wt') === 'ZA' ? (v('h_alb') === 'n' ? '法向压力角 αn' : '轴向压力角 αx') : v('h_wt') === 'ZK' ? '刀具齿形角 α0' : '法向压力角 αn') + '<b>°</b>');
     }
     if (type === 'rotor') { show('imp', v('h_rs') === 'imp'); show('tri', v('h_rs') === 'tri'); }
     if (type === 'thread') { const t = v('h_tp'), bone = t === 'ha' || t === 'hb'; show('ha', t === 'ha'); show('hb', t === 'hb'); show('dp', !bone); show('cu', t === 'cu'); }
@@ -3837,9 +3840,22 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     warnEl.textContent = W.join('；'); window.__hxR = hxR;
     hxResults(); hxDrawPart(); hxDrawTool(); fillTable(); hxBuild3D();
   }
+  // ZA 蜗杆按法向压力角给出时（KHK、JIS 习惯）：tanαx = tanαn / cosγ，γ 为分度圆导程角
+  function zaNormal(o, W) {
+    if (hv('h_mb') === 'n' && o.mx > 0 && o.d1 > 0) {
+      // 法向模数蜗杆：sinγ = mn·z1/d1，mx = mn/cosγ
+      const sg = o.mx * o.z1 / o.d1; if (!(sg < 1)) throw new Error('法向模数 × 头数 不能大于分度圆直径');
+      const mx = o.mx / Math.sqrt(1 - sg * sg); W.push('法向模数 ' + o.mx + ' 换算为轴向模数 mx = ' + mx.toFixed(6)); o.mx = mx;
+    }
+    if (o.type !== 'ZA' || hv('h_alb') !== 'n' || !(o.mx > 0 && o.d1 > 0)) return;
+    const g = Math.atan(o.mx * o.z1 / o.d1), ax = Math.atan(Math.tan(o.al * PI / 180) / Math.cos(g)) * 180 / PI;
+    W.push('ZA 法向压力角 ' + o.al + '° 换算为轴向压力角 αx = ' + ax.toFixed(5) + '°');
+    o.al = ax;
+  }
   function hxWorm(W) {
     const o = { type: hv('h_wt'), mx: hn('h_mx'), z1: Math.max(1, Math.round(hn('h_z1'))), d1: hn('h_d1'), al: hn('h_al'), hand: hv('h_hand'),
       ha: hn('h_ha'), cc: hn('h_cc'), rho: hn('h_rho'), sx: hn('h_sx'), da: hn('h_da'), df: hn('h_df'), D0: hn('h_D0'), ext: Math.max(0, hn('h_ext')) };
+    zaNormal(o, W);
     if (!(o.mx > 0 && o.d1 > 0)) throw new Error('模数和分度圆直径必须大于 0');
     if (!(o.al > 2 && o.al < 45)) throw new Error('压力角应在 2°~45°');
     if (o.z1 > 12) throw new Error('蜗杆头数超过 12，请核对');
@@ -3942,6 +3958,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   function hxWheel(W) {
     const o = { type: hv('h_wt'), mx: hn('h_mx'), z1: Math.max(1, Math.round(hn('h_z1'))), d1: hn('h_d1'), al: hn('h_al'), hand: hv('h_hand'),
       ha: hn('h_ha'), cc: hn('h_cc'), rho: hn('h_rho'), sx: 0, da: 0, df: 0, D0: hn('h_D0') };
+    zaNormal(o, W);
     const m = o.mx, z2 = Math.round(hn('h_z2')), x2 = hn('h_x2') || 0;
     if (!(m > 0 && o.d1 > 0)) throw new Error('模数和蜗杆分度圆直径必须大于 0');
     if (!(o.al > 2 && o.al < 45)) throw new Error('压力角应在 2°~45°');
