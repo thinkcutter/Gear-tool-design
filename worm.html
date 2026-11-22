@@ -307,7 +307,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
     <tr><td>滑动速度</td><td><span class="f">v<sub>s</sub></span></td><td><span class="f">v<sub>1</sub> / cos γ</span></td><td>比蜗杆线速度还快</td></tr>
     <tr><td>啮合效率</td><td><span class="f">η<sub>1</sub></span></td><td><span class="f">tan γ / tan(γ + ρ<sub>v</sub>)</span></td><td>斜面效率</td></tr>
     <tr><td>自锁条件</td><td>—</td><td><span class="f">γ ≤ ρ<sub>v</sub> = arctan f′</span></td><td>坡度小于摩擦角</td></tr>
-    <tr><td>量棒测量（ZA）</td><td><span class="f">M</span></td><td><span class="f">d<sub>1</sub> + d<sub>p</sub>(1 + 1/sin α) − (p<sub>x</sub>/2) cot α</span></td><td>和螺纹三针法一样</td></tr>
+    <tr><td>量棒测量（ZA）</td><td><span class="f">M</span></td><td><span class="f">d<sub>1</sub> + d<sub>p</sub>(1 + 1/sin α) − (p<sub>x</sub>/2) cot α</span></td><td>和螺纹三针法一样。这是齿条近似式，不计导程角；导程角使读数变大（KHK 算例 m<sub>x</sub>2、z<sub>1</sub>1、d<sub>1</sub>31、量棒 3.3：简化式 35.317，精确 35.3345，差 17 µm）。精确值请在计算器“蜗杆”里看“三针读数 M 精确（含导程角）”</td></tr>
   </table></div>
 </section>
 
@@ -1031,7 +1031,7 @@ function wormPair(svg, o) {
       ['中心距 a', a.toFixed(3)], ['喉母圆半径 r_g2', rg2.toFixed(3)], ['蜗轮外径 dₑ₂ ≤', de2.toFixed(3)], ['蜗轮宽度 b₂ ≤', b2.toFixed(3)],
       ['蜗杆圆周速度 v₁', v1.toFixed(3) + ' m/s'], ['滑动速度 vₛ', vs.toFixed(3) + ' m/s'], ['蜗轮转速 n₂', (n1 * z1 / z2).toFixed(2) + ' r/min'],
       ['当量摩擦角 ρᵥ', (rho / D2R).toFixed(3) + '°'], ['啮合效率 η₁（蜗杆主动）', (e1 * 100).toFixed(1) + '%'], ['反推效率 η′（蜗轮主动）', gam > rho ? (e2 * 100).toFixed(1) + '%' : '0，自锁'],
-      ['最佳量棒 d_p（ZA）', dp.toFixed(3)], ['量棒距 M（ZA，未修正）', M.toFixed(3)]];
+      ['最佳量棒 d_p（ZA）', dp.toFixed(3)], ['量棒距 M（ZA，简化式，不计导程角）', M.toFixed(3)]];
     $('tout').innerHTML = rows.map(r => `<tr><td>${hs(r[0])}</td><td>${r[1]}</td></tr>`).join('');
     const W2 = [], rowM = (TAB[m] || []).find(r => r[0] === d1), zOK = rowM ? rowM[1].split(',').map(Number) : [];
     if (rowM && !zOK.includes(z1)) W2.push(`GB/T 10085 常用匹配里，m = ${m}、d₁ = ${d1} 的头数为 ${zOK.join('、')}，z₁ = ${z1} 不在其中。`);

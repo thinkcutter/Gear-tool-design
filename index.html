@@ -197,6 +197,15 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
     </div>
     <div id="accOut"></div>
   </section>
+  <section class="card" id="pairCard">
+    <h2>齿轮副 <span>中心距 · 啮合角 · 齿顶缩短 · 重合度</span></h2>
+    <div class="grid" style="margin-top:0">
+      <div class="f"><label for="pr_z" id="pr_zL">配对齿轮齿数<b>0=不算</b></label><input id="pr_z" type="number" step="1" inputmode="numeric" value="0"></div>
+      <div class="f"><label for="pr_x" id="pr_xL">配对齿轮变位系数</label><input id="pr_x" type="number" step="any" inputmode="decimal" value="0"></div>
+      <div class="f"><label for="pr_a">中心距 a<b>0=由变位算</b></label><input id="pr_a" type="number" step="any" inputmode="decimal" value="0"></div>
+    </div>
+    <div id="pairOut"></div>
+  </section>
 </div>
 
 <div class="main">
@@ -1607,7 +1616,41 @@ const HX = (() => {
     const d2ok = isFinite(r2m) && r2m >= rStr - 1e-9 && r2m <= ra;
     return { A, p, lead, P, n, ra, rf, r1: d2ok ? r2m : rMeas, d2ok, h, flat, rootFlat: flat - tl - tr, e, W, full: rc > 0, rUsed: [r1, r2] };
   }
-  return { gougeCheck, parseXY, grooveFromEnd, threeScrew, roots, worm, thread, rootFillet, offsetPoly, polyX, endToAxial, axialToEnd, S, toolFromHelicoid, helicoidFromTool, rakeSection, formTurning, tangents, resample, polyDist, unit, cross, dot, sub, add, mul, basis, inv, linspace };
+  // ---------- 三针（量棒）测量：按真实螺旋面精确计算（含导程角影响） ----------
+  // A：轴向截面齿槽（左→右，[r, z]，左右对称）；p：导程/2π（带符号）；dp：量针直径；r1：分度圆半径
+  // 量针为直圆柱，轴线垂直于半径方向、与端面倾斜 ψ；对每个 ψ 求针恰好与齿面相切时的中心半径 R，
+  // 量针在压力下转到最深位置，取 R 的最小值（ψ 在导程角附近）。单头/多头均为 M = 2R + dp（对称齿形）
+  function wireM(A, p, dp, r1) {
+    const half = A.filter(q => q[1] >= 0);
+    let k = half.length - 1; while (k > 0 && half[k - 1][0] < half[k][0]) k--;
+    const F = half.slice(k);                        // 右齿面（r 单调增加）
+    if (F.length < 4) return null;
+    const g = r => { if (r <= F[0][0]) { const a = F[0], b = F[1]; return a[1] + (b[1] - a[1]) * (r - a[0]) / (b[0] - a[0]); }
+      let i = 1; while (i < F.length - 1 && F[i][0] < r) i++; const a = F[i - 1], b = F[i]; return a[1] + (b[1] - a[1]) * (r - a[0]) / (b[0] - a[0]); };
+    const rLo = F[0][0], rHi = F[F.length - 1][0], pa = Math.abs(p), sg = p < 0 ? -1 : 1;
+    let st = [r1, 0];
+    const dist = (R, psi) => {
+      const u = [0, Math.cos(psi), sg * Math.sin(psi)];
+      const f = (r, th) => { if (r < rLo || r > rHi) return 1e9; const P = [r * Math.cos(th) - R, r * Math.sin(th), g(r) + p * th]; const d = P[1] * u[1] + P[2] * u[2]; return Math.hypot(P[0], P[1] - d * u[1], P[2] - d * u[2]); };
+      let [br, bt] = st, best = f(br, bt), hr = (rHi - rLo) / 20, ht = 0.05;
+      for (let it = 0; it < 400 && (hr > 1e-9 || ht > 1e-11); it++) {
+        let imp = false;
+        for (const [dr, dt] of [[hr, 0], [-hr, 0], [0, ht], [0, -ht], [hr, ht], [-hr, -ht], [hr, -ht], [-hr, ht]]) { const v = f(br + dr, bt + dt); if (v < best) { best = v; br += dr; bt += dt; imp = true; break; } }
+        if (!imp) { hr /= 2; ht /= 2; }
+      }
+      st = [br, bt]; return { d: best, r: br, th: bt };
+    };
+    const Rof = psi => { let lo = Math.max(0, rLo - dp), hi = rHi + dp; st = [r1, 0];
+      for (let i = 0; i < 55; i++) { const m = (lo + hi) / 2; if (dist(m, psi).d < dp / 2) lo = m; else hi = m; } return (lo + hi) / 2; };
+    const gam = Math.atan(pa / r1);
+    let a = Math.max(0, gam * 0.4), b = gam * 1.6 + 1e-4;
+    if (gam < 1e-6) { const R = Rof(0), cp = dist(R, 0); return { M: 2 * R + dp, R, psi: 0, rc: cp.r, ok: cp.r > rLo + 1e-4 && cp.r < rHi - 1e-4 }; }
+    const gr = (Math.sqrt(5) - 1) / 2; let c = b - gr * (b - a), d = a + gr * (b - a), fc = Rof(c), fd = Rof(d);
+    for (let i = 0; i < 36; i++) { if (fc < fd) { b = d; d = c; fd = fc; c = b - gr * (b - a); fc = Rof(c); } else { a = c; c = d; fc = fd; d = a + gr * (b - a); fd = Rof(d); } }
+    const R = Math.min(fc, fd), cp = dist(R, (a + b) / 2);
+    return { M: 2 * R + dp, R, psi: (a + b) / 2, rc: cp.r, ok: cp.r > rLo + 1e-4 && cp.r < rHi - 1e-4 };
+  }
+  return { gougeCheck, parseXY, grooveFromEnd, threeScrew, roots, worm, wireM, thread, rootFillet, offsetPoly, polyX, endToAxial, axialToEnd, S, toolFromHelicoid, helicoidFromTool, rakeSection, formTurning, tangents, resample, polyDist, unit, cross, dot, sub, add, mul, basis, inv, linspace };
 })();
 if (typeof module !== 'undefined') module.exports = HX;
 
@@ -1624,8 +1667,13 @@ if (typeof module !== 'undefined') module.exports = HX;
   const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
 
   // ---------- 参数定义 ----------
-  const SPL = { '30f': [30, 0.5, 0.75, 0.2], '30r': [30, 0.5, 0.9, 0.4], '37.5': [37.5, 0.45, 0.7, 0.3], '45': [45, 0.4, 0.6, 0.25], 'din': [30, 0.45, 0.55, 0.16] };
+  const SPL = { '30f': [30, 0.5, 0.75, 0.2], '30r': [30, 0.5, 0.9, 0.4], '37.5': [37.5, 0.45, 0.7, 0.3], '45': [45, 0.4, 0.6, 0.25], 'din': [30, 0.45, 0.55, 0.16],
+    // ANSI B92.1（英制，按径节 P；m = 25.4/P）：外花键大径 (N+1)/P、内花键小径 (N−1)/P；平齿根大径/小径 (N±1.35)/P，圆齿根 (N±1.8)/P；大径配合内花键大径 (N+1)/P
+    'a30f': [30, 0.5, 0.675, 0.2], 'a30m': [30, 0.5, 0.675, 0.2], 'a30r': [30, 0.5, 0.9, 0.4] };
+  // DIN 5480-1 表 3：基本齿廓齿根高 hfP 随加工方法：拉削 0.55m、滚齿 0.60m、插齿 0.65m、冷滚压 0.84m（齿根圆角 ρfP：切削 0.16m，冷滚压 0.54m）
+  const DIN_HF = { b: [0.55, 0.16], h: [0.60, 0.16], s: [0.65, 0.16], r: [0.84, 0.54] };
   const gearFields = (internal) => [
+    ['sys', '齿形参数制', 'sel', [['n', '法面制（mn、αn、xn）'], ['t', '端面制（mt、αt、xt）']]],
     ['mn', '法向模数 mn', 'mm', 10], ['z', '齿数 z', '', internal ? 72 : 36],
     ['an', '法向压力角 αn', '°', 20], ['beta', '螺旋角 β', '°', internal ? 0 : 15],
     ['hand', '旋向', 'sel', [['R', '右旋'], ['L', '左旋']]], ['x', '变位系数 xn', '', 0],
@@ -1638,8 +1686,10 @@ if (typeof module !== 'undefined') module.exports = HX;
   const FIELDS = {
     gear: gearFields(false),
     internal: gearFields(true),
-    spline: [['side', '内 / 外花键', 'sel', [['ext', '外花键'], ['int', '内花键']]], ['mn', '模数 m', 'mm', 3], ['z', '齿数 z', '', 24],
-      ['preset', '压力角 / 齿根', 'sel', [['30f', '30° 平齿根'], ['30r', '30° 圆齿根'], ['37.5', '37.5° 圆齿根'], ['45', '45° 圆齿根'], ['din', 'DIN 5480（30°）']]], ['x', '变位系数 x', '', 0],
+    spline: [['side', '内 / 外花键', 'sel', [['ext', '外花键'], ['int', '内花键']]], ['mn', '模数 m', 'mm', 3], ['dp', '径节 P（英制）', '0=用模数', 0], ['z', '齿数 z', '', 24],
+      ['preset', '压力角 / 齿根', 'sel', [['30f', '30° 平齿根（GB/T 3478 / ISO 4156）'], ['30r', '30° 圆齿根（GB/T 3478 / ISO 4156）'], ['37.5', '37.5° 圆齿根（GB/T 3478 / ISO 4156）'], ['45', '45° 圆齿根（GB/T 3478 / ISO 4156）'], ['din', 'DIN 5480（30°）'],
+        ['a30f', 'ANSI B92.1 30° 平齿根 侧配合'], ['a30m', 'ANSI B92.1 30° 平齿根 大径配合'], ['a30r', 'ANSI B92.1 30° 圆齿根 侧配合']]],
+      ['meth', 'DIN 5480 加工方法', 'sel', [['h', '滚齿 / 铣齿（hfP 0.60m）'], ['b', '拉削（hfP 0.55m）'], ['s', '插齿（hfP 0.65m）'], ['r', '冷滚压（hfP 0.84m，ρfP 0.54m）']]], ['x', '变位系数 x', '', 0],
       ['ha', '齿顶高系数', '', 0.5], ['hfS', '齿根高系数', '', 0.75], ['rhoF', '齿根圆角系数', '', 0.2],
       ['ds', '齿厚减薄 Δs', 'mm', 0], ['da', '齿顶圆直径 da', '0=自动', 0], ['df', '齿根圆直径 df', '0=自动', 0], ['b', '花键长度', 'mm', 40]],
     rect: [['side', '内 / 外花键', 'sel', [['ext', '外花键（轴）'], ['int', '内花键（孔）']]], ['std', '标准规格（GB/T 1144-2001）', 'sel', [['', '自定义'], ['6,23,26,6', '轻系列 6×23×26×6'], ['6,26,30,6', '轻系列 6×26×30×6'], ['6,28,32,7', '轻系列 6×28×32×7'], ['8,32,36,6', '轻系列 8×32×36×6'], ['8,36,40,7', '轻系列 8×36×40×7'], ['8,42,46,8', '轻系列 8×42×46×8'], ['8,46,50,9', '轻系列 8×46×50×9'], ['8,52,58,10', '轻系列 8×52×58×10'], ['8,56,62,10', '轻系列 8×56×62×10'], ['8,62,68,12', '轻系列 8×62×68×12'], ['10,72,78,12', '轻系列 10×72×78×12'], ['10,82,88,12', '轻系列 10×82×88×12'], ['10,92,98,14', '轻系列 10×92×98×14'], ['10,102,108,16', '轻系列 10×102×108×16'], ['10,112,120,18', '轻系列 10×112×120×18'], ['6,11,14,3', '中系列 6×11×14×3'], ['6,13,16,3.5', '中系列 6×13×16×3.5'], ['6,16,20,4', '中系列 6×16×20×4'], ['6,18,22,5', '中系列 6×18×22×5'], ['6,21,25,5', '中系列 6×21×25×5'], ['6,23,28,6', '中系列 6×23×28×6'], ['6,26,32,6', '中系列 6×26×32×6'], ['6,28,34,7', '中系列 6×28×34×7'], ['8,32,38,6', '中系列 8×32×38×6'], ['8,36,42,7', '中系列 8×36×42×7'], ['8,42,48,8', '中系列 8×42×48×8'], ['8,46,54,9', '中系列 8×46×54×9'], ['8,52,60,10', '中系列 8×52×60×10'], ['8,56,65,10', '中系列 8×56×65×10'], ['8,62,72,12', '中系列 8×62×72×12'], ['10,72,82,12', '中系列 10×72×82×12'], ['10,82,92,12', '中系列 10×82×92×12'], ['10,92,102,14', '中系列 10×92×102×14'], ['10,102,112,16', '中系列 10×102×112×16'], ['10,112,125,18', '中系列 10×112×125×18']]], ['N', '键数 N', '', 6], ['d', '小径 d', 'mm', 28], ['D', '大径 D', 'mm', 34], ['B', '键宽 B', 'mm', 7],
@@ -1665,9 +1715,18 @@ if (typeof module !== 'undefined') module.exports = HX;
     }
     box.querySelectorAll('[data-k]').forEach(el => el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', onParam));
     if (typeof addHints === 'function') addHints(box);
+    if (type === 'gear' || type === 'internal') syncSysLabels();
+    if (type === 'spline') syncDinMeth();
+  }
+  // 法面制 / 端面制切换时改标签（数值不自动换算，按图纸填写）
+  function syncSysLabels() {
+    const sel = $('p_' + type + '_sys'); if (!sel) return;
+    const t = sel.value === 't', L = { mn: t ? '端面模数 mt' : '法向模数 mn', an: t ? '端面压力角 αt' : '法向压力角 αn', x: t ? '端面变位系数 xt' : '变位系数 xn' };
+    for (const k in L) { const e = $('p_' + type + '_' + k); if (!e) continue; const lab = e.previousElementSibling, tn = [...lab.childNodes].find(n => n.nodeType === 3); if (tn) tn.nodeValue = L[k]; }
   }
   function onParam(e) {
     const k_ = e.target.dataset.k;
+    if ((type === 'gear' || type === 'internal') && k_ === 'sys') syncSysLabels();
     if ((type === 'gear' || type === 'internal') && k_ === 'rack' && e.target.value !== 'cu') {
       const R = { A: [1, 0.25, 0.38], B: [1, 0.25, 0.30], C: [1, 0.25, 0.25], D: [1, 0.40, 0.39] }[e.target.value];
       if (R) { $('p_' + type + '_ha').value = R[0]; $('p_' + type + '_cc').value = R[1]; $('p_' + type + '_rhoF').value = R[2]; }
@@ -1682,7 +1741,11 @@ if (typeof module !== 'undefined') module.exports = HX;
     if (type === 'spline' && e.target.dataset.k === 'preset') {
       const p = SPL[e.target.value];
       $('p_spline_ha').value = p[1]; $('p_spline_hfS').value = p[2]; $('p_spline_rhoF').value = p[3];
+      if (e.target.value === 'din') { $('p_spline_meth').value = isIntUI() ? 'b' : 'h'; applyMeth(); }
     }
+    if (type === 'spline' && k_ === 'meth') applyMeth();
+    if (type === 'spline' && k_ === 'side' && $('p_spline_preset').value === 'din') { $('p_spline_meth').value = isIntUI() ? 'b' : 'h'; applyMeth(); }
+    if (type === 'spline' && (k_ === 'preset' || k_ === 'side')) syncDinMeth();
     schedule();
   }
   function readForm() {
@@ -1745,6 +1808,11 @@ if (typeof module !== 'undefined') module.exports = HX;
   // GB/T 3478.1 花键标准直径：DFe max、DFi min、内花键小径 Dii min、大径 Dei
   const SPL_H = { '30f': [0.6, 1.0], '30r': [0.6, 1.0], '37.5': [0.55, 0.9], '45': [0.5, 0.8] };
   function splStd(m, z, preset) {
+    if (preset && preset[0] === 'a') {
+      // ANSI B92.1 基本尺寸（换成 mm）；径向成形间隙 cF = 0.001D，限 0.002～0.010 in
+      const D = m * z, cF = Math.min(0.254, Math.max(0.0508, 0.001 * D)), fl = preset === 'a30r' ? 1.8 : 1.35;
+      return { DFe: m * (z - 1) - 2 * cF, DFi: preset === 'a30m' ? m * (z + 0.8) - 0.004 * 25.4 + 2 * cF : m * (z + 1) + 2 * cF, Dii: m * (z - 1), Dei: m * (z + (preset === 'a30m' ? 1 : fl)), Dee: m * (z + 1), Die: m * (z - fl), cF, ansi: true };
+    }
     const sp = SPL[preset], hs = SPL_H[preset]; if (!hs) return null;
     const a = sp[0] * D2R, D = m * z, Db = D * Math.cos(a), cF = 0.1 * m;
     const DFe = 2 * Math.sqrt((Db / 2) ** 2 + (D / 2 * Math.sin(a) - hs[0] * m / Math.sin(a)) ** 2);
@@ -1753,12 +1821,14 @@ if (typeof module !== 'undefined') module.exports = HX;
   function toP(v) {
     if (type === 'rect') return { type, side: v.side === 'int' ? 'int' : 'ext', N: Math.round(v.N), d: v.d, D: v.D, B: v.B, rr: Math.max(0, v.rr || 0), b: v.b };
     if (type === 'spline') {
+      if (v.dp > 0) v = Object.assign({}, v, { mn: 25.4 / v.dp });
       const r = v.mn * Math.round(v.z) / 2, x = v.x || 0, m = v.mn, z = Math.round(v.z);
       if (v.side === 'int') {
         // 内花键：按内齿轮计算，变位符号按 DIN 3960 / ISO（GB 花键一般为 0）
         const st = splStd(m, z, v.preset), sp = SPL[v.preset];
         const daI = v.da > 0 ? v.da : st ? st.Dii - 2 * x * m : 2 * (r - (sp[1] + x) * m);
-        const dfI = v.df > 0 ? v.df : st ? st.Dei - 2 * x * m : 2 * (r - x * m + sp[2] * m);
+        const hfI = v.preset === 'din' && DIN_HF[v.meth] ? DIN_HF[v.meth][0] : sp[2];
+        const dfI = v.df > 0 ? v.df : st ? st.Dei - 2 * x * m : 2 * (r - x * m + hfI * m);
         const ha = (r - daI / 2) / m - x, cc = (dfI / 2 - r + x * m) / m - ha;
         return { type: 'internal', spl: true, side: 'int', preset: v.preset, dfFixed: true, mn: m, z, an: sp[0] * D2R, beta: 0, x, ha, cc, rhoF: v.rhoF, ds: v.ds || 0, da: daI, root: 'gen', b: v.b, hand: 'R' };
       }
@@ -1766,7 +1836,10 @@ if (typeof module !== 'undefined') module.exports = HX;
       return { type, spl: true, side: 'ext', preset: v.preset, dfFixed: true, mn: v.mn, z: Math.round(v.z), an: SPL[v.preset][0] * D2R, beta: 0, x, ha, hfS, rhoF: v.rhoF, ds: v.ds || 0, da: v.da || 0, b: v.b, hand: 'R' };
     }
     // 内齿变位符号：GB/机械设计手册（正变位齿顶圆变大、内齿变薄）与 ISO 21771/DIN 3960（z 取负，正变位齿顶圆变小）相反；程序内部按 ISO 计算
-    const P = { type, mn: v.mn, z: Math.round(v.z), an: v.an * D2R, beta: Math.abs(v.beta || 0) * D2R, hand: v.hand, x: (type === 'internal' && v.xconv !== 'iso' ? -1 : 1) * (v.x || 0), dfFixed: v.df > 0, ha: v.ha, cc: v.cc, rhoF: v.rhoF, ds: v.ds || 0, da: v.da || 0, root: v.root || 'gen', b: v.b };
+    // 端面制（日本 JIS 老图纸、部分美制图纸）：mt、αt、xt 及齿高系数均以端面模数为基准，换算成法面制后计算
+    const bt = Math.abs(v.beta || 0) * D2R, kT = v.sys === 't' ? Math.cos(bt) : 1;
+    const mnI = v.mn * kT, anI = v.sys === 't' ? Math.atan(Math.tan(v.an * D2R) * kT) : v.an * D2R, xI = (v.x || 0) / kT;
+    const P = { type, sys: v.sys === 't' ? 't' : 'n', mn: mnI, z: Math.round(v.z), an: anI, beta: bt, hand: v.hand, x: (type === 'internal' && v.xconv !== 'iso' ? -1 : 1) * xI, dfFixed: v.df > 0, ha: v.ha / kT, cc: v.cc / kT, rhoF: v.rhoF / kT, ds: v.ds || 0, da: v.da || 0, root: v.root || 'gen', b: v.b };
     if (v.df > 0) {
       const r = P.z * P.mn / Math.cos(P.beta) / 2;
       P.cc = type === 'internal' ? (v.df / 2 - r + P.x * P.mn) / P.mn - P.ha : (r + P.x * P.mn - v.df / 2) / P.mn - P.ha;
@@ -1788,6 +1861,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     };
     const fromM = !!(qaInfo && qaInfo.fromThk);
     if (type === 'spline') {
+      lock('mn', v.dp > 0, fmt(25.4 / v.dp), '由径节 25.4/P 换算');
       if (P.type === 'internal') {
         lock('ha', true, fmt(P.ha), '内花键由小径推算');
         lock('hfS', true, fmt(P.ha + P.cc), '由大径推算');
@@ -1796,7 +1870,7 @@ if (typeof module !== 'undefined') module.exports = HX;
         lock('hfS', v.df > 0, fmt(P.hfS), '由 df 推算');
       }
     } else if (type !== 'rect') {
-      lock('cc', v.df > 0, fmt(P.cc), '由 df 推算');
+      lock('cc', v.df > 0, fmt(P.cc * (v.sys === 't' ? Math.cos(P.beta) : 1)), '由 df 推算');
       lock('ha', v.da > 0 && v.df > 0, undefined, '已由 da、df 决定');
     }
     if (type !== 'rect') lock('ds', fromM || !!(qaInfo && qaInfo.fromStd), fmt(P.ds), fromM ? '由检测数据推算' : '按 ' + (qaInfo && qaInfo.fromStd) + (P.type === 'internal' ? 'H' : 'h') + ' 公差推算');
@@ -1899,6 +1973,7 @@ if (typeof module !== 'undefined') module.exports = HX;
 
   // ---------- 参数说明（标签后的“?”） ----------
   const HINT = {
+    'gear.sys': '图纸参数的基准。法面制（现行 GB、ISO、DIN 常用）：模数、压力角、变位系数都在法平面内。端面制（日本 JIS 老图纸、部分斜齿轮图纸）：给端面模数 mt、端面压力角 αt、端面变位系数 xt，齿顶高、顶隙、圆角系数也按 mt 计。选端面制后程序按 mn = mt·cosβ、tanαn = tanαt·cosβ、xn = xt/cosβ、法面齿高系数 = 端面系数/cosβ 换算后计算（与 KHK 齿轮技术资料表 5.12、5.23 的端面制算例核对一致）。直齿两种制度相同。',
     'gear.mn': '法向模数。斜齿图纸一般标法向模数 mn；只给端面模数 mt 时，mn = mt·cosβ。英制径节 DP 换算：m = 25.4 / DP。美制斜齿图纸上 8.798818 这类模数，一般是端面径节换算来的（端面 DP 2.5 → mt 10.16 → mn = 10.16 × cos30°），照填即可。',
     'gear.z': '齿数，按图纸填写。',
     'gear.an': '法向压力角，常用 20°。斜齿要分清法向还是端面压力角，端面换算：tanαn = tanαt·cosβ。美制图纸的 17.49524° 这类法向值，对应端面 20°，照填法向值即可。',
@@ -1916,14 +1991,16 @@ if (typeof module !== 'undefined') module.exports = HX;
     'gear.df': '齿根圆直径，由铣刀刀尖决定，0 = 按系数计算。可以照图纸写公差，例如 992H9、1400.68-1401.19、237.5 0 -0.46，程序自动取中值。',
     'gear.root': '展成：按滚齿形成的齿根过渡曲线，适合大多数图纸。切圆弧：渐开线和齿根圆之间用一段相切圆弧过渡，适合图纸标注了齿根圆弧半径的情况。',
     'gear.b': '齿宽只用于 3D 显示，不影响刀具廓形。',
+    'spline.dp': '英制花键的径节 P（ANSI B92.1 写作分数 P/Ps，例如 16/32，填前一个数 16）。填了以后模数按 m = 25.4/P 换算，模数栏变灰。0 = 直接用模数。',
+    'spline.meth': 'DIN 5480-1 表 3：齿根高 hfP 随加工方法不同——拉削 0.55m、滚齿 0.60m、插齿（德文 Wälzstoßen，英译本作 mill-broaching）0.65m、冷滚压 0.84m；齿根圆角 ρfP 切削为 0.16m、冷滚压为 0.54m。标准尺寸表里的名义根径按 0.55m 计算，按方法算出的根径：滚齿轴减 0.1m、插齿轴减 0.2m、插齿毂加 0.2m。选择后自动填入齿根高和圆角系数。',
     'spline.mn': '花键模数，按图纸填写。',
     'spline.z': '齿数，按图纸填写。',
-    'spline.preset': '渐开线花键的齿形标准。GB/T 3478.1 选压力角和齿根类型；DIN 5480 选“DIN 5480”。选择后自动填好标准的齿顶高、齿根高和圆角系数。',
+    'spline.preset': '渐开线花键的齿形标准。GB/T 3478.1 选压力角和齿根类型；DIN 5480 选“DIN 5480”；美制图纸选 ANSI B92.1（30°：平齿根侧配合 / 平齿根大径配合 / 圆齿根侧配合，外花键大径 (N+1)/P，内花键小径 (N−1)/P，平齿根的内花键大径、外花键小径 (N±1.35)/P，圆齿根 (N±1.8)/P，大径配合的内花键大径 (N+1)/P；成形直径按 cF = 0.001D（0.002～0.010 in）计算）。ANSI 37.5°、45° 的公开资料各版本数据不一致，暂未内置，可用 GB/T 3478 的 37.5°、45° 选项并按图纸填大径、小径。选择后自动填好标准的齿顶高、齿根高和圆角系数。',
     'spline.x': '变位系数，GB/T 3478.1 花键一般为 0。DIN 5480 图纸给的“移距量”是 x·m（毫米），x = 移距量 ÷ 模数，例如 0.675 ÷ 1.5 = 0.45；内花键（毂）按 DIN 3960 取 x2 = −x1，要输负值，例如 −0.45。已填齿顶圆、齿根圆和检测数据时，x 不影响结果。',
     'internal.x': '内齿轮变位系数，照图纸填写，并在“内齿变位符号”里选图纸用的约定。没有就填 0。已填齿顶圆、齿根圆和棒间距时，x 不影响刀具廓形。',
     'internal.xconv': '内齿变位的正负号有两种约定，结果相反：GB / 机械设计手册：da = d − 2(ha* − x)m，正变位时内孔变大、内齿变薄，国内图纸多用这种。ISO 21771 / DIN 3960：齿数取负值计算，正变位时内孔变小、内齿变厚。看不出来时，用图纸齿顶圆反推：哪种约定算出的齿顶圆和图纸一致就选哪种。',
     'spline.ha': '外花键齿顶高系数，30° 标准为 0.5。填了齿顶圆 da 后自动推算。',
-    'spline.hfS': '齿根高系数，30° 平齿根 0.75，圆齿根 0.9。DIN 5480 名义值 0.55，按加工方法可为 0.60（滚齿）、0.65（铣拉）、0.84（冷轧）。填了齿根圆 df 后自动推算。',
+    'spline.hfS': '齿根高系数，30° 平齿根 0.75，圆齿根 0.9。DIN 5480 按加工方法：拉削 0.55、滚齿 0.60、插齿 0.65、冷滚压 0.84（在“DIN 5480 加工方法”里选择会自动填入）。填了齿根圆 df 后自动推算。',
     'spline.rhoF': '齿根圆角系数，圆角 = 系数 × 模数。30° 平齿根最小 0.2，圆齿根约 0.4。图纸有渐开线起始圆时，以检查结果“合格”为准，可适当加大，让刀尖更结实。',
     'spline.ds': '齿厚减薄量（比理论齿厚 πm/2 薄多少）。图纸给了跨棒距或实际齿厚时，在“齿厚依据”里选择，这里会自动计算。',
     'spline.da': '外花键为大径 Dee（齿顶），内花键为小径 Dii（齿顶，即内孔）。0 = 按标准：内花键小径按 DFe max + 2cF。外花键大径（齿顶圆）。可以照图纸写公差，例如 250 0 -0.46，程序自动取中值。',
@@ -2092,6 +2169,59 @@ if (typeof module !== 'undefined') module.exports = HX;
       `<div class="accnote">按 DIN 5480-1:2006 表 7（2025-10/2026-05 版改为图 8“Abmaße und Toleranzen”）查偏差和公差（尺寸档由基准直径段和模数段决定；公差等级每升一级在公差栏下移三行，T<sub>G</sub>/T<sub>act</sub> ≈ 1.6），再按表 6：${isInt ? 'e<sub>max</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>G</sub>，e<sub>min</sub> = e<sub>2</sub> + A<sub>e</sub> + T<sub>eff</sub>，e<sub>vmin</sub> = e<sub>2</sub> + A<sub>e</sub>' : 's<sub>vmax</sub> = s<sub>1</sub> + A<sub>s</sub>，s<sub>max</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>eff</sub>，s<sub>min</sub> = s<sub>1</sub> + A<sub>s</sub> − T<sub>G</sub>'}。检测尺寸控制的是实际值。表 7 的偏差栏、公差栏（T<sub>G</sub> 12～360 共 30 行）和单项偏差推荐值已按标准原表逐格录入，并与标准示例 120×3×38（9H/8f）、KISSsoft 报告 70×3×22（7H/6f）、HEXAGON WN2 9 级输出、DIN 5480-2 根径偏差和实测 200×5×38 8g 跨棒距核对一致。径向跳动推荐值取自 2006 版表 8（新版为表 7“Anhaltswerte für die Rundlaufabweichung”，按分度圆直径分档，是推荐值不是公差）。DIN 5480-1 已出 2025-10 版和 2026-05 更正版，官方变更说明只列表 1、表 2、新增附录 A 和编辑性修改，未提偏差和公差数值的改动。${warnTab}</div>`;
     return null;
   }
+  // ---------- 齿轮副：按 KHK 齿轮技术资料表 4.3～4.12 / ISO 21771 ----------
+  // 外啮合：invαwt = 2tanαn(xn1+xn2)/(z1+z2) + invαt；a = a0·cosαt/cosαwt；齿顶缩短 k = Σx·mn − (a − a0)，da = d + 2(ha*·mn + x·mn − k)
+  // 内啮合（本齿轮为内齿圈）：invαwt = 2tanαn(x2−x1)/(z2−z1) + invαt（x2 按 GB 符号，正变位内径变大）；a = (d2−d1)/2·cosαt/cosαwt
+  function calcPair() {
+    const card = $('pairCard'), out = $('pairOut');
+    if (!(type === 'gear' || type === 'internal')) { card.hidden = true; return; }
+    card.hidden = false;
+    const isInt = type === 'internal';
+    $('pr_zL').firstChild.nodeValue = isInt ? '配对小齿轮齿数' : '配对齿轮齿数';
+    $('pr_xL').firstChild.nodeValue = '配对齿轮变位系数 ' + (P.sys === 't' ? 'xt' : 'xn');
+    const z2 = Math.round(parseFloat($('pr_z').value) || 0);
+    if (!(z2 > 0)) { out.innerHTML = '<div class="accnote">填配对齿轮齿数后，按本齿轮参数算标准中心距、啮合角、中心距变动系数 y、齿顶缩短（齿顶高变动系数 Δy）、节圆和端面重合度 εα。填了中心距则反求配对齿轮变位系数。' + (isInt ? '本齿轮为内齿圈，配对的是外齿小齿轮。' : '') + '</div>'; return; }
+    const cb = Math.cos(P.beta), mn = P.mn, mt = mn / cb, at = Math.atan(Math.tan(P.an) / cb), inv = a => Math.tan(a) - a;
+    const kS = P.sys === 't' ? 1 / cb : 1, mS = P.sys === 't' ? mt : mn;     // 系数换算到法面
+    const z1 = P.z, x1 = isInt ? -P.x : P.x;                                   // 内齿：x1 = 内齿圈 GB 符号变位（法面）
+    const aIn = parseFloat($('pr_a').value) || 0;
+    if (isInt && z2 >= z1) { out.innerHTML = '<div class="accnote" style="color:var(--warn)">配对小齿轮齿数应小于内齿圈齿数。</div>'; return; }
+    const dz = isInt ? z1 - z2 : z1 + z2, a0 = dz * mt / 2;
+    let x2 = (parseFloat($('pr_x').value) || 0) * kS, awt, aw, fromA = false;
+    if (aIn > 0) {
+      fromA = true; const c = a0 * Math.cos(at) / aIn;
+      if (!(c > 0 && c < 1)) { out.innerHTML = '<div class="accnote" style="color:var(--warn)">中心距与齿数、模数不匹配，算不出啮合角。</div>'; return; }
+      awt = Math.acos(c); aw = aIn;
+      const sx = dz * (inv(awt) - inv(at)) / (2 * Math.tan(P.an));
+      x2 = isInt ? x1 - sx : sx - x1;
+    } else {
+      const sx = isInt ? x1 - x2 : x1 + x2, iw = 2 * Math.tan(P.an) * sx / dz + inv(at);
+      let a = Math.max(0.05, at); for (let i = 0; i < 60; i++) { const f = inv(a) - iw, d = Math.tan(a) ** 2; a -= f / d; if (Math.abs(f) < 1e-15) break; }
+      awt = a; aw = a0 * Math.cos(at) / Math.cos(awt);
+    }
+    const ha = P.ha, d1 = z1 * mt, d2 = z2 * mt, rb1 = d1 / 2 * Math.cos(at), rb2 = d2 / 2 * Math.cos(at);
+    const y = (aw - a0) / mS, sxS = (isInt ? x1 - x2 : x1 + x2) * mn / mS, dy = isInt ? 0 : sxS - y;
+    const k = dy * mS;                                                         // 齿顶缩短量 mm
+    const da1s = isInt ? d1 - 2 * (ha - x1) * mn : d1 + 2 * (ha + x1) * mn - 2 * k;
+    const da2s = d2 + 2 * (ha + x2) * mn - 2 * k;
+    const dw1 = 2 * aw * z1 / dz, dw2 = 2 * aw * z2 / dz;
+    const ra1 = geo.ra, ra2 = da2s / 2, pbt = PI * mt * Math.cos(at);
+    const ea = isInt ? (Math.sqrt(ra2 * ra2 - rb2 * rb2) - Math.sqrt(Math.max(0, ra1 * ra1 - rb1 * rb1)) + aw * Math.sin(awt)) / pbt
+      : (Math.sqrt(ra1 * ra1 - rb1 * rb1) + Math.sqrt(ra2 * ra2 - rb2 * rb2) - aw * Math.sin(awt)) / pbt;
+    const f4 = v => v.toFixed(4), xs = v => (v / kS).toFixed(5);
+    const nm1 = isInt ? '内齿圈' : '本齿轮', nm2 = isInt ? '小齿轮' : '配对齿轮';
+    const rows = [['标准中心距 a0', f4(a0)], ['中心距 a' + (fromA ? '（给定）' : ''), f4(aw)], ['端面啮合角 αwt', (awt / D2R).toFixed(4) + '°'],
+      ['中心距变动系数 y（按 ' + (P.sys === 't' ? 'mt' : 'mn') + '）', y.toFixed(5)], [isInt ? '变位系数差 x2 − x1' : '变位系数和 x1 + x2', xs(isInt ? x1 - x2 : x1 + x2)]];
+    if (fromA) rows.push([nm2 + '变位系数（反求）', xs(x2)]);
+    if (!isInt) rows.push(['齿顶高变动系数 Δy = Σx − y', dy.toFixed(5)], [nm1 + '齿顶圆（齿顶缩短后）', f4(da1s)], [nm2 + '齿顶圆（齿顶缩短后）', f4(da2s)]);
+    else rows.push([nm2 + '齿顶圆', f4(da2s)]);
+    rows.push([nm1 + ' / ' + nm2 + '节圆 dw', f4(dw1) + ' / ' + f4(dw2)], ['端面重合度 εα', ea.toFixed(3) + (isInt ? '' : '（本齿轮按当前齿顶圆 ' + f3(2 * ra1) + '）')]);
+    let note = '';
+    if (!isInt && Math.abs(2 * ra1 - da1s) > 0.001) note += '本齿轮当前齿顶圆 ' + f3(2 * ra1) + ' 与齿顶缩短后的 ' + f3(da1s) + ' 不同：要按齿顶缩短加工，请把齿顶圆填为 ' + f3(da1s) + '。';
+    if (ea < 1.1) note += (note ? '<br>' : '') + '<span style="color:var(--warn)">重合度小于 1.1，传动不连续的风险大，请核对变位和齿顶圆。</span>';
+    out.innerHTML = '<table class="acctbl"><thead><tr><th>项目</th><th>数值</th></tr></thead><tbody>' + rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('') + '</tbody></table>' +
+      `<div class="accnote">${note ? note + '<br>' : ''}按 KHK 齿轮技术资料表 4.3～4.12（= ISO 21771 / GB/T 3374 的公式）计算，${isInt ? '内啮合不做齿顶缩短，' : '齿顶缩短后 da = d + 2(ha* + x − Δy)m，'}已与 KHK 直齿（表 4.3）、斜齿法面制（表 4.9）、斜齿端面制（表 4.11）、内啮合（表 4.7）算例核对一致。${isInt ? '内啮合还要另查渐开线干涉、齿廓重叠干涉（KHK 表 4.8）。' : ''}</div>`;
+  }
   function calcAcc() {
     const card = $('accCard'), out = $('accOut'), grid = card.querySelector('.grid');
     if (type === 'rect') { card.hidden = true; return null; }
@@ -2109,6 +2239,7 @@ if (typeof module !== 'undefined') module.exports = HX;
         return calcDin(isIntS, out);
       }
       dinF.forEach(e => e.hidden = true);
+      if (/^a/.test(lastFV.preset)) { $('accStd').textContent = 'ANSI B92.1'; out.innerHTML = '<div class="accnote">ANSI B92.1 的齿厚、齿槽宽公差按其公差表（Class 4、5、6、7，分级系数 0.71 / 1 / 1.40 / 2.00），本程序没有内置这张英制表。请在“图纸检测数据”里按图纸填跨棒距或棒间距的上下限，程序据此反算齿厚并设计刀具。</div>'; return null; }
       $('accStd').textContent = 'GB/T 3478.1 ≈ ISO 4156';
       const c = Math.round(parseFloat($('a_q').value) || 0);
       if (!c) { out.innerHTML = '<div class="accnote">填写公差等级（如图纸 6h 填 6）后，按 GB/T 3478.1（ISO 4156）的公式算出总公差 T+λ、综合公差 λ，以及实际齿厚、作用齿厚的上下限，并和图纸检测数据核对。</div>'; return null; }
@@ -2204,6 +2335,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       `<div class="accnote">${note ? note + '<br>' : ''}${rangeTxt}</div>`;
     return { Fa: items[2][2] };
   }
+  ['pr_z', 'pr_x', 'pr_a'].forEach(id => $(id).addEventListener('input', schedule));
   $('a_std').addEventListener('change', schedule);
   $('a_q').addEventListener('input', schedule);
   ['a_dA', 'a_dTG', 'a_dTa'].forEach(id => $(id).addEventListener('input', schedule));
@@ -2323,6 +2455,8 @@ if (typeof module !== 'undefined') module.exports = HX;
     syncQA();
   }
   function isIntUI() { const s = $('p_spline_side'); return type === 'internal' || (type === 'spline' && s && s.value === 'int'); }
+  function applyMeth() { const h = DIN_HF[$('p_spline_meth').value]; if (!h) return; $('p_spline_hfS').value = h[0]; $('p_spline_rhoF').value = h[1]; }
+  function syncDinMeth() { const e = $('p_spline_meth'); if (e) e.closest('.f').hidden = $('p_spline_preset').value !== 'din'; }
   function syncSplineLabels() {
     if (type !== 'spline') return;
     const int = isIntUI(), la = $('p_spline_da') && $('p_spline_da').previousElementSibling, lf = $('p_spline_df') && $('p_spline_df').previousElementSibling;
@@ -2412,7 +2546,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     if ($('t_kind').value !== 'slot') stool = null;
     if (cut.flatFail) W.push('刀齿顶做成直线时圆角放不下（齿槽太窄或圆角太大），已按圆弧刀齿顶计算');
     if (cut.flat && geo.k) W.push(cut.exact ? '斜齿时刀齿顶直线在刀盘轴向截面内，端面图和 3D 按刀盘沿螺旋线实际切出的槽形显示' : cut.formTool ? '斜齿时刀齿顶直线在法向截面内，端面图和 3D 按换算到端面的槽形显示' : '斜齿时端面图中橙色点线为刀具实际铣出的端面槽形，3D 也按它显示');
-    accWarn = []; accRes = calcAcc();
+    accWarn = []; accRes = calcAcc(); calcPair();
     if (qaInfo && qaInfo.err) W.push(qaInfo.err);
     if (!cut.mono) W.push('刀具廓形高度方向不单调，已做单调化处理，请复核');
     if (geo.kind === 'int' && $('t_kind').value === 'finger') W.push('内齿：铣刀由齿圈内侧伸入，请核对主轴头在内孔中的空间（内径 ' + f2(geo.ra * 2) + ' mm）');
@@ -2434,6 +2568,7 @@ if (typeof module !== 'undefined') module.exports = HX;
         [P.spl ? (geo.kind === 'int' ? '大径 Dei(齿根)' : '小径 Die(齿根)') : geo.kind === 'int' ? '齿根圆 df(外)' : '齿根圆 df', f3(geo.rf * 2)],
         ['端面槽宽 et', f3(et)], ['法向槽宽 en', f3(et * cb)],
         ['齿顶厚 sa', f3(geo.tipThick)], ['齿根圆角 ρf', f3(geo.rho)]);
+      if (P.sys === 't' && P.beta > 0) rows.unshift(['换算法向模数 mn', P.mn.toFixed(5)], ['换算法向压力角 αn', (P.an / D2R).toFixed(5) + '°'], ['换算法向变位 xn', (P.x * (P.type === 'internal' && lastFV.xconv !== 'iso' ? -1 : 1)).toFixed(5)]);
     } else {
       const ri = Math.min(geo.ra, geo.rf), ro = Math.max(geo.ra, geo.rf);
       rows.push(['小径 d', f3(ri * 2)], ['大径 D', f3(ro * 2)], [geo.kind === 'int' ? '键槽宽 B' : '键宽 B', f3(P.B)], ['槽底圆角 r', f3(P.rr)]);
@@ -2511,8 +2646,10 @@ if (typeof module !== 'undefined') module.exports = HX;
       if (P.spl) {
         const sp = SPL[FV.preset], st = splStd(m, P.z, FV.preset);
         if (isInt) { daS = st ? st.Dii - 2 * P.x * m : d - 2 * (sp[1] + P.x) * m; dfS = st ? st.Dei - 2 * P.x * m : d - 2 * P.x * m + 2 * sp[2] * m; }
-        else { daS = d + 2 * (sp[1] + P.x) * m; dfS = d + 2 * (P.x - sp[2]) * m; }
-        why = FV.preset === 'din' ? 'DIN 5480' : 'GB/T 3478.1';
+        else { daS = d + 2 * (sp[1] + P.x) * m; dfS = d + 2 * (P.x - (FV.preset === 'din' && DIN_HF[FV.meth] ? DIN_HF[FV.meth][0] : sp[2])) * m; }
+        if (isInt && FV.preset === 'din' && DIN_HF[FV.meth]) dfS = d - 2 * P.x * m + 2 * DIN_HF[FV.meth][0] * m;
+        if (!isInt && st && st.ansi) { daS = st.Dee + 2 * P.x * m; dfS = st.Die + 2 * P.x * m; }
+        why = FV.preset === 'din' ? 'DIN 5480（hfP ' + (DIN_HF[FV.meth] || [0.55])[0] + 'm）' : st && st.ansi ? 'ANSI B92.1' : 'GB/T 3478.1';
         // DIN 5480-1 表 3：轴 x1 = −0.05～+0.45（个别到 +0.879）；毂按 DIN 3960 取 x2 = −x1 = +0.05～−0.45（个别到 −0.879），符号相反
         if (FV.preset === 'din' && Math.abs(P.x) > 1e-9) {
           const xs = P.x, okX = isInt ? xs <= 0.05 + 1e-6 && xs >= -0.879 - 1e-6 : xs >= -0.05 - 1e-6 && xs <= 0.879 + 1e-6;
@@ -2520,7 +2657,7 @@ if (typeof module !== 'undefined') module.exports = HX;
             stdWarn.push(isInt ? 'DIN 5480 毂（内花键）的变位系数按 DIN 3960 是 x2 = −x1，一般为负值（如 −0.45）；图纸若写 +x·m 是轴的数值，请改为负值输入' : 'DIN 5480 轴的变位系数应在 −0.05～+0.45（个别到 +0.879）之间，请核对符号'); }
         }
       } else {
-        const ha = fieldOrig('ha'), c = fieldOrig('cc'), xE = P.x - P.ds / (2 * m * tanA);
+        const kS = FV.sys === 't' ? 1 / Math.cos(P.beta) : 1, ha = fieldOrig('ha') * kS, c = fieldOrig('cc') * kS, xE = P.x - P.ds / (2 * m * tanA);
         if (isInt) { daS = d - 2 * (ha + P.x) * m; dfS = d - 2 * P.x * m + 2 * (ha + c) * m; why = 'ha*=' + ha + '、c*=' + c; }
         else {
           const xUnknown = !(Math.abs(FV.x) > 0) && qaInfo.fromThk;
@@ -3451,7 +3588,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       ['h_al', '压力角 αx', '°', 20], ['h_hand', '旋向', 'sel', [['R', '右旋'], ['L', '左旋']]],
       ['h_ha', '齿顶高系数 ha*', '', 1], ['h_cc', '顶隙系数 c*', '', 0.2], ['h_rho', '齿根圆角系数 ρf*', '', 0.3],
       ['h_sx', '分度圆轴向齿厚 sx', 'mm 0=πm/2', '0', 'tx'], ['h_da', '齿顶圆 da1', '0=自动', '0', 'tx'], ['h_df', '齿根圆 df1', '0=自动', '0', 'tx'],
-      ['h_D0', 'ZK 生成刀具直径', '0=自动', 0, '', 'zk'], ['h_L', '螺纹长度', 'mm（3D）', 60],
+      ['h_D0', 'ZK 生成刀具直径', '0=自动', 0, '', 'zk'], ['h_wdp', '三针量棒直径 dp', 'mm 0=最佳', 0], ['h_L', '螺纹长度', 'mm（3D）', 60],
     ],
     wheel: [
       ['h_wt', '配对蜗杆齿形', 'sel', [['ZA', 'ZA 阿基米德'], ['ZN', 'ZN 法向直廓'], ['ZI', 'ZI 渐开线'], ['ZK', 'ZK 锥面包络']]],
@@ -3474,7 +3611,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       ['h_te', '牙顶宽（大径处）', 'mm', 0.219, '', 'cu'],
       ['h_tr1', '牙底圆角 r1（左）', 'mm', 0.253, '', 'cu'], ['h_tr2', '牙底圆角 r2（右）', 'mm', 0.253, '', 'cu'],
       ['h_trc', '牙顶圆角', 'mm 0=牙顶不由车刀成形', 0, '', 'cu'],
-      ['h_tn', '头数 n', '', 1], ['h_hand', '旋向', 'sel', [['R', '右旋'], ['L', '左旋']]], ['h_L', '螺纹长度', 'mm（3D）', 30],
+      ['h_tn', '头数 n', '', 1], ['h_hand', '旋向', 'sel', [['R', '右旋'], ['L', '左旋']]], ['h_wdp', '三针量针直径 dp', 'mm 0=最佳', 0], ['h_L', '螺纹长度', 'mm（3D）', 30],
     ],
     rotor: [
       ['h_rs', '型线来源', 'sel', [['imp', '导入端面型线（压缩机转子等）'], ['tri', '三螺杆泵（摆线型线）']]],
@@ -3514,6 +3651,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     h_te: '大径上牙顶平台的轴向宽度。', h_tr1: '齿槽左下角（牙底与左侧牙侧之间）的圆角半径。两侧圆角正好占满牙底时就是整圆弧牙底。', h_tr2: '齿槽右下角的圆角半径。',
     h_trc: '大于 0 时牙顶两角也由车刀车出圆角（全牙型车刀，刀具覆盖一个螺距）；0 = 牙顶由外圆车削得到，车刀只切齿槽。',
     h_tn: '螺纹头数（线数）。', h_L: '只影响 3D 显示。',
+    h_wdp: '三针（量棒）直径，0 = 取最佳直径 dp* = 轴向齿距 /(2cosαx)，量棒在分度圆（螺纹为中径）处与齿面相切。程序给出两种读数：简化式按齿条近似、不计导程角（KHK 表 5.24 的 a-1 式、螺纹三针常用式）；精确值按真实螺旋面计算，量棒为直圆柱、自动转到最深位置，已与 KHK 齿轮技术资料两个蜗杆算例核对一致（35.3345、42.6897）。导程角越大两者差得越多，检测以精确值为准。',
     h_wt: 'ZA 阿基米德：轴向截面齿形为直线，车刀前刀面过轴线车出，最常用。ZN 法向直廓：齿槽法平面内为直线，车刀前刀面放在螺旋法平面内，多头大导程蜗杆常用。ZI 渐开线：端面为渐开线，可磨削，精度高，车削时左右齿面各用一把刀，前刀面与基圆相切。ZK 锥面包络：由双锥面盘形铣刀或砂轮按导程角安装铣/磨出来，齿形由刀具决定。',
     h_mx: '蜗杆轴向模数 mx（= 配对蜗轮端面模数），按图纸填写。', h_z1: '蜗杆头数（螺纹线数）。', h_d1: '蜗杆分度圆直径 d1 = q·mx（q 为直径系数）。',
     h_al: 'ZA 填轴向压力角 αx；ZN、ZI 填法向压力角 αn；ZK 填生成刀具的齿形角 α0。GB/T 10087 标准为 20°。',
@@ -3705,6 +3843,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     return { kind: 'worm', o, w, A: w.A, Aeff, p: w.p, r1: w.r1, ra: w.ra, rf: w.rf, Efull, rb, L: hn('h_L') || 60, starts: o.z1 };
   }
   // 外螺纹：标准牙型参数 → HX.thread
+  // ISO 5835:1991 图 2/图 4：d1、d5 为最大值，d1 最小值 = 最大值 − 0.15；d5 最小值 = 最大值 − 0.1（HA1.5、HA2）或 − 0.15（其余）；2026-11-22 已与 ISO 5835 图 2、图 4 公开数据逐项核对
   const THREAD_BONE = {   // [大径, 芯径(小径), 螺距, 前侧(左)牙底圆角, 后侧(右)牙底圆角, 牙顶宽]，ISO 5835 / ASTM F543
     ha: { '1.5': [1.5, 1.1, 0.5, 0.3, 0.1, 0.1], '2': [2.0, 1.3, 0.6, 0.4, 0.1, 0.1], '2.7': [2.7, 1.9, 1.0, 0.6, 0.2, 0.1], '3.5': [3.5, 2.4, 1.25, 0.8, 0.2, 0.1], '4': [4.0, 2.9, 1.5, 0.8, 0.2, 0.1], '4.5': [4.5, 3.0, 1.75, 1.0, 0.3, 0.1], '5': [5.0, 3.5, 1.75, 1.0, 0.3, 0.1] },
     hb: { '4': [4.0, 1.9, 1.75, 0.8, 0.3, 0.1], '6.5': [6.5, 3.0, 2.75, 1.2, 0.8, 0.2] },
@@ -4013,6 +4152,24 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   }
 
   // ---------- 结果 ----------
+  // 三针测量：简化式（齿条近似，不计导程角）和按螺旋面精确计算（含导程角）两种读数
+  let wireCache = { k: '', r: null };
+  function wireRows(rows, w, pitch, dRef, refName) {
+    const A = w.A, half = A.filter(q => q[1] >= 0);
+    // 参考直径处轴向齿形角（由齿形斜率求，ZA 即 αx）
+    let ta = NaN; for (let i = 1; i < half.length; i++) { const a = half[i - 1], b = half[i]; if (b[0] > a[0] && (a[0] - dRef / 2) * (b[0] - dRef / 2) <= 0) { ta = (b[1] - a[1]) / (b[0] - a[0]); break; } }
+    if (!(ta > 0)) return;
+    const al = Math.atan(ta), dIn = hn('h_wdp'), dBest = pitch / (2 * Math.cos(al)), dp = dIn > 0 ? dIn : dBest;
+    const M0 = dRef + dp * (1 + 1 / Math.sin(al)) - pitch / 2 / Math.tan(al);
+    const key = [A.length, A[0][0], A[0][1], A[A.length >> 1][1], w.p, dp, dRef].join(',');
+    if (wireCache.k !== key) { wireCache = { k: key, r: HX.wireM(A, w.p, dp, dRef / 2) }; }
+    const ex = wireCache.r;
+    rows.push(['三针量棒最佳直径 dp*', f3(dBest)]);
+    if (dIn > 0) rows.push(['本次量棒直径 dp', f3(dIn)]);
+    rows.push(['三针读数 M 简化式（不计导程角）', M0.toFixed(4)]);
+    if (ex && !ex.ok) rows.push(['三针读数 M 精确', '量棒碰不到齿面直线段（太粗或太细），请换量棒直径']);
+    else if (ex && isFinite(ex.M)) rows.push(['三针读数 M 精确（含导程角）', ex.M.toFixed(4)], ['导程角修正量', ((ex.M - M0) * 1000 >= 0 ? '+' : '') + ((ex.M - M0) * 1000).toFixed(1) + ' µm']);
+  }
   function hxResults() {
     const R = hxR, rows = [], hl = []; let note = "";
     if (R.kind === 'worm') {
@@ -4021,15 +4178,17 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
         ['轴向齿距 px', f3(w.px)], ['分度圆轴向齿厚 sx', f3(w.sx)], ['法向齿厚 sn≈sx·cosγ1', f3(w.sx * Math.cos(w.g1))], ['分度圆轴向槽宽（核算）', f3(w.exChk)]);
       if (isFinite(R.rb)) rows.push(['基圆直径 db', f3(2 * R.rb)]);
       if (w.zkTool) rows.push(['ZK 生成刀具', `Ø${f2(w.zkTool.D0)}，分度处刀厚 ${f3(w.zkTool.w)}`]);
+      wireRows(rows, w, w.px, 2 * w.r1, '分度圆');
     } else if (R.kind === 'thread') {
       const w = R.w, o = R.o, D = 180 / PI;
       rows.push(['牙型', THREAD_NAME[o.tp] + (o.size ? ' · ' + o.size : '')], ['大径 d', f3(2 * w.ra)], w.d2ok ? ['中径 d2（槽宽 = P/2）', f3(2 * w.r1)] : ['参考直径（牙侧直线段中点）', f3(2 * w.r1)], ['小径 d3', f3(2 * w.rf)],
         ['螺距 P', f3(w.P)], ['导程 Ph', f3(w.lead) + (w.n > 1 ? `（${w.n} 头）` : '')], [w.d2ok ? '中径处导程角' : '参考直径处导程角', (Math.atan(Math.abs(w.p) / w.r1) * D).toFixed(3) + '°'], ['小径处导程角', (Math.atan(Math.abs(w.p) / w.rf) * D).toFixed(3) + '°'],
         ['牙高 h3', f3(w.h)], ['牙侧角 左 / 右', o.a1 + '° / ' + o.a2 + '°'], ['牙顶宽', f3(w.e)], ['牙底直线宽', w.rootFlat > 1e-5 ? f3(w.rootFlat) : '0（整圆弧牙底）'],
         ['牙底圆角 左 / 右', f3(w.rUsed[0]) + ' / ' + f3(w.rUsed[1]) + (Math.abs(w.rUsed[0] - o.r1) > 1e-6 ? `（标准近似值 ${o.r1} / ${o.r2}）` : '')]);
-      if (o.tolP) rows.push(['牙型允许偏差（ISO 5835 建议）', '≤ ' + o.tolP.toFixed(3)]);
+      if (o.tolP) rows.push(['大径 d1 范围（ISO 5835）', f3(o.d - 0.15) + ' ～ ' + f3(o.d)], ['芯径 d5 范围（ISO 5835）', f3(o.dr - (o.d <= 2 ? 0.1 : 0.15)) + ' ～ ' + f3(o.dr)], ['牙型允许偏差（ISO 5835 建议）', '≤ ' + o.tolP.toFixed(3)]);
       if (o.ac) rows.push(['牙顶间隙 ac', f3(o.ac)]);
       if (w.full) rows.push(['牙顶圆角', f3(o.rc) + '（全牙型车刀）']);
+      if (Math.abs(o.a1 - o.a2) < 1e-9 && Math.abs(o.r1 - o.r2) < 1e-9 && w.d2ok) wireRows(rows, w, w.P, 2 * w.r1, '中径');
     } else if (R.kind === 'wheel') {
       const h = R.wh, D = 180 / PI;
       rows.push(['蜗轮分度圆 d2', f3(2 * h.r2)], ['中心距 a', f3(h.a)], ['喉圆 da2', f3(2 * h.ra2)], ['齿根圆 df2（中间平面）', f3(h.df2)], ['喉母圆半径 rg2', f3(h.rg)], ['外径 de2', f3(h.de2)], ['齿宽 b2', f3(h.b2)],
