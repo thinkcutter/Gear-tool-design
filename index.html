@@ -1669,7 +1669,9 @@ if (typeof module !== 'undefined') module.exports = HX;
   // ---------- 参数定义 ----------
   const SPL = { '30f': [30, 0.5, 0.75, 0.2], '30r': [30, 0.5, 0.9, 0.4], '37.5': [37.5, 0.45, 0.7, 0.3], '45': [45, 0.4, 0.6, 0.25], 'din': [30, 0.45, 0.55, 0.16],
     // ANSI B92.1（英制，按径节 P；m = 25.4/P）：外花键大径 (N+1)/P、内花键小径 (N−1)/P；平齿根大径/小径 (N±1.35)/P，圆齿根 (N±1.8)/P；大径配合内花键大径 (N+1)/P
-    'a30f': [30, 0.5, 0.675, 0.2], 'a30m': [30, 0.5, 0.675, 0.2], 'a30r': [30, 0.5, 0.9, 0.4] };
+    'a30f': [30, 0.5, 0.675, 0.2], 'a30m': [30, 0.5, 0.675, 0.2], 'a30r': [30, 0.5, 0.9, 0.4], 'a37': [37.5, 0.5, 0.65, 0.3], 'a45': [45, 0.5, 0.5, 0.25] };
+  // ANSI B92.1 基本尺寸系数（×1/P）：内花键大径 Dri、内花键小径 Di、外花键小径 Dre；37.5°/45° 最小作用齿槽宽比 π/(2P) 大 0.1/P、0.2/P
+  const ANSI_K = { a30f: { dri: 1.35, di: 1, dre: 1.35 }, a30m: { dri: 1, di: 1, dre: 1.35 }, a30r: { dri: 1.8, di: 1, dre: 1.8, dreFine: 2 }, a37: { dri: 1.6, di: 0.8, dre: 1.3, sv: 0.1, pr: [2.5, 48] }, a45: { dri: 1.4, di: 0.6, dre: 1, sv: 0.2, pr: [10, 128] } };
   // DIN 5480-1 表 3：基本齿廓齿根高 hfP 随加工方法：拉削 0.55m、滚齿 0.60m、插齿 0.65m、冷滚压 0.84m（齿根圆角 ρfP：切削 0.16m，冷滚压 0.54m）
   const DIN_HF = { b: [0.55, 0.16], h: [0.60, 0.16], s: [0.65, 0.16], r: [0.84, 0.54] };
   const gearFields = (internal) => [
@@ -1688,7 +1690,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     internal: gearFields(true),
     spline: [['side', '内 / 外花键', 'sel', [['ext', '外花键'], ['int', '内花键']]], ['mn', '模数 m', 'mm', 3], ['dp', '径节 P（英制）', '0=用模数', 0], ['z', '齿数 z', '', 24],
       ['preset', '压力角 / 齿根', 'sel', [['30f', '30° 平齿根（GB/T 3478 / ISO 4156）'], ['30r', '30° 圆齿根（GB/T 3478 / ISO 4156）'], ['37.5', '37.5° 圆齿根（GB/T 3478 / ISO 4156）'], ['45', '45° 圆齿根（GB/T 3478 / ISO 4156）'], ['din', 'DIN 5480（30°）'],
-        ['a30f', 'ANSI B92.1 30° 平齿根 侧配合'], ['a30m', 'ANSI B92.1 30° 平齿根 大径配合'], ['a30r', 'ANSI B92.1 30° 圆齿根 侧配合']]],
+        ['a30f', 'ANSI B92.1 30° 平齿根 侧配合'], ['a30m', 'ANSI B92.1 30° 平齿根 大径配合'], ['a30r', 'ANSI B92.1 30° 圆齿根 侧配合'], ['a37', 'ANSI B92.1 37.5° 圆齿根 侧配合'], ['a45', 'ANSI B92.1 45° 圆齿根 侧配合']]],
       ['meth', 'DIN 5480 加工方法', 'sel', [['h', '滚齿 / 铣齿（hfP 0.60m）'], ['b', '拉削（hfP 0.55m）'], ['s', '插齿（hfP 0.65m）'], ['r', '冷滚压（hfP 0.84m，ρfP 0.54m）']]], ['x', '变位系数 x', '', 0],
       ['ha', '齿顶高系数', '', 0.5], ['hfS', '齿根高系数', '', 0.75], ['rhoF', '齿根圆角系数', '', 0.2],
       ['ds', '齿厚减薄 Δs', 'mm', 0], ['da', '齿顶圆直径 da', '0=自动', 0], ['df', '齿根圆直径 df', '0=自动', 0], ['b', '花键长度', 'mm', 40]],
@@ -1741,6 +1743,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     if (type === 'spline' && e.target.dataset.k === 'preset') {
       const p = SPL[e.target.value];
       $('p_spline_ha').value = p[1]; $('p_spline_hfS').value = p[2]; $('p_spline_rhoF').value = p[3];
+      ['ha', 'hfS', 'rhoF'].forEach(k => { const f = $('p_spline_' + k); if (f.disabled) f.dataset.orig = f.value; });   // 锁定状态下也以新预设值为准
       if (e.target.value === 'din') { $('p_spline_meth').value = isIntUI() ? 'b' : 'h'; applyMeth(); }
     }
     if (type === 'spline' && k_ === 'meth') applyMeth();
@@ -1808,10 +1811,11 @@ if (typeof module !== 'undefined') module.exports = HX;
   // GB/T 3478.1 花键标准直径：DFe max、DFi min、内花键小径 Dii min、大径 Dei
   const SPL_H = { '30f': [0.6, 1.0], '30r': [0.6, 1.0], '37.5': [0.55, 0.9], '45': [0.5, 0.8] };
   function splStd(m, z, preset) {
-    if (preset && preset[0] === 'a') {
+    if (ANSI_K[preset]) {
       // ANSI B92.1 基本尺寸（换成 mm）；径向成形间隙 cF = 0.001D，限 0.002～0.010 in
-      const D = m * z, cF = Math.min(0.254, Math.max(0.0508, 0.001 * D)), fl = preset === 'a30r' ? 1.8 : 1.35;
-      return { DFe: m * (z - 1) - 2 * cF, DFi: preset === 'a30m' ? m * (z + 0.8) - 0.004 * 25.4 + 2 * cF : m * (z + 1) + 2 * cF, Dii: m * (z - 1), Dei: m * (z + (preset === 'a30m' ? 1 : fl)), Dee: m * (z + 1), Die: m * (z - fl), cF, ansi: true };
+      const K = ANSI_K[preset], D = m * z, cF = Math.min(0.254, Math.max(0.0508, 0.001 * D)), DP = 25.4 / m;
+      const dre = K.dreFine && DP >= 16 - 1e-6 ? K.dreFine : K.dre;
+      return { DFe: m * (z - K.di) - 2 * cF, DFi: preset === 'a30m' ? m * (z + 0.8) - 0.004 * 25.4 + 2 * cF : m * (z + 1) + 2 * cF, Dii: m * (z - K.di), Dei: m * (z + K.dri), Dee: m * (z + 1), Die: m * (z - dre), cF, ansi: true, sv: (K.sv || 0) * m, DP, outRange: K.pr ? DP < K.pr[0] - 1e-6 || DP > K.pr[1] + 1e-6 : false };
     }
     const sp = SPL[preset], hs = SPL_H[preset]; if (!hs) return null;
     const a = sp[0] * D2R, D = m * z, Db = D * Math.cos(a), cF = 0.1 * m;
@@ -1830,10 +1834,11 @@ if (typeof module !== 'undefined') module.exports = HX;
         const hfI = v.preset === 'din' && DIN_HF[v.meth] ? DIN_HF[v.meth][0] : sp[2];
         const dfI = v.df > 0 ? v.df : st ? st.Dei - 2 * x * m : 2 * (r - x * m + hfI * m);
         const ha = (r - daI / 2) / m - x, cc = (dfI / 2 - r + x * m) / m - ha;
-        return { type: 'internal', spl: true, side: 'int', preset: v.preset, dfFixed: true, mn: m, z, an: sp[0] * D2R, beta: 0, x, ha, cc, rhoF: v.rhoF, ds: v.ds || 0, da: daI, root: 'gen', b: v.b, hand: 'R' };
+        return { type: 'internal', spl: true, side: 'int', preset: v.preset, dfFixed: true, mn: m, z, an: sp[0] * D2R, beta: 0, x, ha, cc, rhoF: v.rhoF, ds: (v.ds || 0) + (st && st.sv || 0), da: daI, root: 'gen', b: v.b, hand: 'R' };
       }
-      const ha = v.da > 0 ? (v.da / 2 - r) / v.mn - x : v.ha, hfS = v.df > 0 ? (r + x * v.mn - v.df / 2) / v.mn : v.hfS;
-      return { type, spl: true, side: 'ext', preset: v.preset, dfFixed: true, mn: v.mn, z: Math.round(v.z), an: SPL[v.preset][0] * D2R, beta: 0, x, ha, hfS, rhoF: v.rhoF, ds: v.ds || 0, da: v.da || 0, b: v.b, hand: 'R' };
+      const stA = ANSI_K[v.preset] ? splStd(v.mn, Math.round(v.z), v.preset) : null;
+      const ha = v.da > 0 ? (v.da / 2 - r) / v.mn - x : stA ? (stA.Dee / 2 - r) / v.mn : v.ha, hfS = v.df > 0 ? (r + x * v.mn - v.df / 2) / v.mn : stA ? (r - stA.Die / 2) / v.mn : v.hfS;
+      return { type, spl: true, side: 'ext', preset: v.preset, dfFixed: true, mn: v.mn, z: Math.round(v.z), an: SPL[v.preset][0] * D2R, beta: 0, x, ha, hfS, rhoF: v.rhoF, ds: (v.ds || 0) + (stA ? stA.sv : 0), da: v.da || 0, b: v.b, hand: 'R' };
     }
     // 内齿变位符号：GB/机械设计手册（正变位齿顶圆变大、内齿变薄）与 ISO 21771/DIN 3960（z 取负，正变位齿顶圆变小）相反；程序内部按 ISO 计算
     // 端面制（日本 JIS 老图纸、部分美制图纸）：mt、αt、xt 及齿高系数均以端面模数为基准，换算成法面制后计算
@@ -1862,7 +1867,8 @@ if (typeof module !== 'undefined') module.exports = HX;
     const fromM = !!(qaInfo && qaInfo.fromThk);
     if (type === 'spline') {
       lock('mn', v.dp > 0, fmt(25.4 / v.dp), '由径节 25.4/P 换算');
-      if (P.type === 'internal') {
+      if (P.type !== 'internal' && ANSI_K[v.preset]) { lock('ha', !(v.da > 0), fmt(P.ha), '按 ANSI B92.1'); lock('hfS', !(v.df > 0), fmt(P.hfS), '按 ANSI B92.1'); }
+      else if (P.type === 'internal') {
         lock('ha', true, fmt(P.ha), '内花键由小径推算');
         lock('hfS', true, fmt(P.ha + P.cc), '由大径推算');
       } else {
@@ -1902,7 +1908,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     if (Q.src === 'none' || !(Q.Vmin > 0 || Q.Vmax > 0)) {
       // 花键没有检测数据、但填了公差等级：按 GB/T 3478.1 实际齿厚（齿槽宽）公差中值设计
       const c = Math.round(parseFloat($('a_q').value) || 0);
-      if (P.spl && lastPreset() !== 'din' && c >= 4 && c <= 7) {
+      if (P.spl && lastPreset() !== 'din' && !ANSI_K[lastPreset()] && c >= 4 && c <= 7) {
         const t = splTol(P, c), m = P.mn, sB = m * (PI / 2 + 2 * P.x * Math.tan(P.an));
         const pick = v => Q.pick === 'min' ? v[0] : Q.pick === 'max' ? v[1] : (v[0] + v[1]) / 2;
         const stUse = P.type === 'internal' ? PI * m - pick([t.Emin, t.Emax]) : pick([t.Smin, t.Smax]);
@@ -1995,7 +2001,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     'spline.meth': 'DIN 5480-1 表 3：齿根高 hfP 随加工方法不同——拉削 0.55m、滚齿 0.60m、插齿（德文 Wälzstoßen，英译本作 mill-broaching）0.65m、冷滚压 0.84m；齿根圆角 ρfP 切削为 0.16m、冷滚压为 0.54m。标准尺寸表里的名义根径按 0.55m 计算，按方法算出的根径：滚齿轴减 0.1m、插齿轴减 0.2m、插齿毂加 0.2m。选择后自动填入齿根高和圆角系数。',
     'spline.mn': '花键模数，按图纸填写。',
     'spline.z': '齿数，按图纸填写。',
-    'spline.preset': '渐开线花键的齿形标准。GB/T 3478.1 选压力角和齿根类型；DIN 5480 选“DIN 5480”；美制图纸选 ANSI B92.1（30°：平齿根侧配合 / 平齿根大径配合 / 圆齿根侧配合，外花键大径 (N+1)/P，内花键小径 (N−1)/P，平齿根的内花键大径、外花键小径 (N±1.35)/P，圆齿根 (N±1.8)/P，大径配合的内花键大径 (N+1)/P；成形直径按 cF = 0.001D（0.002～0.010 in）计算）。ANSI 37.5°、45° 的公开资料各版本数据不一致，暂未内置，可用 GB/T 3478 的 37.5°、45° 选项并按图纸填大径、小径。选择后自动填好标准的齿顶高、齿根高和圆角系数。',
+    'spline.preset': '渐开线花键的齿形标准。GB/T 3478.1（ISO 4156）选压力角和齿根类型；DIN 5480 选“DIN 5480”；美制图纸选 ANSI B92.1（按径节 P 输入）。ANSI B92.1 基本尺寸（×1/P）：外花键大径都是 N+1；内花键大径 30° 平齿根 N+1.35、大径配合 N+1、30° 圆齿根 N+1.8、37.5° N+1.6、45° N+1.4；内花键小径 30° N−1、37.5° N−0.8、45° N−0.6；外花键小径 30° 平齿根 N−1.35、30° 圆齿根 N−1.8（16/32 及更细 N−2）、37.5° N−1.3、45° N−1；最小作用齿槽宽 30° 为 π/2，37.5° 为 π/2+0.1，45° 为 π/2+0.2；成形直径 DFi = (N+1)/P + 2cF、DFe = 内花键小径 − 2cF，cF = 0.001D（0.002～0.010 in）。已与 Autodesk Inventor 的 ANSI 公式表、Engineers Edge 公式表、Machinery’s Handbook 表 3 的数值、Parker 泵和电机样本、Polaris 图纸数据交叉核对。注意：ANSI 1996 版图纸上的内花键小径常比 (N−1)/P 大（齿数少时更明显），外花键小径也常另有规定，请以图纸为准填入。',
     'spline.x': '变位系数，GB/T 3478.1 花键一般为 0。DIN 5480 图纸给的“移距量”是 x·m（毫米），x = 移距量 ÷ 模数，例如 0.675 ÷ 1.5 = 0.45；内花键（毂）按 DIN 3960 取 x2 = −x1，要输负值，例如 −0.45。已填齿顶圆、齿根圆和检测数据时，x 不影响结果。',
     'internal.x': '内齿轮变位系数，照图纸填写，并在“内齿变位符号”里选图纸用的约定。没有就填 0。已填齿顶圆、齿根圆和棒间距时，x 不影响刀具廓形。',
     'internal.xconv': '内齿变位的正负号有两种约定，结果相反：GB / 机械设计手册：da = d − 2(ha* − x)m，正变位时内孔变大、内齿变薄，国内图纸多用这种。ISO 21771 / DIN 3960：齿数取负值计算，正变位时内孔变小、内齿变厚。看不出来时，用图纸齿顶圆反推：哪种约定算出的齿顶圆和图纸一致就选哪种。',
@@ -2632,7 +2638,15 @@ if (typeof module !== 'undefined') module.exports = HX;
       }
       if (geo.Rinv) {
         const Di = 2 * geo.Rinv, nm = isInt ? '渐开线终止圆' : '渐开线起始圆';
-        const stS = P.spl ? splStd(P.mn, P.z, lastFV.preset) : null;
+        let stS = P.spl ? splStd(P.mn, P.z, lastFV.preset) : null;
+        if (P.spl && lastFV.preset === 'din') {
+          // DIN 5480-1 表 3、表 4：轴 dFf1 ≤ |da2| − 2cFmin，毂 |dFf2| ≥ da1 + 2cFmin（x1 = −x2）
+          const m = P.mn, x1 = isInt ? -P.x : P.x, dB = m * P.z + 2 * x1 * m + 1.1 * m;
+          const r = dB <= 12 ? 0 : dB <= 25 ? 1 : dB <= 50 ? 2 : dB <= 100 ? 3 : dB <= 200 ? 4 : dB <= 400 ? 5 : 6, g = m <= 1.5 ? 0 : m <= 4 ? 1 : 2;
+          const CF = [[25, NaN, NaN], [28, 30, NaN], [30, 35, 40], [35, 40, 45], [40, 45, 50], [NaN, 50, 55], [NaN, NaN, 65]][r][g];
+          const cF = (isFinite(CF) ? CF : [25, 30, 40, 45, 50, 55, 65][r]) / 1000;
+          stS = isInt ? { DFi: m * P.z + 2 * x1 * m + 0.9 * m + 2 * cF } : { DFe: m * P.z + 2 * x1 * m - 0.9 * m - 2 * cF };
+        }
         const dfeUse = Q.dfe > 0 ? Q.dfe : stS ? (isInt ? stS.DFi : stS.DFe) : 0, auto = !(Q.dfe > 0) && dfeUse > 0;
         if (dfeUse > 0) {
           const ok = isInt ? Di >= dfeUse - 1e-3 : Di <= dfeUse + 1e-3;
@@ -2650,6 +2664,7 @@ if (typeof module !== 'undefined') module.exports = HX;
         if (isInt && FV.preset === 'din' && DIN_HF[FV.meth]) dfS = d - 2 * P.x * m + 2 * DIN_HF[FV.meth][0] * m;
         if (!isInt && st && st.ansi) { daS = st.Dee + 2 * P.x * m; dfS = st.Die + 2 * P.x * m; }
         why = FV.preset === 'din' ? 'DIN 5480（hfP ' + (DIN_HF[FV.meth] || [0.55])[0] + 'm）' : st && st.ansi ? 'ANSI B92.1' : 'GB/T 3478.1';
+        if (st && st.outRange) stdWarn.push('ANSI B92.1 的 37.5° 花键径节范围为 2.5/5～48/96，45° 为 10/20～128/256，当前径节 ' + st.DP.toFixed(2) + ' 超出范围，请核对');
         // DIN 5480-1 表 3：轴 x1 = −0.05～+0.45（个别到 +0.879）；毂按 DIN 3960 取 x2 = −x1 = +0.05～−0.45（个别到 −0.879），符号相反
         if (FV.preset === 'din' && Math.abs(P.x) > 1e-9) {
           const xs = P.x, okX = isInt ? xs <= 0.05 + 1e-6 && xs >= -0.879 - 1e-6 : xs >= -0.05 - 1e-6 && xs <= 0.879 + 1e-6;
