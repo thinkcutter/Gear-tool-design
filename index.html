@@ -2664,6 +2664,12 @@ if (typeof module !== 'undefined') module.exports = HX;
         if (isInt && FV.preset === 'din' && DIN_HF[FV.meth]) dfS = d - 2 * P.x * m + 2 * DIN_HF[FV.meth][0] * m;
         if (!isInt && st && st.ansi) { daS = st.Dee + 2 * P.x * m; dfS = st.Die + 2 * P.x * m; }
         why = FV.preset === 'din' ? 'DIN 5480（hfP ' + (DIN_HF[FV.meth] || [0.55])[0] + 'm）' : st && st.ansi ? 'ANSI B92.1' : 'GB/T 3478.1';
+        if (isInt && st && st.ansi && /^a30/.test(FV.preset)) {
+          // ANSI B92.1-1996 图纸上的内花键小径下限普遍大于 (N−1)/P，与“外花键真实成形直径 + 2cF”（ISO 4156 / B92.2M 的做法，hs = 0.6m）吻合（Parker 7 张图纸，16/32 径节差 ≤ 0.001″）
+          const Db = m * P.z * Math.cos(P.an), Dp = m * P.z, hs = 0.6 * m;
+          const DFeInv = 2 * Math.sqrt((Db / 2) ** 2 + (Dp / 2 * Math.sin(P.an) - hs / Math.sin(P.an)) ** 2), diRef = DFeInv + 2 * st.cF;
+          if (diRef > st.Dii + 1e-4) rowsQA.push(['', '1996 版图纸常见的内花键小径下限（外花键真实成形直径 + 2cF，参考）', f3(diRef) + '（基本值 ' + f3(st.Dii) + '，以图纸为准）']);
+        }
         if (st && st.outRange) stdWarn.push('ANSI B92.1 的 37.5° 花键径节范围为 2.5/5～48/96，45° 为 10/20～128/256，当前径节 ' + st.DP.toFixed(2) + ' 超出范围，请核对');
         // DIN 5480-1 表 3：轴 x1 = −0.05～+0.45（个别到 +0.879）；毂按 DIN 3960 取 x2 = −x1 = +0.05～−0.45（个别到 −0.879），符号相反
         if (FV.preset === 'din' && Math.abs(P.x) > 1e-9) {
