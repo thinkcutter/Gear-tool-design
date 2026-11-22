@@ -1931,6 +1931,10 @@ if (typeof module !== 'undefined') module.exports = HX;
     Object.assign(qaInfo, { fromThk: true, Vu, sMin: Math.min(s1, s2) * cb, sMax: Math.max(s1, s2) * cb, sUse: su * cb });
   }
   function lastPreset() { const e = $('p_spline_preset'); return e ? e.value : ''; }
+  // ISO 4156-1:2005 表 5（= GB/T 3478.1-2008）：外花键作用齿厚上偏差 esv（µm），d、e、f 按分度圆直径分档（同 ISO 286 基本偏差），js = +(T+λ)/2，k = +(T+λ)
+  const ESV = [[3, -20, -14, -6], [6, -30, -20, -10], [10, -40, -25, -13], [18, -50, -32, -16], [30, -65, -40, -20], [50, -80, -50, -25], [80, -100, -60, -30], [120, -120, -72, -36], [180, -145, -85, -43], [250, -170, -100, -50], [315, -190, -110, -56], [400, -210, -125, -62], [500, -230, -135, -68], [630, -260, -145, -76], [800, -290, -160, -80], [1000, -320, -170, -86]];
+  const gbFit = () => { const e = $('a_dL'); return e && e.dataset.side === 'g' && P && P.type !== 'internal' ? e.value : 'h'; };
+  function gbEsv(D, L, Tl) { const r = ESV.find(q => D <= q[0]) || ESV[ESV.length - 1]; return L === 'd' ? r[1] : L === 'e' ? r[2] : L === 'f' ? r[3] : L === 'js' ? Tl / 2 : L === 'k' ? Tl : 0; }
   // ISO 4156-1 公差单位：D ≤ 500 mm 时 0.45∛D + 0.001D，D > 500 mm 时 0.004D + 2.1
   const splI = x => x <= 500 ? 0.45 * Math.cbrt(x) + 0.001 * x : 0.004 * x + 2.1;
   // GB/T 3478.1 / ISO 4156 花键公差（µm 与 mm）
@@ -1942,7 +1946,8 @@ if (typeof module !== 'undefined') module.exports = HX;
     const Fp = K[2] * Math.sqrt(Lh) + K[3], Fa = K[4] * m * (1 + 0.0125 * z) + K[5], Fb = K[6] * Math.sqrt(gL) + K[7];
     const lam = 0.6 * Math.sqrt(Fp * Fp + Fa * Fa + Fb * Fb);
     const sB = m * (PI / 2 + 2 * P.x * Math.tan(P.an)), Eb = PI * m - sB;
-    return { Tl, lam, Fp, Fa, Fb, Smax: sB - lam / 1000, Smin: sB - Tl / 1000, Emin: Eb + lam / 1000, Emax: Eb + Tl / 1000 };
+    const sv = sB + (P.type === 'internal' ? 0 : gbEsv(D, gbFit(), Tl) / 1000);
+    return { Tl, lam, Fp, Fa, Fb, Smax: sv - lam / 1000, Smin: sv - Tl / 1000, Emin: Eb + lam / 1000, Emax: Eb + Tl / 1000 };
   }
   function validate(P) {
     const bad = [];
@@ -2251,7 +2256,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     if (type === 'spline') {
       grid.hidden = false; $('a_std').closest('.f').hidden = true;
       const isIntS = P.type === 'internal';
-      keepHint(qLab, '花键公差等级<b>4–7，配合 ' + (isIntS ? 'H' : 'h') + '</b>');
+      keepHint(qLab, '花键公差等级<b>4–7' + (isIntS ? '，配合 H' : '') + '</b>');
       const dinF = card.querySelectorAll('[data-din]');
       if (lastFV.preset === 'din') {
         dinF.forEach(e => e.hidden = false);
@@ -2260,6 +2265,10 @@ if (typeof module !== 'undefined') module.exports = HX;
         return calcDin(isIntS, out);
       }
       dinF.forEach(e => e.hidden = true);
+      if (!/^a/.test(lastFV.preset) && !isIntS) {   // GB/T 3478.1 / ISO 4156 外花键配合类别 h、f、e、d、js、k
+        const selG = $('a_dL'); selG.closest('.f').hidden = false;
+        if (selG.dataset.side !== 'g') { selG.innerHTML = ['h', 'f', 'e', 'd', 'js', 'k'].map(l => `<option>${l}</option>`).join(''); selG.dataset.side = 'g'; }
+      }
       if (/^a/.test(lastFV.preset)) { $('accStd').textContent = 'ANSI B92.1'; out.innerHTML = '<div class="accnote">ANSI B92.1 的齿厚、齿槽宽公差按其公差表（Class 4、5、6、7，分级系数 0.71 / 1 / 1.40 / 2.00），本程序没有内置这张英制表。请在“图纸检测数据”里按图纸填跨棒距或棒间距的上下限，程序据此反算齿厚并设计刀具。</div>'; return null; }
       $('accStd').textContent = 'GB/T 3478.1 ≈ ISO 4156';
       const c = Math.round(parseFloat($('a_q').value) || 0);
@@ -2291,28 +2300,31 @@ if (typeof module !== 'undefined') module.exports = HX;
         }
         out.innerHTML = '<table class="acctbl"><thead><tr><th>项目</th><th>数值</th></tr></thead><tbody>' + rowsI.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('') + '</tbody></table>' +
           (note ? `<div class="accnote" style="color:${bad ? 'var(--warn)' : 'var(--ok)'}">${note}</div>` : '') +
-          `<div class="accnote">按 ISO 4156-1:2005（GB/T 3478.1-2008 以它为基础）公式计算，配合 H：作用齿槽宽下限 = 理论齿槽宽；实际齿槽宽 = 作用齿槽宽下限 + λ ~ + (T+λ)。T+λ 的系数（4～7 级：10/40、16/64、25/100、40/160）已与 ISO 4156-1 公开资料核对；Fp、Fα、Fβ 公式来自公开资料。ISO 4156-1 已有 2021 版，基本齿廓与 2005 版相同。</div>`;
+          `<div class="accnote">按 ISO 4156-1:2005（GB/T 3478.1-2008 以它为基础）公式计算，配合 H：作用齿槽宽下限 = 理论齿槽宽；实际齿槽宽 = 作用齿槽宽下限 + λ ~ + (T+λ)。T+λ 的系数（4～7 级：10/40、16/64、25/100、40/160）已与 ISO 4156-1 公开资料核对；Fp、Fα、Fβ、λ 公式已与 ISO 4156-1:2005 第 9 章（λ 式 (4)、Fp 表 7、Fα 表 8 与式 (6) φf = m + 0.0125mz）、RoyMech（BS ISO 4156）和机械设计手册（GB/T 3478.1）核对，i* 按实际分度圆直径 D 计算（标准 9.1 原文）。ISO 4156-1 已有 2021 版，基本齿廓与 2005 版相同。</div>`;
         return { Fa };
       }
-      const Svmax = sB, Smax = Svmax - lam / 1000, Smin = Svmax - Tl / 1000, Svmin = Smin + lam / 1000;
+      const fitL = gbFit(), esv = gbEsv(D, fitL, Tl);
+      const Svmax = sB + esv / 1000, Smax = Svmax - lam / 1000, Smin = Svmax - Tl / 1000, Svmin = Smin + lam / 1000;
       const meas = s => Q.src === 'pin' && Q.dp > 0 ? '　M ' + f3(G.MFromThickness(P, s, Q.dp)) : Q.src === 'span' && Q.k >= 2 ? '　W' + Q.k + ' ' + f3(G.WFromThickness(P, s, Q.k)) : '';
       const r1 = v => (Math.round(v * 10) / 10).toFixed(1);
-      let rowsH = [['总公差 T+λ', 'µm', r1(Tl)], ['综合公差 λ', 'µm', r1(lam)], ['加工公差 T', 'µm', r1(T)],
+      const tanA = Math.tan(P.an), dEsv = fitL === 'js' || fitL === 'k' ? 0 : esv / 1000 / tanA;   // 表 1 注：js、k 的大径、小径取 esv = 0
+      let rowsH = [['配合类别 / 作用齿厚上偏差 es<sub>v</sub>', 'µm', c + fitL + '　' + (esv > 0 ? '+' : '') + r1(esv)], ['外花键大径、小径上偏差 es<sub>v</sub>/tanα<sub>D</sub>', 'mm', (dEsv > 0 ? '+' : '') + dEsv.toFixed(3)],
+        ['总公差 T+λ', 'µm', r1(Tl)], ['综合公差 λ', 'µm', r1(lam)], ['加工公差 T', 'µm', r1(T)],
         ['齿距累积公差 Fp', 'µm', r1(Fp)], ['齿形公差 Fα', 'µm', r1(Fa)], ['齿向公差 Fβ（长度 ' + gL + '）', 'µm', r1(Fb)],
         ['作用齿厚 Sv', 'mm', f3(Svmin) + ' ~ ' + f3(Svmax)], ['实际齿厚 S', 'mm', f3(Smin) + ' ~ ' + f3(Smax)]].concat(meas(Smin) ? [[Q.src === 'pin' ? '对应跨棒距 M' : '对应公法线 W' + Q.k, 'mm', meas(Smin).replace(/^　[MW]\d* /, '') + ' ~ ' + meas(Smax).replace(/^　[MW]\d* /, '')]] : []);
       let note = '', bad = false;
       if (qaInfo && qaInfo.fromThk) {
         const dMin = qaInfo.sMin, dMax = qaInfo.sMax, tol = 0.005;
         if (Math.abs(dMin - Svmin) < 0.01 && Math.abs(dMax - Svmax) < 0.01) {
-          bad = true; note = '图纸检测尺寸对应的齿厚 ' + f3(dMin) + '~' + f3(dMax) + ' 与<b>作用齿厚</b>范围基本相同，而跨棒距、公法线测的是<b>实际齿厚</b>，按标准应为 ' + f3(Smin) + '~' + f3(Smax) + '。图纸可能把作用齿厚当成了实际齿厚，按图纸加工的花键可能与 ' + c + 'H 内花键装不进，请向客户确认。';
+          bad = true; note = '图纸检测尺寸对应的齿厚 ' + f3(dMin) + '~' + f3(dMax) + ' 与<b>作用齿厚</b>范围基本相同，而跨棒距、公法线测的是<b>实际齿厚</b>，按标准应为 ' + f3(Smin) + '~' + f3(Smax) + '。图纸可能把作用齿厚当成了实际齿厚，按图纸加工的花键可能与 ' + c + 'H 内花键配合不对，请向客户确认。';
         } else if (dMin >= Smin - tol && dMax <= Smax + tol) note = '图纸实际齿厚 ' + f3(dMin) + '~' + f3(dMax) + ' 在标准实际齿厚范围内 ✓';
         else { bad = true; note = '图纸实际齿厚 ' + f3(dMin) + '~' + f3(dMax) + ' 与标准实际齿厚 ' + f3(Smin) + '~' + f3(Smax) + ' 不一致，请向客户确认。'; }
-        if (bad) accWarn.push('花键齿厚与 GB/T 3478.1 ' + c + 'h 不一致，详见“精度等级换算”');
+        if (bad) accWarn.push('花键齿厚与 GB/T 3478.1 ' + c + fitL + ' 不一致，详见“精度等级换算”');
       }
       out.innerHTML = '<table class="acctbl"><thead><tr><th>项目</th><th>数值</th></tr></thead><tbody>' +
         rowsH.map(r => `<tr><td>${r[0]}</td><td>${r[2]}${r[1] === 'µm' ? ' µm' : ''}</td></tr>`).join('') + '</tbody></table>' +
         (note ? `<div class="accnote" style="color:${bad ? 'var(--warn)' : 'var(--ok)'}">${note}</div>` : '') +
-        `<div class="accnote">按 ISO 4156-1:2005（GB/T 3478.1-2008 以它为基础）公式计算：T+λ = ${K[0]}i* + ${K[1]}i**，i* = 0.45∛D + 0.001D（D > 500 mm 时 0.004D + 2.1），i** = 0.45∛(πm/2) + 0.001(πm/2)，λ = 0.6√(Fp² + Fα² + Fβ²)，配合 h：作用齿厚上限 = 理论齿厚。Fβ 按“花键长度”计算。T+λ 的系数（4～7 级：10/40、16/64、25/100、40/160）已与 ISO 4156-1 公开资料核对；Fp、Fα、Fβ 公式来自公开资料。ISO 4156-1 已有 2021 版，基本齿廓与 2005 版相同。</div>`;
+        `<div class="accnote">按 ISO 4156-1:2005（GB/T 3478.1-2008 以它为基础）公式计算：T+λ = ${K[0]}i* + ${K[1]}i**，i* = 0.45∛D + 0.001D（D > 500 mm 时 0.004D + 2.1），i** = 0.45∛(πm/2) + 0.001(πm/2)，λ = 0.6√(Fp² + Fα² + Fβ²)，作用齿厚上限 = 理论齿厚 + es<sub>v</sub>（配合类别 h 为 0；d、e、f 按 ISO 4156-1:2005 表 5 / GB/T 3478.1 分度圆直径分档取值，与 ISO 286 基本偏差相同；js 为 +(T+λ)/2，k 为 +(T+λ)，这两类的大径、小径按 es<sub>v</sub> = 0 计）。Fβ 按“花键长度”计算。T+λ 的系数（4～7 级：10/40、16/64、25/100、40/160）已与 ISO 4156-1 公开资料核对；Fp、Fα、Fβ、λ 公式已与 ISO 4156-1:2005 第 9 章（λ 式 (4)、Fp 表 7、Fα 表 8 与式 (6) φf = m + 0.0125mz）、RoyMech（BS ISO 4156）和机械设计手册（GB/T 3478.1）核对，i* 按实际分度圆直径 D 计算（标准 9.1 原文）。ISO 4156-1 已有 2021 版，基本齿廓与 2005 版相同。</div>`;
       return { Fa };
     }
     card.querySelectorAll('[data-din]').forEach(e => e.hidden = true);
