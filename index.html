@@ -4224,25 +4224,35 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       let nx = dy / L, ny = -dx / L; if (nx > 0) { nx = -nx; ny = -ny; } off.push([prof[i][0] + nx * af, prof[i][1] + ny * af]); }
     let yb = rStart + ar;
     let side = off.filter(q => q[0] > 0);
-    side = side.filter((q, i, A) => i === 0 || q[1] > A[i - 1][1]);   // 去掉偏移造成的回折，半径方向单调
+    { let mx = -Infinity; side = side.filter(q => q[1] > mx ? (mx = q[1], true) : false); }   // 去掉偏移造成的回折：只留半径比前面所有点都大的点（和前一点比会漏掉回折后的几个点）
     let hb = NaN; for (let i = 1; i < side.length; i++) if (side[i - 1][1] <= yb && side[i][1] >= yb) { hb = side[i - 1][0] + (side[i][0] - side[i - 1][0]) * (yb - side[i - 1][1]) / (side[i][1] - side[i - 1][1]); break; }
     if (!isFinite(hb) && side.length && side[0][1] > yb) { const up = side[0][1] - yb; yb = side[0][1]; hb = side[0][0]; if (up > 0.05 * m) W.push('留余量后槽底附近宽度不够，开粗槽底比“齿根 + 余量”再抬高 ' + f3(up) + '（离蜗轮轴线 ' + f3(yb) + '）'); }
     side = side.filter(q => q[1] > yb + 1e-9);
     if (side.length < 5 || !isFinite(hb)) throw new Error('余量太大：开粗齿槽宽度为零，请减小余量');
     let half = [[Math.max(hb, 0), yb]].concat(side);
     // 槽底做成内切圆弧（开粗刀刀尖圆弧）：圆心在槽中线上、与两侧相切，半径取 0.3m 或放得下的最大值
-    let tipR = 0;
+    let tipR = 0, cornerExtra = 0;
     { const sd = half.filter(q => q[1] > yb + 1e-9), dist = (yc) => { let d = Infinity; for (let i = 1; i < sd.length; i++) { const A0 = sd[i - 1], B0 = sd[i], vx = B0[0] - A0[0], vy = B0[1] - A0[1], L2 = vx * vx + vy * vy || 1e-12;
           let t = ((0 - A0[0]) * vx + (yc - A0[1]) * vy) / L2; t = Math.max(0, Math.min(1, t)); d = Math.min(d, Math.hypot(A0[0] + vx * t, A0[1] + vy * t - yc)); } return d; };
-      let R = 0.3 * m, yc = yb + R;
+      // 到侧边的最近点（槽中线之外的圆心也适用）
+      const near = (hc, yc0) => { let tp = null, bd = Infinity; for (let i = 1; i < sd.length; i++) { const A0 = sd[i - 1], B0 = sd[i], vx = B0[0] - A0[0], vy = B0[1] - A0[1], L2 = vx * vx + vy * vy || 1e-12;
+          let t = ((hc - A0[0]) * vx + (yc0 - A0[1]) * vy) / L2; t = Math.max(0, Math.min(1, t)); const q = [A0[0] + vx * t, A0[1] + vy * t], d = Math.hypot(q[0] - hc, q[1] - yc0); if (d < bd) { bd = d; tp = { q, i }; } } return { tp, d: bd }; };
+      let R = 0.3 * m, yc = yb + R; const hc = 0;
       if (dist(yc) < R) { let lo = 0, hi = R; for (let it = 0; it < 40; it++) { const md = (lo + hi) / 2; if (dist(yb + md) >= md) lo = md; else hi = md; } R = lo; yc = yb + R; }
-      else { let lo = yc, hi = yc + 3 * m; if (dist(hi) > R) hi = yc; for (let it = 0; it < 40; it++) { const md = (lo + hi) / 2; if (dist(md) > R) lo = md; else hi = md; } yc = lo; }
+      else if (near(0, yc).d > R + 1e-9) {
+        // 槽底比 2R 宽（小压力角蜗轮常见）：0.3m 的圆弧碰不到两侧。旧做法圆弧画到半路就接回侧边，槽形出现台阶，指型铣刀刀尖附近出现回落、
+        // 并切进开粗齿槽。平底 + 两角圆弧也不行：指型铣刀沿螺旋线走刀时宽平底会切到槽壁（实测过切达毫米级）。
+        // 所以加大圆弧半径，使圆弧（圆心在槽中线上）同时与槽底、两侧相切；代价是槽底两角多留一些料，留给精加工
+        let lo = R, hi = R; while (near(0, yb + hi).d > hi && hi < 20 * m) hi *= 1.5;
+        for (let it = 0; it < 60; it++) { const md = (lo + hi) / 2; if (near(0, yb + md).d > md) lo = md; else hi = md; } R = hi; yc = yb + R;
+      }
       if (R > 1e-3) {
-        // 切点：圆与侧边最近点
-        let tp = null, bd = Infinity; for (let i = 1; i < sd.length; i++) { const A0 = sd[i - 1], B0 = sd[i], vx = B0[0] - A0[0], vy = B0[1] - A0[1], L2 = vx * vx + vy * vy || 1e-12;
-          let t = ((0 - A0[0]) * vx + (yc - A0[1]) * vy) / L2; t = Math.max(0, Math.min(1, t)); const q = [A0[0] + vx * t, A0[1] + vy * t], d = Math.hypot(q[0], q[1] - yc); if (d < bd) { bd = d; tp = { q, i }; } }
-        const a1 = Math.atan2(tp.q[0], -(tp.q[1] - yc)), arc = []; for (let j = 0; j <= 16; j++) { const t = a1 * j / 16; arc.push([R * Math.sin(t), yc - R * Math.cos(t)]); }
-        half = arc.concat([tp.q], sd.slice(tp.i)); yb = yc - R; tipR = R;
+        const { tp } = near(hc, yc);   // 切点：圆与侧边最近点
+        const a1 = Math.atan2(tp.q[0] - hc, -(tp.q[1] - yc)), arc = hc > 1e-9 ? [[0, yc - R]] : []; for (let j = 0; j <= 16; j++) { const t = a1 * j / 16; arc.push([hc + R * Math.sin(t), yc - R * Math.cos(t)]); }
+        // 槽底两角比“侧边 + 余量”多留的料：被圆弧代替的那段侧边到圆弧的距离
+        for (let j = 0; j < tp.i; j++) cornerExtra = Math.max(cornerExtra, Math.hypot(sd[j][0] - hc, sd[j][1] - yc) - R);
+        half = arc.concat([tp.q], sd.slice(tp.i)).filter((q, j, A) => j === 0 || Math.hypot(q[0] - A[j - 1][0], q[1] - A[j - 1][1]) > 1e-7);   // 去掉重合点（切点正好在顶点上时），否则换算刀具时切向算不出
+        yb = yc - R; tipR = R;
       } }
     if (half[0][0] > 0) half.unshift([0, yb]);
     const toXY = ([H, r], s) => [s * r * Math.sin(H / r), r * Math.cos(H / r)];
@@ -4257,7 +4267,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     const gam = Math.atan(w.pz / (2 * PI * r1));
     if (mode === 'flat') W.push('固定深度：中间截面槽底比两端低 ' + f3(Math.max(...secs.map(S => S.root)) - s0.root) + '，开粗后中间槽底余量较大');
     return { kind: 'wheel', o, w, A: hxExtendA(A, Math.max(0, hn('h_ext'))), Aeff: A, p: pL, r1: r2, ra: rTip, rf: yb, Efull, G, lead: 2 * PI * Math.abs(pL), L: b2, starts: z2,
-      wh: { tipR, m, z2, x2, r1, r2, a, rh, rg, ra2, de2, b2, af, ar, mode, gam, k, secs, s0, yb, rTip, trueMid: trueSec(s0), trueEnd: [trueSec(secs[0]), trueSec(secs[NS - 1])], df2: 2 * s0.root, rootEnd: secs[0].root, rootEnd2: secs[NS - 1].root } };
+      wh: { tipR, cornerExtra, m, z2, x2, r1, r2, a, rh, rg, ra2, de2, b2, af, ar, mode, gam, k, secs, s0, yb, rTip, trueMid: trueSec(s0), trueEnd: [trueSec(secs[0]), trueSec(secs[NS - 1])], df2: 2 * s0.root, rootEnd: secs[0].root, rootEnd2: secs[NS - 1].root } };
   }
   // 刀具
   // 型线尖角检查（有效段内相邻两段夹角大于 25°）
@@ -5091,8 +5101,9 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     } else if (R.kind === 'wheel') {
       const h = R.wh, D = 180 / PI;
       rows.push(['蜗轮分度圆 d2', f3(2 * h.r2)], ['中心距 a', f3(h.a)], ['喉圆 da2', f3(2 * h.ra2)], ['齿根圆 df2（中间平面）', f3(h.df2)], ['喉母圆半径 rg2', f3(h.rg)], ['外径 de2', f3(h.de2)], ['齿宽 b2', f3(h.b2)],
-        ['蜗杆导程角 γ', (h.gam * D).toFixed(3) + '°'], ['开粗走刀螺旋角（分度圆）', (Math.atan(Math.abs(h.k) * h.r2) * D).toFixed(3) + '°'], ['齿面 / 槽底余量', f3(h.af) + ' / ' + f3(h.ar)], ['开粗槽底圆弧半径（≈ 刀尖圆角）', f3(h.tipR)],
+        ['蜗杆导程角 γ', (h.gam * D).toFixed(3) + '°'], ['开粗走刀螺旋角（分度圆）', (Math.atan(Math.abs(h.k) * h.r2) * D).toFixed(3) + '°'], ['齿面 / 槽底余量', f3(h.af) + ' / ' + f3(h.ar)], ['开粗槽底圆弧半径（≈ 刀尖圆角）', f3(h.tipR) + (h.tipR > 0.3 * h.m + 1e-6 ? '（槽底较宽，已加大到与两侧相切）' : '')],
         ['两端槽底比中间高', f3((h.rootEnd + h.rootEnd2) / 2 - h.s0.root)]);
+      if (h.cornerExtra > 0.005) rows.push(['槽底两角多留料（在余量之外）', f3(h.cornerExtra)]);
       if (h.mode === 'arc') rows.push(['刀尖到蜗轮轴线距离（沿齿宽 w）', `a − √(${f3(h.rh)}² − w²) + ${f3(h.ar)}`]);
       else rows.push(['刀尖到蜗轮轴线距离（固定）', f3(h.yb)]);
       note = '开粗刀只按蜗轮各截面齿槽的公共部分（再减余量）计算，精加工仍用滚刀或飞刀。' + (h.mode === 'arc' ? '沿喉部圆弧径向插补：刀具沿齿宽 w（从中间平面量起）走刀时，刀尖到蜗轮轴线的距离按上式变化，同时蜗轮按走刀螺旋线转动。' : '') + '3D 只表示开粗齿槽的螺旋走向，未画出喉部圆弧。';
