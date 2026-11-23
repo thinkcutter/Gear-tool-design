@@ -117,7 +117,7 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
 <div class="app">
 <header>
   <h1>指型铣刀廓形计算器</h1>
-  <span class="sub">齿轮 · 花键 · 齿条 · 蜗杆 · 蜗轮开粗 · 外螺纹 · 螺杆转子 · 回转体 → 成形刀具廓形</span>
+  <span class="sub">齿轮 · 花键 · 齿条 · 链轮 · 摆线齿轮 · 棘轮 · 蜗杆 · 蜗轮开粗 · 外螺纹 · 螺杆转子 · 回转体 → 成形刀具廓形</span>
 </header>
 
 <div class="side">
@@ -129,6 +129,10 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
       <button data-t="spline" aria-pressed="false">渐开线花键</button>
       <button data-t="rect" aria-pressed="false">矩形花键</button>
       <button data-t="rack" aria-pressed="false">齿条</button>
+      <button data-t="sprocket" aria-pressed="false">链轮</button>
+      <button data-t="cyclo" aria-pressed="false">摆线齿轮</button>
+      <button data-t="serr" aria-pressed="false">三角花键</button>
+      <button data-t="ratchet" aria-pressed="false">棘轮</button>
       <button data-t="worm" aria-pressed="false">蜗杆</button>
       <button data-t="wheel" aria-pressed="false">蜗轮开粗</button>
       <button data-t="thread" aria-pressed="false">外螺纹</button>
@@ -297,6 +301,11 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
     <p><b>外螺纹（含骨钉）</b>：按轴向截面牙型生成螺旋面，再用与蜗杆相同的方法算成形车刀刃口（也可选盘形铣刀、指型铣刀）。普通螺纹按 ISO 68-1 基本牙型，外螺纹牙底取整圆弧 R = 0.1443P（d3 = d − 1.2269P）；梯形螺纹按 GB/T 5796，h3 = 0.5P + ac，牙顶宽 0.366P，牙底圆角取 0.5ac；锯齿形按 GB/T 13576 / DIN 513，承载面 3°、另一面 30°，h3 = 0.86777P，牙顶宽 0.26384P，牙底整圆弧 R = 0.12427P；骨钉 HA 1.5～5（35° / 3°）、HB 4、6.5（25° / 5°）按 ISO 5835 / ASTM F543 的大径 d1、芯径 d5、螺距 P、前侧圆角 r4（35° 或 25° 面与牙底之间）、后侧圆角 r5（3° 或 5° 面与牙底之间）和牙顶宽 e；标准中 e、r4、r5、α、β 是近似值（≈），HA 1.5、HA 2 按近似值构造时圆角放不下，程序按比例缩小并提示。牙侧角都从垂直于轴线的径向线量起，图中右侧为螺纹尖端方向。骨钉直径小、导程角大（小径处常到 10°～16°），车刀背离进给一侧的侧后角往往不够，需要按导程角倾斜安装或选“法向”前刀面。标准牙型的数值以标准原文和图纸为准，不一致时选“自定义牙型”逐项填写（切换时会先填入上一个牙型的数值）。牙顶圆角大于 0 时按全牙型车刀计算，刀具覆盖一个螺距并车出牙顶。</p>
     <p><b>蜗杆成形车刀</b>：刃口 = 前刀面与螺旋面的交线。轴向安装（ZA 刃口为直线）、法向安装（ZN，前刀面在分度圆处的齿槽法平面内）、偏置安装（ZI，前刀面偏离轴线 rb，左右齿面各用一把车刀，刃口均为直线）。有前角时前刀面绕刃口方向转 γ；“后刀面法向截面”给出磨刀用的廓形（深度 × cos(α+γ)/cosγ）。侧后角：进给一侧要加上齿根导程角，另一侧要减去齿顶导程角。</p>
     <p><b>齿条</b>：齿条齿面是平面、齿根是直线。指型铣刀刀轴垂直于齿条顶面、盘形铣刀刀轴水平并垂直于齿向，沿齿向直线走刀时，刀具廓形都严格等于齿条法向截面的齿槽（基本齿条梯形 + 齿根圆角），直齿、斜齿相同，也与盘铣刀外径无关；斜齿条只是分度步距变成端面齿距 πmn/cosβ。指型铣刀端面是平的，正好铣出直线槽底，没有齿轮那种槽底多铣或残留。成形插刀只用于直齿条。量棒沿齿向放在齿槽里：量棒尺寸 M = H + dp/2·(1 + 1/sinαn) − en/(2tanαn)，H 为分度线到基准面高度，en 为分度线处法向槽宽；理想量棒 dp* = πmn/(2cosαn)。</p>
+    <p><b>链轮、摆线齿轮、三角花键、棘轮</b>：都是直齿，沿轴向走刀，刀具廓形 = 端面齿槽形状（指型铣刀刀轴沿齿槽对称线，盘形铣刀刀轴沿切向，插刀截面即齿槽）。指型铣刀端面是平的：齿槽底是外齿齿根圆弧（两角比中心深）时，两角会留下很小的残留，程序会给出数值。<br>
+    <b>链轮</b>按 GB/T 1243 / ISO 606：分度圆 d = p/sin(180°/z)，齿根圆 df = d − d1，齿顶圆 d + (1 − 1.6/z)p − d1 ～ d + 1.25p − d1；标准只规定最大、最小齿槽，三圆弧一直线齿形按机械设计手册公式（r1 = 0.5025d1 + 0.05，α/2 = 55° − 60°/z，r2 = 1.3025d1 + 0.05，β = 18° − 56°/z，r3 = d1(1.3cos(γ/2) + 0.8cosβ − 1.3025) − 0.05，γ/2 = 17° − 64°/z，da = p(0.54 + cot180°/z)），程序会自检 r3 圆心是否落在两滚子中心连线上距滚子 1.3d1 处。量柱测量距 MR：偶数齿 d + d1，奇数齿 d·cos(90°/z) + d1。<br>
+    <b>摆线齿轮</b>（钟表）：轮齿理论齿顶高由齿数比决定（摆线相交处），实用齿顶高取 0.95 倍，齿顶圆弧半径 1.4·fa·m，齿根高 πm/2；小齿轮齿厚 1.05m / 1.25m，齿根高 (轮齿实用齿顶系数 + 0.4)m，齿顶分圆头、中尖拱、高尖拱。公式按 BS 978-2 的数据（H. Sparks 推导）。<br>
+    <b>三角花键</b>按 DIN 5481（60° 系列，直线齿侧）：分度圆 D = (d1 + d2)/2，外花键槽角 60°，内花键槽角 60° − 360°/z，分度圆上齿厚 = 槽宽 = 半个齿距。<br>
+    <b>棘轮</b>按机械设计手册：da = mz，h = 0.75m，齿顶厚 a = m，齿槽夹角 θ = 60° 或 55°；作 ∠BEC = θ 的圆与齿根圆相交得工作面 CE。工作面后倾（齿倾角，一般 15°～20°），所以棘轮用单角铣刀铣：刀轴垂直于工作面，端面刃铣工作面，锥面刃铣齿背，刀尖圆弧 = 槽底圆角；也可用成形插刀。指型铣刀做不了不对称齿槽。</p>
     <p><b>回转体成形车刀</b>：输入零件轮廓（轴向位置 z，直径或半径），刀尖对准零件最小半径。C = √(r² − (r₁ sinγ)²) − r₁ cosγ 为前刀面内的廓形深度；<b>棱体刀</b>廓形深度 P = C·cos(α + γ)（垂直于后刀面量）；<b>圆体刀</b>各点半径 Rx = √(R0² + C² − 2R0·C·cos(α + γ))，刀具中心高于工件中心 R0·sinα。</p>
     <p><b>DXF 文件</b>：① <b>下载纯轮廓 DXF</b>：文件里只有刀具轮廓一条线（等点距时为多段线，“圆弧 + 直线拟合”时为一条带圆弧的多段线），没有任何标注，直接导入数控磨床、线切割等设备。② <b>下载 DXF 文件</b>：刀具轮廓仍单独放在 CUTTER（或 TOOL）层、只有一条线；其他内容都不与它相交、不共点：MARK 层在轮廓右侧外面标出齿根圆（刀尖 H = 0，并注明槽底多铣 / 残留量）、渐开线起始圆、分度圆、齿顶圆对应的高度和刀径；PART_REF 层画零件的齿顶圆、分度圆、基圆、渐开线起始圆、齿根圆（螺纹、蜗杆为大径、参考直径、小径）；零件齿槽整体移到刀具左侧（螺纹、蜗杆的轴向齿形移到右侧），避免与刀具重叠；CENTER 为刀具中心线；NOTES 为右侧说明栏（参数、结果、提示、图层说明）。格式为 DXF R12，单位 mm，中文按 AutoCAD 的 \U+ 编码写入，字体 gbenor.shx + gbcbig.shx，若显示问号请把文字样式 CN 改成任一中文字体。“复制 DXF 文本”复制的是同一文件的文字内容，一般用不到。</p>
     <p><b>刀具坐标输出</b>：① <b>等点距坐标点</b>：沿廓形每隔“点距”取一点，相邻点连成直线。曲线段的误差很小，但廓形上的尖角（如齿面与倒角的交点）可能落在两点之间被削掉：倒角处（折角 30° 左右）最大约为点距的 1/10，折角越大削得越多。点距最小 0.02，这时倒角尖角仍可能差 2 µm 左右，所以要求 1 µm 以内时请用“圆弧 + 直线拟合”。② <b>圆弧 + 直线拟合</b>：按“拟合误差”自动分段，用最少的圆弧和直线逼近程序算出的理论廓形；刀尖平底、倒角等直线段保持为直线，尖角和曲率突变点（直线接圆角、圆角接渐开线）作为段的端点保留。选“相切连续”时用双圆弧逐段拟合，每段终点的切向与廓形一致，连接处没有折角（廓形本身的尖角除外）；选“允许微小折角”时每段用过三点的圆弧，段数更少，连接处折角一般只有百分之几度。表中给出每段的起点、终点、圆心、半径和实测偏差，DXF 中为真正的 ARC / LINE 图元，可直接用于磨床或线切割编程。</p>
@@ -3199,7 +3208,7 @@ if (typeof module !== 'undefined') module.exports = HX;
   // 下载文件（DXF 按 Windows 习惯用 CRLF 换行）
   function download(text, ext, mime, suffix) {
     const t = (document.querySelector('.seg button[data-t][aria-pressed="true"]') || {}).dataset || {};
-    const nm = { gear: 'gear', internal: 'internal', spline: 'spline', rect: 'rect-spline', worm: 'worm', wheel: 'wormwheel', thread: 'thread', rotor: 'rotor', form: 'form', rack: 'rack' }[t.t] || 'cutter';
+    const nm = { gear: 'gear', internal: 'internal', spline: 'spline', rect: 'rect-spline', worm: 'worm', wheel: 'wormwheel', thread: 'thread', rotor: 'rotor', form: 'form', rack: 'rack', sprocket: 'sprocket', cyclo: 'cycloidal', serr: 'serration', ratchet: 'ratchet' }[t.t] || 'cutter';
     const tool = hxOn ? '' : '_' + ($('t_kind').value || ''), name = 'cutter_' + nm + tool + (suffix || '') + '.' + ext;
     try {
       const blob = new Blob([ext === 'dxf' ? text.replace(/\r?\n/g, '\r\n') : '\ufeff' + text], { type: mime }), a = document.createElement('a');
@@ -3632,7 +3641,8 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   }));
   // ===================== 螺旋面零件（蜗杆 / 螺杆转子）与回转体成形车刀 =====================
   // 本段在构建时插入主程序闭包内，直接使用 $、f2、f3、pathD、mkMesh、meshes、scene、cam、anim、M4 等
-  const HXT = ['worm', 'wheel', 'thread', 'rotor', 'form', 'rack'];
+  const HXT = ['worm', 'wheel', 'thread', 'rotor', 'form', 'rack', 'sprocket', 'cyclo', 'serr', 'ratchet'];
+  const NOHXTOOL = ['form', 'rack', 'sprocket', 'cyclo', 'serr', 'ratchet'];   // 自带刀具设置、不用螺旋面刀具栏
   let hxOn = false, hxR = null, hxRows = [];
   const hxStore = {};
   const HXF = {
@@ -3686,6 +3696,39 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       ['h_rg', '插刀前角 γ', '°', 0, '', 'rslot'], ['h_ra', '插刀后角 α', '°', 6, '', 'rslot'],
       ['h_rsec', '坐标表截面', 'sel', [['face', '端面投影（= 齿槽形状）'], ['rake', '前刀面内（刃口）'], ['normal', '后刀面法向截面（磨刀用）']], '', 'rslot'],
       ['h_rL', '齿条长度', 'mm（3D）', 120], ['h_rw', '齿宽 b', 'mm（3D）', 30],
+    ],
+    sprocket: [
+      ['h_scs', '链条规格（GB/T 1243 / ISO 606）', 'sel', [['', '自定义'], ['05B', '05B（p 8，d1 5）'],['06B', '06B（p 9.525，d1 6.35）'],['08A', '08A（p 12.7，d1 7.92）'],['08B', '08B（p 12.7，d1 8.51）'],['10A', '10A（p 15.875，d1 10.16）'],['10B', '10B（p 15.875，d1 10.16）'],['12A', '12A（p 19.05，d1 11.91）'],['12B', '12B（p 19.05，d1 12.07）'],['16A', '16A（p 25.4，d1 15.88）'],['16B', '16B（p 25.4，d1 15.88）'],['20A', '20A（p 31.75，d1 19.05）'],['20B', '20B（p 31.75，d1 19.05）'],['24A', '24A（p 38.1，d1 22.23）'],['24B', '24B（p 38.1，d1 25.4）'],['28A', '28A（p 44.45，d1 25.4）'],['28B', '28B（p 44.45，d1 27.94）'],['32A', '32A（p 50.8，d1 28.58）'],['32B', '32B（p 50.8，d1 29.21）'],['40A', '40A（p 63.5，d1 39.68）'],['40B', '40B（p 63.5，d1 39.37）'],['48A', '48A（p 76.2，d1 47.63）'],['48B', '48B（p 76.2，d1 48.26）']], '', ''],
+      ['h_sp', '节距 p', 'mm', 25.4], ['h_sd1', '滚子直径 d1', 'mm', 15.88], ['h_sz', '齿数 z', '', 20],
+      ['h_sform', '齿槽形状', 'sel', [['tri', '三圆弧一直线（常用）'], ['min', '最小齿槽（ri 小、re 大、α 大）'], ['max', '最大齿槽（ri 大、re 小、α 小）'], ['cu', '自定义 ri、re、α']]],
+      ['h_sri', '齿沟圆弧 ri', 'mm', 8.1, '', 'scu'], ['h_sre', '齿侧圆弧 re', 'mm', 40, '', 'scu'], ['h_sal', '齿沟角 α', '°', 130, '', 'scu'],
+      ['h_sda', '齿顶圆 da', '0=最大值', 0, 'tx'],
+      ['h_gtool', '刀具类型', 'sel', [['finger', '指型铣刀'], ['disc', '盘形铣刀'], ['slot', '成形插刀']]], ['h_ext', '刃部外延量', 'mm', 1],
+      ['h_gD', '盘形铣刀外径', 'mm', 100, '', 'gdisc'], ['h_gg', '插刀前角 γ', '°', 0, '', 'gslot'], ['h_ga', '插刀后角 α', '°', 6, '', 'gslot'],
+      ['h_gsec', '坐标表截面', 'sel', [['face', '端面投影（= 齿槽形状）'], ['rake', '前刀面内（刃口）'], ['normal', '后刀面法向截面（磨刀用）']], '', 'gslot'], ['h_gb', '齿宽', 'mm（3D）', 20],
+    ],
+    cyclo: [
+      ['h_cpart', '零件', 'sel', [['wheel', '轮（主动，齿多）'], ['pinion', '小齿轮（从动）']]], ['h_cm', '模数 m', 'mm', 0.5], ['h_cz', '本件齿数 z', '', 64], ['h_cz2', '配对齿数', '', 8],
+      ['h_cprof', '小齿轮齿顶', 'sel', [['auto', '按齿数自动'], ['round', '圆头'], ['medium', '中尖拱'], ['high', '高尖拱']], '', 'cpin'], ['h_cw', '小齿轮齿厚', '×m 0=自动', 0, '', 'cpin'],
+      ['h_cpf', '轮齿实用齿顶比例', '', 0.95, '', 'cwh'], ['h_crr', '槽底角圆角', 'mm', 0],
+      ['h_gtool', '刀具类型', 'sel', [['finger', '指型铣刀'], ['disc', '盘形铣刀'], ['slot', '成形插刀']]], ['h_ext', '刃部外延量', 'mm', 1],
+      ['h_gD', '盘形铣刀外径', 'mm', 100, '', 'gdisc'], ['h_gg', '插刀前角 γ', '°', 0, '', 'gslot'], ['h_ga', '插刀后角 α', '°', 6, '', 'gslot'],
+      ['h_gsec', '坐标表截面', 'sel', [['face', '端面投影（= 齿槽形状）'], ['rake', '前刀面内（刃口）'], ['normal', '后刀面法向截面（磨刀用）']], '', 'gslot'], ['h_gb', '齿宽', 'mm（3D）', 20],
+    ],
+    serr: [
+      ['h_esize', '规格（DIN 5481，60°）', 'sel', [['7x8', '7 × 8（z 28）'],['8x10', '8 × 10（z 28）'],['10x12', '10 × 12（z 30）'],['12x14', '12 × 14（z 31）'],['15x17', '15 × 17（z 32）'],['17x20', '17 × 20（z 33）'],['21x24', '21 × 24（z 34）'],['26x30', '26 × 30（z 35）'],['30x34', '30 × 34（z 36）'],['36x40', '36 × 40（z 37）'],['40x44', '40 × 44（z 38）'],['45x50', '45 × 50（z 39）'],['50x55', '50 × 55（z 40）'],['55x60', '55 × 60（z 42）'], ['', '自定义']]], ['h_eside', '内 / 外花键', 'sel', [['ext', '外花键（轴）'], ['int', '内花键（毂）']]],
+      ['h_eDo', '分度圆 D', '0=(d1+d2)/2', 0, '', 'epre'], ['h_ez', '齿数 z', '', 30, '', 'ecu'], ['h_eD', '分度圆 D', 'mm', 11, '', 'ecu'], ['h_eang', '外花键槽角', '°', 60, '', 'ecu'],
+      ['h_eda', '齿顶圆', '0=默认', 0, 'tx'], ['h_erf', '槽底圆角', 'mm', 0.1], ['h_eds', '槽宽加大 Δs', 'mm', 0, 'tx'], ['h_edp', '量棒直径', 'mm 0=推荐', 0],
+      ['h_gtool', '刀具类型', 'sel', [['finger', '指型铣刀'], ['disc', '盘形铣刀'], ['slot', '成形插刀']]], ['h_ext', '刃部外延量', 'mm', 1],
+      ['h_gD', '盘形铣刀外径', 'mm', 100, '', 'gdisc'], ['h_gg', '插刀前角 γ', '°', 0, '', 'gslot'], ['h_ga', '插刀后角 α', '°', 6, '', 'gslot'],
+      ['h_gsec', '坐标表截面', 'sel', [['face', '端面投影（= 齿槽形状）'], ['rake', '前刀面内（刃口）'], ['normal', '后刀面法向截面（磨刀用）']], '', 'gslot'], ['h_gb', '齿宽', 'mm（3D）', 20],
+    ],
+    ratchet: [
+      ['h_km', '模数 m', 'mm', 4], ['h_kz', '齿数 z', '', 24], ['h_kda', '齿顶圆 da', '0=m·z', 0, 'tx'], ['h_kh', '齿高 h', '0=0.75m', 0], ['h_ka', '齿顶厚 a', '0=m', 0],
+      ['h_kth', '齿槽夹角 θ', 'sel', [['60', '60°'], ['55', '55°']]], ['h_kr', '槽底圆角 r', 'mm', 1.5], ['h_kdir', '工作面方向', 'sel', [['R', '工作面在右'], ['L', '工作面在左']]],
+      ['h_gtool', '刀具类型', 'sel', [['disc', '盘形铣刀'], ['slot', '成形插刀']]], ['h_ext', '刃部外延量', 'mm', 1],
+      ['h_gD', '盘形铣刀外径', 'mm', 100, '', 'gdisc'], ['h_gg', '插刀前角 γ', '°', 0, '', 'gslot'], ['h_ga', '插刀后角 α', '°', 6, '', 'gslot'],
+      ['h_gsec', '坐标表截面', 'sel', [['face', '端面投影（= 齿槽形状）'], ['rake', '前刀面内（刃口）'], ['normal', '后刀面法向截面（磨刀用）']], '', 'gslot'], ['h_gb', '齿宽', 'mm（3D）', 20],
     ],
     form: [
       ['h_ftxt', '零件轮廓 z, 直径', 'area', '0, 20\n5, 20\n5, 26\n12, 30\n18, 30\n18, 24\n25, 24', ''],
@@ -3771,12 +3814,42 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     h_rg: '插刀前角 γ，一般 0°–10°。前刀面内齿高 = 端面齿高 ÷ cosγ。', h_ra: '插刀后角 α，一般 4°–8°。后刀面法向截面齿高 = 端面齿高 × cos(α+γ)/cosγ。',
     h_rsec: '坐标表和 DXF 用哪个截面：端面投影就是齿槽形状；前刀面内是刃口实际形状；后刀面法向截面是磨刀用的形状。宽度方向三者相同。',
     h_rL: '齿条长度，只用于 3D 显示。', h_rw: '齿条齿宽，只用于 3D 显示。',
+    // 直齿非渐开线零件（链轮 / 摆线齿轮 / 三角花键 / 棘轮）共用
+    h_gtool: '直齿件沿轴向走刀，三种刀具的廓形都等于端面齿槽形状。指型铣刀：刀轴沿齿槽对称线（径向），回转体，端面是平的；只能做左右对称的齿槽。盘形铣刀：刀轴沿切向（棘轮为单角铣刀，刀轴垂直于工作面）。成形插刀：截面就是齿槽形状。',
+    h_gD: '盘形铣刀外径，只用于 3D 显示和刃数建议；直齿件的刀齿廓形与外径无关。',
+    h_gg: '插刀前角 γ，一般 0°–10°。前刀面内齿高 = 端面齿高 ÷ cosγ。', h_ga: '插刀后角 α，一般 4°–8°。后刀面法向截面齿高 = 端面齿高 × cos(α+γ)/cosγ。',
+    h_gsec: '坐标表和 DXF 用哪个截面：端面投影就是齿槽形状；前刀面内是刃口实际形状；后刀面法向截面是磨刀用的形状。宽度方向三者相同。',
+    h_gb: '齿宽，只用于 3D 显示。',
+    h_scs: '选链条规格自动填节距 p 和滚子直径 d1（GB/T 1243—2024 / ISO 606 表 1，A 系列 = ANSI，B 系列 = 欧洲）。改动 p 或 d1 后自动变成“自定义”。',
+    h_sp: '链条节距 p。', h_sd1: '链条滚子直径 d1（最大值），齿槽按它计算。', h_sz: '链轮齿数 z。',
+    h_sform: 'GB/T 1243 / ISO 606 只规定最大和最小齿槽形状，实际齿槽在两者之间都合格。三圆弧一直线：国内最常用，标准刀具按此制造（老标准 GB 1244—85）。最小齿槽：ri = 0.505d1，re = 0.12d1(z+2)，α = 140° − 90°/z。最大齿槽：ri = 0.505d1 + 0.069·d1^(1/3)，re = 0.008d1(z²+180)，α = 120° − 90°/z。',
+    h_sri: '齿沟圆弧半径 ri，圆心在滚子中心。标准范围 0.505d1 ～ 0.505d1 + 0.069·d1^(1/3)。', h_sre: '齿侧圆弧半径 re，与齿沟圆弧在齿沟角端点相切。标准范围 0.12d1(z+2)（最小齿槽）～ 0.008d1(z²+180)（最大齿槽）。', h_sal: '齿沟角 α（齿沟圆弧所占的圆心角），标准范围 120° − 90°/z ～ 140° − 90°/z。',
+    h_sda: '齿顶圆直径。0 = 三圆弧一直线齿形取 p(0.54 + cot180°/z)，最大 / 最小 / 自定义齿槽取最大值 d + 1.25p − d1。标准范围 d + (1 − 1.6/z)p − d1 ～ d + 1.25p − d1。齿顶在 da 以内已变尖时按尖点。',
+    h_cpart: '钟表摆线齿轮：轮（齿多）带动小齿轮（齿少，钟表叫“齿轴”）。轮齿是尖拱形齿顶 + 径向齿根，小齿轮是径向齿侧 + 圆头或尖拱齿顶。',
+    h_cm: '模数 m = 分度圆直径 / 齿数。钟表常用 0.05 ～ 1。',
+    h_cz: '本件齿数。', h_cz2: '配对件齿数：算轮时填小齿轮齿数，算小齿轮时填轮的齿数。轮齿的齿顶高由齿数比决定。',
+    h_cprof: '小齿轮齿顶形状（BS 978-2 / Sparks）：圆头 = 半圆，齿顶高、半径 0.525m（6～10 齿）/ 0.625m（11 齿以上）；中尖拱 0.670 / 0.700（11 齿以上 0.805 / 0.840）；高尖拱 0.855 / 1.050（11 齿以上 1.050 / 1.250），前为齿顶高、后为圆弧半径（×m）。自动：7 齿以下高尖拱，8～9 齿中尖拱，10 齿以上圆头。',
+    h_cw: '小齿轮分度圆齿厚（×m）。0 = 6～10 齿 1.05m，11 齿以上 1.25m（BS 978-2 / Sparks）。',
+    h_cpf: '轮齿实用齿顶高 = 这个比例 × 理论尖顶高（摆线齿顶相交处）。BS 978-2 / Sparks 取 0.95；齿顶圆弧半径固定为 1.4 × 理论齿顶系数 × m。',
+    h_crr: '齿槽底部两角的圆角半径。0 = 尖角（标准画法）。',
+    h_esize: 'DIN 5481（2019）三角花键规格 d1 × d2（内花键小径 × 外花键大径）和齿数。分度圆 D = (d1 + d2)/2，模数 m = D/z。选“自定义”可填齿数、分度圆、槽角。',
+    h_eside: '外花键（轴）槽角 60°；内花键（毂）槽角 = 60° − 360°/z，两者在分度圆上的齿厚、槽宽都是半个齿距。',
+    h_eDo: 'DIN 5481 表中给出各规格的分度圆直径 D。0 = 按 (d1 + d2)/2 计算（10×12 为 11）；手上有标准原文时请按表填写。',
+    h_ez: '齿数 z。', h_eD: '分度圆直径 D。', h_eang: '外花键槽角（两齿侧夹角），DIN 5481 为 60°。内花键自动取 槽角 − 360°/z。',
+    h_eda: '齿顶圆：外花键是大径，内花键是小径。0 = 外花键取公称 d2；内花键取 OKEY 拉刀样本的预孔直径（公称 d1 处内花键齿已接近尖顶）。各拉刀厂预孔不同，例如 10×12：OKEY 10.47，Klink 10.20，Gleser 10.13～10.40，请按图纸填写。',
+    h_erf: '槽底（两齿侧交点）圆角半径。', h_eds: '分度圆槽宽加大量（弧长），用于留间隙或公差。0 = 理论值（半个齿距）。',
+    h_edp: '测量用量棒直径。0 = 推荐值（量棒在分度圆处与齿侧接触）。外花键给跨棒距，内花键给棒间距；奇数齿已按 cos(90°/z) 换算。',
+    h_km: '棘轮模数 m，齿顶圆 da = m·z（机械设计手册）。', h_kz: '棘轮齿数 z。', h_kda: '齿顶圆直径。0 = m·z。',
+    h_kh: '齿高 h。0 = 0.75m（机械设计手册）。', h_ka: '齿顶厚 a（齿顶弦长）。0 = m。',
+    h_kth: '齿槽夹角 θ（∠BEC），手册规定 60° 或 55°，正好是单角铣刀的标准刃形角。',
+    h_kr: '槽底圆角 r。手册表中 m = 6～8 时为 1.5，等于单角铣刀刀尖圆弧半径。',
+    h_kdir: '工作面（棘爪顶住的那一面）在齿槽的哪一侧，只影响左右方向。',
   });
 
   function hxActivate(on) {
     hxOn = on;
     ['params', 'qa', 'gtool', 'accCard', 'pairCard'].forEach(id => { const e = $(id); if (e) e.hidden = on; });   // 齿轮副只对外齿轮、内齿轮有用，螺旋面零件和齿条里隐藏
-    $('hxForm').hidden = !on; $('hxTool').hidden = !on || type === 'form' || type === 'rack';
+    $('hxForm').hidden = !on; $('hxTool').hidden = !on || NOHXTOOL.includes(type);
   }
   function hxField([id, lab, unit, def, tx, cls]) {
     const d = document.createElement('div'); d.className = 'f' + (cls ? ' hx-' + cls : '') + (unit === 'area' ? ' full' : '');
@@ -3792,7 +3865,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     const box = $('hxForm'), tb = $('hxTool'); box.innerHTML = ''; tb.innerHTML = '';
     for (const f of HXF[type]) box.appendChild(hxField(f));
     for (const f of HXF[type]) if (f[2] === 'sel' && hxStore[f[0]] !== undefined) $(f[0]).value = hxStore[f[0]];
-    if (type !== 'form' && type !== 'rack') {
+    if (!NOHXTOOL.includes(type)) {
       const s = document.createElement('div'); s.className = 'sep'; s.textContent = '刀具设置'; tb.appendChild(s);
       for (const f of HXTOOL) tb.appendChild(hxField(f));
       for (const f of HXTOOL) if (f[2] === 'sel' && hxStore[f[0]] !== undefined) $(f[0]).value = hxStore[f[0]];
@@ -3801,6 +3874,10 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       if (el.type === 'file') { el.addEventListener('change', hxReadFile); return; }
       el.addEventListener(el.tagName === 'SELECT' ? 'change' : 'input', () => {
         hxStore[el.id] = el.value;
+        if (el.id === 'h_cpart') { const a = $('h_cz').value, b = $('h_cz2').value; if ((el.value === 'pinion') === (+a > +b)) { $('h_cz').value = b; $('h_cz2').value = a; hxStore.h_cz = b; hxStore.h_cz2 = a; } }
+        if (el.id === 'h_scs' && el.value) { const c = CHAINS.find(q => q[0] === el.value); if (c) { $('h_sp').value = c[1]; $('h_sd1').value = c[2]; hxStore.h_sp = c[1]; hxStore.h_sd1 = c[2]; } }
+        if ((el.id === 'h_sp' || el.id === 'h_sd1') && $('h_scs')) { $('h_scs').value = ''; hxStore.h_scs = ''; }
+        if (el.id === 'h_esize' && el.value) { const c = SERR.find(q => q[0] === el.value); if (c) { $('h_ez').value = c[3]; $('h_eD').value = (c[1] + c[2]) / 2; $('h_eang').value = 60; ['h_ez', 'h_eD', 'h_eang'].forEach(k => hxStore[k] = $(k).value); } }
         if (el.id === 'h_rs' && $('h_lead')) { $('h_lead').value = 0; hxStore.h_lead = 0; }   // 换型线来源：导程回到默认
         if (el.id === 'h_tp' && el.value === 'cu' && hxR && hxR.kind === 'thread') {   // 改成自定义：先填入上一个标准牙型的数值，在此基础上改
           const o = hxR.o, put = (id, v) => { if ($(id)) { $(id).value = +v.toFixed(4); hxStore[id] = $(id).value; } };
@@ -3823,6 +3900,12 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     if (type === 'thread') { const t = v('h_tp'), bone = t === 'ha' || t === 'hb'; show('ha', t === 'ha'); show('hb', t === 'hb'); show('dp', !bone); show('cu', t === 'cu'); }
     if (type === 'form') show('round', v('h_fk') === 'round');
     if (type === 'rack') { const t = v('h_rtool'); show('rdisc', t === 'disc'); show('rslot', t === 'slot'); show('rhel', Math.abs(parseFloat(v('h_rb')) || 0) > 0); }
+    else if (SPURT.includes(type)) {
+      const t = v('h_gtool'); show('gdisc', t === 'disc'); show('gslot', t === 'slot');
+      if (type === 'sprocket') show('scu', v('h_sform') === 'cu');
+      if (type === 'cyclo') { const pin = v('h_cpart') === 'pinion'; show('cpin', pin); show('cwh', !pin); }
+      if (type === 'serr') { show('ecu', v('h_esize') === ''); show('epre', v('h_esize') !== ''); }
+    }
     else if (type !== 'form') { const t = v('h_tool'); show('disc', t === 'disc'); show('turn', t === 'turn'); }
   }
   function hxReadFile(e) {
@@ -3906,6 +3989,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     try {
       if (type === 'form') hxR = hxForm(W);
       else if (type === 'rack') hxR = hxRack(W);
+      else if (SPURT.includes(type)) hxR = hxSpur(W);
       else {
         const part = type === 'worm' ? hxWorm(W) : type === 'wheel' ? hxWheel(W) : type === 'thread' ? hxThread(W) : hxRotor(W);
         hxR = Object.assign(part, hxTool(part, W));
@@ -4418,6 +4502,400 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     scene.nCut0 = scene.nGear;
   }
 
+  // ===================== 直齿非渐开线零件：链轮 / 摆线齿轮 / 三角花键 / 棘轮 =====================
+  // 直齿件沿轴向走刀：指型铣刀（刀轴沿齿槽对称径向线）、盘形铣刀（刀轴沿切向）、成形插刀扫出的截面都是刀具子午截形，
+  // 所以刀具廓形 = 端面齿槽形状（直角坐标，以齿槽对称线为纵轴）。坐标：x 横向，y 沿径向（外齿向外为正）。
+  const SPURT = ['sprocket', 'cyclo', 'serr', 'ratchet'];
+  const vAdd = (a, b) => [a[0] + b[0], a[1] + b[1]], vSub = (a, b) => [a[0] - b[0], a[1] - b[1]], vMul = (a, s) => [a[0] * s, a[1] * s];
+  const vLen = a => Math.hypot(a[0], a[1]), vUnit = a => vMul(a, 1 / (vLen(a) || 1)), vRot = (a, t) => [a[0] * Math.cos(t) - a[1] * Math.sin(t), a[0] * Math.sin(t) + a[1] * Math.cos(t)];
+  const pol = (r, psi) => [r * Math.sin(psi), r * Math.cos(psi)];   // ψ 自 +y 顺时针
+  const psiOf = p => Math.atan2(p[0], p[1]);
+  function arcPts(C, r, t0, t1, n) { const out = []; for (let i = 0; i <= n; i++) { const t = t0 + (t1 - t0) * i / n; out.push([C[0] + r * Math.cos(t), C[1] + r * Math.sin(t)]); } return out; }
+  const angOf = (C, p) => Math.atan2(p[1] - C[1], p[0] - C[0]);
+  function arcBetween(C, r, P, T, n) { const t0 = angOf(C, P); let d = angOf(C, T) - t0; while (d > PI) d -= 2 * PI; while (d < -PI) d += 2 * PI; return arcPts(C, r, t0, t0 + d, n); }
+  // 两圆弧方程：过 P、T 两点、半径 r 的圆心（取离 away 点更远的那个）
+  function circ2(P, T, r, away) {
+    const M = vMul(vAdd(P, T), 0.5), d = vLen(vSub(T, P)); if (d > 2 * r) return null;
+    const h = Math.sqrt(r * r - d * d / 4), u = vUnit(vSub(T, P)), nrm = [-u[1], u[0]];
+    const c1 = vAdd(M, vMul(nrm, h)), c2 = vSub(M, vMul(nrm, h));
+    return vLen(vSub(c1, away)) > vLen(vSub(c2, away)) ? c1 : c2;
+  }
+  // 把右半齿槽（自对称线上槽底开始、向齿顶）镜像成全齿槽（左→右）
+  const mirrorFull = half => half.slice(1).reverse().map(q => [-q[0], q[1]]).concat(half);
+  // 沿末端切向外延 e
+  function extendEnd(P, e) {
+    if (!(e > 0)) return [];
+    const a = P[P.length - 1], b = P[Math.max(0, P.length - 4)], u = vUnit(vSub(a, b)), n = Math.max(3, Math.ceil(e / 0.05));
+    return HX.linspace(0, e, n).slice(1).map(s => vAdd(a, vMul(u, s)));
+  }
+  // 截断点精确求交：截断段 (P[i-1], P[i]) 若与前一点共圆（同一段圆弧上的采样点），在该圆上二分求交；共线时线性插值本身就是精确的
+  function cutPoint(P, i, f) {
+    const a = P[i - 1], b = P[i], lin = () => { const fa = f(a), fb = f(b), t = fa / (fa - fb); return vAdd(a, vMul(vSub(b, a), Math.max(0, Math.min(1, t)))); };
+    if (i < 2) return lin();
+    const c = P[i - 2], d = 2 * (c[0] * (a[1] - b[1]) + a[0] * (b[1] - c[1]) + b[0] * (c[1] - a[1]));
+    const L = vLen(vSub(b, c));
+    if (Math.abs(d) < 1e-12 * L * L) return lin();
+    const s1 = c[0] ** 2 + c[1] ** 2, s2 = a[0] ** 2 + a[1] ** 2, s3 = b[0] ** 2 + b[1] ** 2;
+    const O = [(s1 * (a[1] - b[1]) + s2 * (b[1] - c[1]) + s3 * (c[1] - a[1])) / d, (s1 * (b[0] - a[0]) + s2 * (c[0] - b[0]) + s3 * (a[0] - c[0])) / d], r = vLen(vSub(a, O));
+    if (!(r < 1e4 * L)) return lin();
+    const t0 = angOf(O, a); let dt = angOf(O, b) - t0; while (dt > PI) dt -= 2 * PI; while (dt < -PI) dt += 2 * PI;
+    const at = t => [O[0] + r * Math.cos(t0 + dt * t), O[1] + r * Math.sin(t0 + dt * t)];
+    let lo = 0, hi = 1; const fl = f(a);
+    for (let k = 0; k < 60; k++) { const m = (lo + hi) / 2; if ((f(at(m)) > 0) === (fl > 0)) lo = m; else hi = m; }
+    return at((lo + hi) / 2);
+  }
+  // 截到半径 rCut（外齿：截到齿顶圆以内；返回截断后的点 + 是否在到达前已与齿对称线相交（齿顶变尖））
+  function clipR(P, rCut, isInt) {
+    const out = [P[0]];
+    for (let i = 1; i < P.length; i++) {
+      const a = P[i - 1], b = P[i], ra = vLen(a), rb = vLen(b), over = r => isInt ? r < rCut : r > rCut;
+      if (over(rb)) { out.push(cutPoint(P, i, q => vLen(q) - rCut)); return { pts: out, hit: true }; }
+      out.push(b);
+    }
+    return { pts: out, hit: false };
+  }
+  // 右半齿槽不能越过右侧轮齿对称线（ψ = π/z）：越过就是齿顶变尖，截在交点
+  function clipBisector(P, z) {
+    const lim = PI / z, out = [P[0]];
+    for (let i = 1; i < P.length; i++) { const a = P[i - 1], b = P[i]; if (psiOf(b) > lim) { out.push(cutPoint(P, i, q => psiOf(q) - lim)); return { pts: out, sharp: true }; } out.push(b); }
+    return { pts: out, sharp: false };
+  }
+  // ---------- 链轮（GB/T 1243 / ISO 606）----------
+  const CHAINS = [['05B', 8, 5], ['06B', 9.525, 6.35], ['08A', 12.7, 7.92], ['08B', 12.7, 8.51], ['10A', 15.875, 10.16], ['10B', 15.875, 10.16], ['12A', 19.05, 11.91], ['12B', 19.05, 12.07],
+    ['16A', 25.4, 15.88], ['16B', 25.4, 15.88], ['20A', 31.75, 19.05], ['20B', 31.75, 19.05], ['24A', 38.1, 22.23], ['24B', 38.1, 25.4], ['28A', 44.45, 25.4], ['28B', 44.45, 27.94],
+    ['32A', 50.8, 28.58], ['32B', 50.8, 29.21], ['40A', 63.5, 39.68], ['40B', 63.5, 39.37], ['48A', 76.2, 47.63], ['48B', 76.2, 48.26]];
+  function spSprocket(W) {
+    const p = hn('h_sp'), d1 = hn('h_sd1'), z = Math.round(hn('h_sz')), form = hv('h_sform') || 'tri';
+    if (!(p > 0 && d1 > 0 && d1 < p)) throw new Error('节距、滚子直径必须大于 0，且滚子直径小于节距');
+    if (!(z >= 6 && z <= 300)) throw new Error('链轮齿数应在 6～300');
+    const d = p / Math.sin(PI / z), rp = d / 2, O = [0, rp];
+    const daMax = d + 1.25 * p - d1, daMin = d + (1 - 1.6 / z) * p - d1, df = d - d1;
+    let da = hn('h_sda'); const daAuto = !(da > 0); if (daAuto) da = form === 'tri' ? p * (0.54 + 1 / Math.tan(PI / z)) : daMax;   // 三圆弧一直线齿形 da = p(0.54 + cot180°/z)
+    if (da > daMax + 1e-6 || da < daMin - 1e-6) W.push('齿顶圆 ' + f3(da) + ' 超出 GB/T 1243 范围 ' + f3(daMin) + '～' + f3(daMax));
+    let half = [], info = {};
+    if (form === 'tri') {
+      // 三圆弧一直线齿槽（GB/T 1243 附录 / 机械设计手册）：r1、r2、r3 三段圆弧 + 直线 bc
+      const a2 = (55 - 60 / z) * D2R, b = (18 - 56 / z) * D2R, g2 = (17 - 64 / z) * D2R;
+      const r1 = 0.5025 * d1 + 0.05, r2 = 1.3025 * d1 + 0.05, r3 = d1 * (1.3 * Math.cos(g2) + 0.8 * Math.cos(b) - 1.3025) - 0.05, bc = d1 * (1.3 * Math.sin(g2) - 0.8 * Math.sin(b));
+      const uA = [Math.sin(a2), -Math.cos(a2)], A = vAdd(O, vMul(uA, r1)), O2 = vSub(O, vMul(uA, 0.8 * d1));
+      half = arcPts(O, r1, -PI / 2, -PI / 2 + a2, 40);
+      const tA = angOf(O2, A); half = half.concat(arcPts(O2, r2, tA, tA + b, 40).slice(1));
+      const uB = [Math.cos(tA + b), Math.sin(tA + b)], B = vAdd(O2, vMul(uB, r2)), t = [-uB[1], uB[0]], c = vAdd(B, vMul(t, bc));
+      HX.linspace(0, 1, 12).slice(1).forEach(s => half.push(vAdd(B, vMul(t, bc * s))));
+      const O3 = vAdd(c, vMul(uB, r3)), tc = angOf(O3, c);
+      half = half.concat(arcPts(O3, r3, tc, tc - PI / 2, 80).slice(1));
+      // 自检：O3 应在两滚子中心连线上、距 O 为 1.3d1（手册 W、V 坐标）
+      const O1 = pol(rp, 2 * PI / z), Oexp = vAdd(O, vMul(vUnit(vSub(O1, O)), 1.3 * d1));
+      if (vLen(vSub(O3, Oexp)) > 1e-6) W.push('三圆弧齿形自检未通过（O3 偏差 ' + f3(vLen(vSub(O3, Oexp))) + '），请反馈');
+      info = { r1, r2, r3, bc, a2: a2 / D2R, b: b / D2R, g2: g2 / D2R, H: Math.sqrt(r3 * r3 - (1.3 * d1 - p / 2) ** 2) };
+    } else {
+      // ISO 606 / GB/T 1243 齿槽：齿沟圆弧 ri（圆心在滚子中心）+ 与之内切的齿侧圆弧 re，齿沟角 α
+      let ri, re, al;
+      if (form === 'min') { ri = 0.505 * d1; re = 0.12 * d1 * (z + 2); al = 140 - 90 / z; }
+      else if (form === 'max') { ri = 0.505 * d1 + 0.069 * Math.cbrt(d1); re = 0.008 * d1 * (z * z + 180); al = 120 - 90 / z; }
+      else { ri = hn('h_sri'); re = hn('h_sre'); al = hn('h_sal'); if (!(ri > d1 / 2 && re > ri && al > 60 && al < 180)) throw new Error('自定义齿槽：ri 要大于滚子半径，re 要大于 ri，齿沟角在 60°～180°'); }
+      const a2 = al / 2 * D2R, uA = [Math.sin(a2), -Math.cos(a2)], E = vSub(O, vMul(uA, re - ri));
+      half = arcPts(O, ri, -PI / 2, -PI / 2 + a2, 40);
+      const tA = angOf(E, vAdd(O, vMul(uA, ri))); half = half.concat(arcPts(E, re, tA, tA + PI / 3, 300).slice(1));
+      info = { ri, re, al, riMin: 0.505 * d1, riMax: 0.505 * d1 + 0.069 * Math.cbrt(d1), reMin: 0.008 * d1 * (z * z + 180), reMax: 0.12 * d1 * (z + 2), alMin: 120 - 90 / z, alMax: 140 - 90 / z };
+    }
+    const cb = clipBisector(half, z), cr = clipR(cb.pts, da / 2, false);
+    let pts = cr.pts, sharp = cb.sharp && !cr.hit;
+    if (sharp) W.push('齿顶在齿顶圆 ' + f3(da) + ' 以内已变尖（尖点直径 ' + f3(2 * vLen(pts[pts.length - 1])) + '）' + (daAuto ? '，齿顶按尖点' : '，请减小齿顶圆'));
+    const MR = z % 2 === 0 ? d + d1 : d * Math.cos(PI / 2 / z) + d1;
+    return { sub: 'sprocket', z, isInt: false, sym: true, half: pts, rTip: sharp ? vLen(pts[pts.length - 1]) : da / 2, refs: [[da / 2, '齿顶圆 da'], [rp, '分度圆 d'], [df / 2, '齿根圆 df']],
+      sp: { p, d1, d, da, daMax, daMin, df, form, MR, haMax: (0.625 + 0.8 / z) * p - 0.5 * d1, haMin: 0.5 * (p - d1), info, sharp, bottom: 2 * vLen(pts[0]) } };
+  }
+  // ---------- 摆线齿轮（钟表：轮驱动小齿轮；公式按 H. Sparks 推导，与 BS 978-2 表值一致）----------
+  function cycloFa(np, R) {   // 轮齿理论齿顶系数（式 9、11、17）
+    let th = PI / np; for (let i = 0; i < 200; i++) { const be = Math.atan(Math.sin(th) / (1 + 2 * R - Math.cos(th))), t2 = PI / np + 2 * R * be; if (Math.abs(t2 - th) < 1e-15) { th = t2; break; } th = t2; }
+    const k = 1 + 2 * R; return { fa: np / 4 * (1 - k + Math.sqrt(1 + k * k - 2 * k * Math.cos(th))), th };
+  }
+  const PIN_PROF = { round: [[0.525, 0.525], [0.625, 0.625]], medium: [[0.670, 0.700], [0.805, 0.840]], high: [[0.855, 1.050], [1.050, 1.250]] };
+  function spCyclo(W) {
+    const part = hv('h_cpart') || 'wheel', m = hn('h_cm'), z = Math.round(hn('h_cz')), z2 = Math.round(hn('h_cz2'));
+    if (!(m > 0 && m <= 10)) throw new Error('模数应在 0～10');
+    if (!(z >= 5 && z2 >= 5)) throw new Error('齿数、配对齿数都至少 5');
+    const nw = part === 'wheel' ? z : z2, np = part === 'wheel' ? z2 : z;
+    if (nw <= np) W.push('轮的齿数一般大于小齿轮（钟表轮系：轮驱动小齿轮）');
+    const R = nw / np, F = cycloFa(np, R), fPrac = (hn('h_cpf') || 0.95) * F.fa, rp = m * z / 2, crr = Math.max(0, hn('h_crr'));
+    let half, cy = { fa: F.fa, th: F.th, fPrac, R, nw, np };
+    if (part === 'wheel') {
+      const ah = m * fPrac, ar = 1.4 * F.fa * m, rr = rp - PI * m / 2, psP = PI / (2 * z);    // 齿厚 = 槽宽 = 半个齿距
+      const P = pol(rp, psP), T = pol(rp + ah, PI / z), C = circ2(P, T, ar, pol(rp, 0));
+      if (!C) throw new Error('齿顶圆弧半径太小，连不上齿顶');
+      half = spRoot(rr, psP, rp, crr, W).concat(arcBetween(C, ar, P, T, 80).slice(1));
+      Object.assign(cy, { ah, ar, rr, ra: rp + ah, dedendum: PI * m / 2 });
+    } else {
+      const wFix = hn('h_cw'), w = wFix > 0 ? wFix * m : (z <= 10 ? 1.05 : 1.25) * m;
+      let prof = hv('h_cprof') || 'auto'; if (prof === 'auto') prof = z <= 7 ? 'high' : z <= 9 ? 'medium' : 'round';
+      const [fa, fr] = PIN_PROF[prof][z <= 10 ? 0 : 1], ded = (fPrac + 0.4) * m, rr = rp - ded, psP = PI / z - w / 2 / rp;
+      if (!(psP > 0)) throw new Error('小齿轮齿厚太大，没有齿槽');
+      const P = pol(rp, psP), T = pol(rp + fa * m, PI / z), C = circ2(P, T, fr * m, pol(rp, 0));
+      if (!C) throw new Error('小齿轮齿顶圆弧连不上（齿顶太高或圆弧太小）');
+      half = spRoot(rr, psP, rp, crr, W).concat(arcBetween(C, fr * m, P, T, 80).slice(1));
+      Object.assign(cy, { w, prof, fa_p: fa, fr, ah: fa * m, ar: fr * m, rr, ra: rp + fa * m, dedendum: ded });
+    }
+    return { sub: 'cyclo', z, isInt: false, sym: true, half, rTip: cy.ra, refs: [[cy.ra, '齿顶圆'], [rp, '分度圆'], [cy.rr, '齿根圆']], cy: Object.assign(cy, { part, m, rp }) };
+  }
+  // 槽底：齿根圆弧 + 径向齿侧（可加角部圆角 rc），返回右半边（自对称线到分度圆处齿侧点）
+  function spRoot(rr, psP, rp, rc, W) {
+    const pts = [];
+    if (rc > 1e-9) {
+      // 圆角与齿根圆（凸向槽内）和径向直线相切：圆心距中心 rr + rc，距径向线 rc
+      const ps = Math.asin(rc / (rr + rc)), psC = psP - ps;   // 圆心极角（在径向线内侧）
+      if (!(psC > 0)) { W.push('槽底圆角太大，已按 0 处理'); return spRoot(rr, psP, rp, 0, W); }
+      const C = pol(rr + rc, psC), Tr = pol(rr, psC), Tl = vAdd(C, vMul(pol(1, psP + PI / 2), rc));
+      HX.linspace(0, psC, 30).forEach(t => pts.push(pol(rr, t)));
+      const t0 = angOf(C, Tr), t1 = angOf(C, Tl); let d = t1 - t0; while (d > PI) d -= 2 * PI; while (d < -PI) d += 2 * PI;
+      arcPts(C, rc, t0, t0 + d, 30).slice(1).forEach(q => pts.push(q));
+      const r0 = vLen(Tl); HX.linspace(r0, rp, 30).slice(1).forEach(r => pts.push(pol(r, psP)));
+    } else {
+      HX.linspace(0, psP, 40).forEach(t => pts.push(pol(rr, t)));
+      HX.linspace(rr, rp, 40).slice(1).forEach(r => pts.push(pol(r, psP)));
+    }
+    return pts;
+  }
+  // ---------- 三角花键 DIN 5481（60° 系列，直线齿侧）----------
+  // [规格, d1, d2, z, 内花键小径（拉刀预孔，OKEY 拉刀样本）]
+  const SERR = [['7x8', 7, 8, 28, 7.25], ['8x10', 8, 10, 28, 8.44], ['10x12', 10, 12, 30, 10.47], ['12x14', 12, 14, 31, 12.37], ['15x17', 15, 17, 32, 15.27], ['17x20', 17, 20, 33, 17.67], ['21x24', 21, 24, 34, 21.2],
+    ['26x30', 26, 30, 35, 26.9], ['30x34', 30, 34, 36, 30.93], ['36x40', 36, 40, 37, 36.43], ['40x44', 40, 44, 38, 40.4], ['45x50', 45, 50, 39, 45.44], ['50x55', 50, 55, 40, 50.44], ['55x60', 55, 60, 42, 55.45]];
+  function spSerr(W) {
+    const side = hv('h_eside') || 'ext', isInt = side === 'int', sz = hv('h_esize');
+    const pre = SERR.find(q => q[0] === sz);
+    let z = Math.round(hn('h_ez')), D = hn('h_eD'), ge = hn('h_eang');
+    if (pre) { z = pre[3]; D = hn('h_eDo') > 0 ? hn('h_eDo') : (pre[1] + pre[2]) / 2; ge = 60; }
+    if (!(z >= 6 && D > 0 && ge > 20 && ge < 120)) throw new Error('齿数、分度圆直径、槽角请核对（槽角 20°～120°）');
+    const r = D / 2, m = D / z, ds = hn('h_eds'), e = PI * m / 2 + ds, b0 = e / 2 / r;   // 分度圆处槽宽（弧长）
+    const gi = ge - 360 / z, g2 = (isInt ? gi : ge) / 2 * D2R;
+    if (!(g2 > 0)) throw new Error('内花键槽角 = 外花键槽角 − 360°/z 必须大于 0');
+    const P = pol(r, b0), dir = isInt ? [Math.sin(g2), -Math.cos(g2)] : [Math.sin(g2), Math.cos(g2)];
+    const yApex = isInt ? P[1] + P[0] / Math.tan(g2) : P[1] - P[0] / Math.tan(g2);
+    const nomTip = pre ? (isInt ? pre[4] : pre[2]) : 0; let dTip = hn('h_eda'); if (!(dTip > 0)) dTip = nomTip || (isInt ? 2 * (yApex - (yApex - r) * 2.2) : 2 * (r + (r - yApex) * 1.2));
+    const rc = Math.max(0, hn('h_erf'));
+    // 槽底：顶点圆角（圆心在对称线上）
+    const sg = isInt ? -1 : 1, Cy = yApex + sg * rc / Math.sin(g2), C = [0, Cy];
+    const nOut = isInt ? [Math.cos(g2), Math.sin(g2)] : [Math.cos(g2), -Math.sin(g2)];   // 齿侧外法向（指向齿）
+    const Tg = vAdd(C, vMul(nOut, rc));
+    let half = [];
+    if (rc > 1e-9) { const t0 = isInt ? PI / 2 : -PI / 2, t1 = angOf(C, Tg); half = arcPts(C, rc, t0, t1, 40); }
+    else half = [[0, yApex]];
+    // 内花键：齿侧直线只到离中心最近的点为止（再往后半径又变大）
+    const L = (() => { let lo = 0, hi = isInt ? Math.max(0, -(Tg[0] * dir[0] + Tg[1] * dir[1])) : 10 * D; for (let i = 0; i < 100; i++) { const mid = (lo + hi) / 2, q = vAdd(Tg, vMul(dir, mid)); if (isInt ? vLen(q) > dTip / 2 : vLen(q) < dTip / 2) lo = mid; else hi = mid; } return lo; })();
+    HX.linspace(0, L, Math.max(20, Math.ceil(L / 0.02))).slice(1).forEach(s => half.push(vAdd(Tg, vMul(dir, s))));
+    const cb = clipBisector(half, z); if (cb.sharp) W.push('齿顶在所填齿顶圆以内已变尖');
+    half = cb.pts;
+    // 量棒：圆心在对称线上
+    const dpIn = hn('h_edp'), dpRec = 2 * P[0] / Math.cos(g2), dp = dpIn > 0 ? dpIn : dpRec;
+    const yc = isInt ? yApex - dp / 2 / Math.sin(g2) : yApex + dp / 2 / Math.sin(g2);
+    const cosz = z % 2 ? Math.cos(PI / 2 / z) : 1, M = isInt ? 2 * yc * cosz - dp : 2 * yc * cosz + dp;
+    const yCon = yc + (isInt ? 1 : -1) * dp / 2 * Math.sin(g2), rCon = Math.hypot(dp / 2 * Math.cos(g2), yCon);
+    const rTg = vLen(Tg), pinOK = isInt ? rCon < rTg && rCon > dTip / 2 : rCon > rTg && rCon < dTip / 2;
+    if (!pinOK) W.push('量棒 ' + f3(dp) + ' 与齿侧的接触点不在齿侧直线段上，请换量棒');
+    const rootD = 2 * (isInt ? Cy + rc : Cy - rc);
+    return { sub: 'serr', z, isInt, sym: true, half, rTip: dTip / 2, refs: [[dTip / 2, isInt ? '小径（齿顶）' : '大径（齿顶）'], [r, '分度圆 D'], [rootD / 2, isInt ? '大径（槽底）' : '小径（槽底）']],
+      se: { size: pre ? pre[0].replace('x', ' × ') : '自定义', side, z, D, m, ge, gi, e, ds, dTip, nomTip, rc, apexD: 2 * yApex, rootD, dp, dpRec, M, pinOK } };
+  }
+  // ---------- 棘轮（机械设计手册：da = mz，h = 0.75m，齿顶厚 a = m，齿槽夹角 60°/55°）----------
+  function spRatchet(W) {
+    const m = hn('h_km'), z = Math.round(hn('h_kz')); if (!(m > 0 && z >= 6)) throw new Error('模数要大于 0，齿数至少 6');
+    let da = hn('h_kda'); if (!(da > 0)) da = m * z;
+    const h = hn('h_kh') > 0 ? hn('h_kh') : 0.75 * m, a = hn('h_ka') > 0 ? hn('h_ka') : m, th = (parseFloat(hv('h_kth')) || 60) * D2R, rc = Math.max(0, hn('h_kr'));
+    const R = da / 2, Rf = R - h, ph = 2 * PI / z;
+    if (!(Rf > 0)) throw new Error('齿高太大');
+    const psA = -ph / 2, psB = psA + 2 * Math.asin(a / (2 * R)), psC = ph / 2, B = pol(R, psB), Cc = pol(R, psC);
+    if (!(psB < psC)) throw new Error('齿顶厚太大（大于齿距）');
+    // 根圆上找 E：∠BEC = θ，取靠近 C 的解（工作面 CE 较陡）
+    const angE = ps => { const E = pol(Rf, ps), u = vUnit(vSub(B, E)), v = vUnit(vSub(Cc, E)); return Math.acos(Math.max(-1, Math.min(1, u[0] * v[0] + u[1] * v[1]))); };
+    let lo = (psB + psC) / 2, hi = psC + ph / 2, fl = angE(lo) - th;
+    // 从中间往 C 方向找第一个越过 θ 的位置
+    let found = null; const N = 400; let prev = lo, fp = fl;
+    for (let i = 1; i <= N; i++) { const ps = lo + (hi - lo) * i / N, f = angE(ps) - th; if ((fp - 0) * (f - 0) <= 0 && isFinite(f)) { let a0 = prev, b0 = ps; for (let k = 0; k < 80; k++) { const c0 = (a0 + b0) / 2, fc = angE(c0) - th; if ((angE(a0) - th) * fc <= 0) b0 = c0; else a0 = c0; } found = (a0 + b0) / 2; break; } prev = ps; fp = f; }
+    if (found === null) throw new Error('按齿高、齿顶厚和齿槽夹角作不出齿形（∠BEC 达不到 θ），请核对');
+    const E = pol(Rf, found);
+    // 槽底圆角：与 EB、EC 两直线相切
+    const uB = vUnit(vSub(B, E)), uC = vUnit(vSub(Cc, E)), bis = vUnit(vAdd(uB, uC)), dC = rc / Math.sin(th / 2), Cf = vAdd(E, vMul(bis, dC));
+    const TB = vAdd(E, vMul(uB, rc / Math.tan(th / 2))), TC = vAdd(E, vMul(uC, rc / Math.tan(th / 2)));
+    if (rc > 0 && (rc / Math.tan(th / 2) >= vLen(vSub(B, E)) || rc / Math.tan(th / 2) >= vLen(vSub(Cc, E)))) throw new Error('槽底圆角太大');
+    let full = [];
+    HX.linspace(0, 1, 60).forEach(s => full.push(vAdd(B, vMul(vSub(TB, B), s))));
+    if (rc > 0) { let t0 = angOf(Cf, TB), t1 = angOf(Cf, TC), d = t1 - t0; while (d > PI) d -= 2 * PI; while (d < -PI) d += 2 * PI; arcPts(Cf, rc, t0, t0 + d, 40).slice(1).forEach(q => full.push(q)); }
+    HX.linspace(0, 1, 60).slice(1).forEach(s => full.push(vAdd(TC, vMul(vSub(Cc, TC), s))));
+    // 工作面 CE 与径向线 OC 的夹角（正值：齿面向齿根方向后倾，棘爪受力时被拉向齿根）
+    const radC = vUnit(Cc), work = vUnit(vSub(E, Cc)), wAng = (psiOf(E) > psC ? 1 : -1) * Math.acos(Math.max(-1, Math.min(1, -(radC[0] * work[0] + radC[1] * work[1])))) / D2R;   // 正：E 在 C 外侧，工作面后倾，棘爪受力被拉向齿根
+        let wf = { C: Cc, E, B };
+    if (hv('h_kdir') === 'L') { full = full.slice().reverse().map(q => [-q[0], q[1]]); wf = { C: [-Cc[0], Cc[1]], E: [-E[0], E[1]], B: [-B[0], B[1]] }; }
+    return { sub: 'ratchet', z, isInt: false, sym: false, full, rTip: R, refs: [[R, '齿顶圆 da'], [Rf, '齿根圆 df']],
+      rk: { m, da, df: 2 * Rf, h, a, th: th / D2R, rc, t: PI * m, wAng, pitch: PI * da / z, wf } };
+  }
+  // ---------- 通用：刀具廓形、结果、图、3D ----------
+  function hxSpur(W) {
+    const sub = type, G = sub === 'sprocket' ? spSprocket(W) : sub === 'cyclo' ? spCyclo(W) : sub === 'serr' ? spSerr(W) : spRatchet(W);
+    let tool = hv('h_gtool') || 'finger'; const ext = Math.max(0, hn('h_ext'));
+    if (!G.sym && tool === 'finger') tool = 'disc';   // 棘轮只有盘铣刀、插刀
+    if (!G.full) G.full = mirrorFull(G.half);
+    // 外延：两端沿切向
+    // 廓形止于轮齿对称线（齿顶变尖或圆弧齿顶的中点）时，沿切向外延会伸到齿顶另一半上方，改为沿齿槽方向（径向）外延；止于齿顶圆时沿切向外延
+    const L = G.full, sg0 = G.isInt ? -1 : 1, onBis = q => G.sym && Math.abs(Math.abs(psiOf(q)) - PI / G.z) < 1e-9;
+    const vExt = q => ext > 0 ? HX.linspace(0, ext, Math.max(3, Math.ceil(ext / 0.05))).slice(1).map(t => [q[0], q[1] + sg0 * t]) : [];
+    const eR = onBis(L[L.length - 1]) ? vExt(L[L.length - 1]) : extendEnd(L, ext), eL = onBis(L[0]) ? vExt(L[0]).reverse() : extendEnd(L.slice().reverse(), ext).reverse();
+    G.fullE = eL.concat(L, eR); G.effE = eL.map(() => false).concat(L.map(() => true), eR.map(() => false));
+    const ys = L.map(q => q[1]); G.yDeep = G.isInt ? Math.max(...ys) : Math.min(...ys);
+    const Hof = y => G.isInt ? G.yDeep - y : y - G.yDeep;
+    const g = hn('h_gg') * D2R, aS = hn('h_ga') * D2R, sec = tool === 'slot' ? hv('h_gsec') || 'face' : 'face';
+    if (tool === 'slot' && !(aS > 0 && g + aS < PI / 2)) throw new Error('插刀后角应大于 0，前角 + 后角应小于 90°');
+    const kH = sec === 'rake' ? 1 / Math.cos(g) : sec === 'normal' ? Math.cos(aS + g) / Math.cos(g) : 1;
+    let curves, y0 = G.yDeep, resid = 0;
+    if (tool === 'finger') {
+      // 指型铣刀：刀尖平面在对称线处的槽底；槽底两侧比中心深时（外齿齿根圆弧）会留下残留
+      const H = G.half.concat(eR); y0 = H[0][1];
+      resid = Math.abs(y0 - G.yDeep);
+      // 自对称线向外逐点取 (半径, 高度)：低于刀尖平面的点（齿根圆弧两角）去掉，穿过刀尖平面处插入交点；
+      // 指型铣刀是回转体，每个高度只能有一个半径：高度回落的点（齿槽中部外凸）无法做出，提示并去掉
+      // 齿顶圆弧越过最高点后高度回落（如小齿轮圆头齿顶）：越过的部分属于相邻齿槽，本齿槽的刀到最高点为止，再竖直外延
+      const hOf = q => G.isInt ? y0 - q[1] : q[1] - y0, mono = [[0, 0]]; let hMax = 0, back = false;
+      for (let i = 1; i < H.length; i++) {
+        const a = H[i - 1], b = H[i], ha = hOf(a), hb = hOf(b);
+        if (ha < 0 && hb >= 0) { const t = -ha / (hb - ha); mono.push([Math.abs(a[0] + (b[0] - a[0]) * t), 0]); }
+        if (hb < 0) continue;
+        if (hb < hMax - 1e-9) { back = true; break; }
+        if (hb <= hMax + 1e-12) continue;
+        mono.push([Math.abs(b[0]), hb]); hMax = hb;
+      }
+      if (back && ext > 0) mono.push([mono[mono.length - 1][0], hMax + ext]);
+      curves = [{ nm: '指型铣刀', pts: mono, eff: [], sym: true }];
+      const hEff = Math.max(...G.half.map(hOf)); curves[0].eff = mono.map(q => q[1] <= hEff + 1e-9);
+      if (resid > 1e-4) W.push('指型铣刀端面是平的：槽底中心按刀尖，槽底两角比中心深 ' + f3(resid) + '（齿根圆弧），这部分会留下残留；要完全铣到请用盘形铣刀或插刀');
+    } else if (G.sub === 'ratchet' && tool === 'disc') {
+      // 棘轮工作面后倾（齿倾角），切向刀轴的盘铣刀会切掉齿尖；按手册做法用单角铣刀：刀轴垂直于工作面，
+      // 端面刃铣工作面，锥面刃（刃形角 = θ）铣齿背，刀尖圆弧 = 槽底圆角。廓形坐标：横向 u 沿刀轴（自工作面起），纵向 H 沿工作面（自刀尖起）
+      const { C, E, B } = G.rk.wf, w = vUnit(vSub(C, E)); let n = [-w[1], w[0]]; if ((B[0] - C[0]) * n[0] + (B[1] - C[1]) * n[1] < 0) n = vMul(n, -1);
+      const S = G.fullE.map(q => { const d = vSub(q, E); return [d[0] * n[0] + d[1] * n[1], d[0] * w[0] + d[1] * w[1]]; }), sMin = Math.min(...S.map(q => q[1]));
+      const P = S.map(q => [Math.abs(q[0]) < 1e-9 ? 0 : q[0], q[1] - sMin]);
+      G.ang = { E, w, n, sMin };
+      curves = [{ nm: '单角铣刀', pts: P, eff: G.effE }];
+    } else {
+      const P = G.fullE.map(q => [q[0], Hof(q[1]) * (tool === 'slot' ? kH : 1)]);
+      curves = [{ nm: tool === 'disc' ? '盘形铣刀' : '成形插刀', pts: P, eff: G.effE }];
+    }
+    const Dc = hn('h_gD');
+    const hTot = Math.max(...curves[0].pts.map(q => q[1]));
+    if (tool === 'disc' && !(Dc / 2 > hTot + 5)) W.push('盘形铣刀外径 ' + f2(Dc) + ' 太小，至少要大于 ' + f2(2 * (hTot + 5)));
+    if (tool === 'disc' && G.isInt) W.push('内花键用盘形铣刀需要内齿铣头，刀盘要放得进内孔（小径 ' + f2(2 * G.rTip) + '）');
+    return Object.assign(G, { kind: 'spur', tool, ext, curves, y0, resid, kH, sec, Dc, bw: Math.max(1, hn('h_gb')), b: 0, hTot });
+  }
+  function spurResults(R, rows, hl) {
+    const f4 = v => v.toFixed(4), D = 180 / PI;
+    if (R.sub === 'sprocket') {
+      const s = R.sp, i = s.info;
+      rows.push(['节距 p / 滚子 d1', f3(s.p) + ' / ' + f3(s.d1)], ['齿数 z', String(R.z)], ['分度圆 d', f4(s.d)], ['齿顶圆 da（所用）', f3(s.da)], ['da 范围', f3(s.daMin) + ' ～ ' + f3(s.daMax)],
+        ['齿根圆 df = d − d1', f3(s.df)], ['齿沟底直径', f3(s.bottom)], ['分度圆弦齿高 ha 范围', f3(s.haMin) + ' ～ ' + f3(s.haMax)], ['量柱测量距 MR（dR = d1）', f4(s.MR) + (R.z % 2 ? '（奇数齿）' : '（偶数齿）')]);
+      if (s.form === 'tri') rows.push(['齿形', '三圆弧一直线'], ['齿沟圆弧 r1', f3(i.r1)], ['齿沟半角 α/2', i.a2.toFixed(3) + '°'], ['工作段圆弧 r2', f3(i.r2)], ['工作段中心角 β', i.b.toFixed(3) + '°'], ['直线段 bc', f3(i.bc)], ['齿顶圆弧 r3', f3(i.r3)], ['齿形半角 γ/2', i.g2.toFixed(3) + '°']);
+      else rows.push(['齿形', s.form === 'min' ? '最小齿槽（GB/T 1243 / ISO 606）' : s.form === 'max' ? '最大齿槽（GB/T 1243 / ISO 606）' : '自定义'], ['齿沟圆弧 ri', f3(i.ri) + '（' + f3(i.riMin) + '～' + f3(i.riMax) + '）'], ['齿侧圆弧 re', f3(i.re) + '（' + f3(i.reMax) + '～' + f3(i.reMin) + '）'], ['齿沟角 α', i.al.toFixed(3) + '°（' + i.alMin.toFixed(2) + '～' + i.alMax.toFixed(2) + '）']);
+    } else if (R.sub === 'cyclo') {
+      const c = R.cy;
+      rows.push(['零件', c.part === 'wheel' ? '轮（主动）' : '小齿轮（从动）'], ['模数 m', f3(c.m)], ['齿数 / 配对齿数', R.z + ' / ' + (c.part === 'wheel' ? c.np : c.nw)], ['分度圆', f4(2 * c.rp)], ['齿顶圆', f4(2 * c.ra)], ['齿根圆', f4(2 * c.rr)],
+        ['轮齿理论齿顶系数 fa', f4(c.fa)], ['轮齿实用齿顶系数', f4(c.fPrac)]);
+      if (c.part === 'wheel') rows.push(['齿顶高', f4(c.ah)], ['齿顶圆弧半径 ar = 1.4fa·m', f4(c.ar)], ['齿根高 πm/2', f4(c.dedendum)], ['分度圆齿厚 = 槽宽', f4(PI * c.m / 2)]);
+      else rows.push(['齿顶形状', { round: '圆头', medium: '中尖拱', high: '高尖拱' }[c.prof]], ['分度圆齿厚', f4(c.w)], ['齿顶高 fa·m', f4(c.ah)], ['齿顶圆弧半径', f4(c.ar)], ['齿根高 (fa实用+0.4)m', f4(c.dedendum)]);
+    } else if (R.sub === 'serr') {
+      const s = R.se;
+      rows.push(['规格', s.size + '（' + (s.side === 'int' ? '内花键' : '外花键') + '）'], ['齿数 z', String(s.z)], ['分度圆 D', f4(s.D)], ['模数 m = D/z', f4(s.m)], ['外花键槽角', s.ge.toFixed(3) + '°'], ['内花键槽角 = 槽角 − 360°/z', s.gi.toFixed(3) + '°'],
+        ['分度圆槽宽（弧）', f4(s.e)], ['齿顶圆（所用）', f3(s.dTip)], ['齿侧交点直径', f3(s.apexD)], ['槽底直径（含圆角）', f3(s.rootD)], ['槽底圆角', f3(s.rc)], ['推荐量棒（在分度圆接触）', f3(s.dpRec)]);
+      rows.push([s.side === 'int' ? '棒间距 M（dp ' + f3(s.dp) + '）' : '跨棒距 M（dp ' + f3(s.dp) + '）', s.pinOK ? f4(s.M) : '量棒接触点不在齿侧直线段，无效']);
+    } else {
+      const k = R.rk;
+      rows.push(['模数 m', f3(k.m)], ['齿数 z', String(R.z)], ['齿顶圆 da', f3(k.da)], ['齿根圆 df', f3(k.df)], ['齿高 h', f3(k.h)], ['齿距（齿顶圆）', f3(k.pitch)], ['齿顶厚 a', f3(k.a)], ['齿槽夹角 θ', k.th.toFixed(0) + '°'], ['槽底圆角 r', f3(k.rc)],
+        ['齿倾角（工作面与径向线夹角）', k.wAng.toFixed(2) + '°' + (k.wAng >= 10 ? '' : '（小于常用摩擦角 6°～10°，棘爪可能滑出）')]);
+    }
+    const C = R.curves[0], P = C.pts, hTot = Math.max(...P.map(q => q[1])), eff = P.filter((q, i) => C.eff[i]), hEff = Math.max(...eff.map(q => q[1]));
+    hl.push(['刃部有效高度', f3(hEff)], ['刀具总高（含外延）', f3(hTot)]);
+    if (R.tool === 'finger') {
+      const Rmax = Math.max(...P.map(q => q[0])), flat = 2 * Math.max(...P.filter(q => q[1] < 1e-9).map(q => q[0]));
+      hl.push(['刀尖平底直径', flat > 1e-3 ? f3(flat) : '0（圆弧）'], ['刀具最大直径（含外延）', f3(2 * Rmax)]);
+      if (R.resid > 1e-4) hl.push(['槽底两角残留', f3(R.resid)]);
+      const fl = fluteSuggest('finger', 2 * Rmax, 0, flat); if (fl) { hl.push(['建议刃数', fl.txt]); R.note = fl.note; }
+    } else {
+      const xs = eff.map(q => q[0]); hl.push(['刀齿宽（有效段最大）', f3(Math.max(...xs) - Math.min(...xs))]);
+      if (R.ang) hl.push(['刀具形式', '单角铣刀，刃形角 ' + R.rk.th.toFixed(0) + '°，刀尖圆弧 R' + f3(R.rk.rc)], ['刀轴方向', '垂直于工作面（与径向线成 ' + R.rk.wAng.toFixed(2) + '°）']);
+      if (R.tool === 'disc') { hl.push(['盘铣刀外径', f2(R.Dc)]); const fl = fluteSuggest('disc', R.Dc, hTot); if (fl) { hl.push(['建议刃数', fl.txt]); R.note = fl.note; } }
+      else hl.push(['坐标表截面', R.sec === 'rake' ? '前刀面内（齿高 ÷ cosγ）' : R.sec === 'normal' ? '后刀面法向截面（齿高 × cos(α+γ)/cosγ）' : '端面投影']);
+    }
+  }
+  // 一个齿距的轮廓（齿槽 + 齿顶），按 k 个齿距转动
+  function spurPitch(R) {
+    const F = R.full, z = R.z, ph = 2 * PI / z, a0 = psiOf(F[F.length - 1]), a1 = psiOf(F[0]) + ph, rT = R.isInt ? vLen(F[F.length - 1]) : vLen(F[F.length - 1]);
+    const land = a1 > a0 + 1e-9 ? HX.linspace(a0, a1, Math.max(2, Math.ceil((a1 - a0) * rT / 0.1))).slice(1, -1).map(t => pol(rT, t)) : [];
+    return F.concat(land);
+  }
+  const rotPsi = (q, t) => { const r = vLen(q), p = psiOf(q) + t; return pol(r, p); };
+  function spurDrawPart(R, svg) {
+    const ph = 2 * PI / R.z, one = spurPitch(R), out = [];
+    for (const k of [-1, 0, 1]) one.forEach(q => out.push(rotPsi(q, k * ph)));
+    const rs = R.refs.map(q => q[0]), rMin = Math.min(...rs), rMax = Math.max(...rs), span = 1.6 * ph;
+    const lay = [];
+    if (!R.isInt) { const rB = rMin - 0.25 * (rMax - rMin) - 0.5; lay.push({ pts: [pol(rB, -span)].concat(out, [pol(rB, span)]), close: true, fill: 'var(--metal)' }); }
+    else { const rB = rMax + 0.25 * (rMax - rMin) + 0.5; lay.push({ pts: [pol(rB, -span)].concat(out, [pol(rB, span)]), close: true, fill: 'var(--metal)' }); }
+    // 刀具（含外延）放在中间齿槽
+    lay.push({ pts: R.fullE, stroke: 'var(--tin)', w: 2 });
+    for (const [r, nm] of R.refs) lay.push({ pts: HX.linspace(-span, span, 60).map(t => pol(r, t)), stroke: nm.includes('分度') ? 'var(--muted)' : 'var(--steel)', dash: nm.includes('分度') ? '6 3 1.5 3' : '4 3', w: 0.8 });
+    if (R.sub === 'serr' && R.se.pinOK || R.sub === 'sprocket') {
+      const cy = R.sub === 'serr' ? (R.se.M + (R.isInt ? R.se.dp : -R.se.dp)) / 2 / (R.z % 2 ? Math.cos(PI / 2 / R.z) : 1) : R.sp.d / 2, rr = (R.sub === 'serr' ? R.se.dp : R.sp.d1) / 2;
+      lay.push({ pts: HX.linspace(0, 2 * PI, 72).map(t => [rr * Math.cos(t), cy + rr * Math.sin(t)]), stroke: 'var(--accent)', w: 1, dash: '3 2' });
+    }
+    // 标注放在图形右侧（各参考圆右端），按字高错开不重叠；右侧留出文字宽度
+    let x0 = Infinity, x1 = -Infinity, y0 = Infinity, y1 = -Infinity; for (const L of lay) for (const q of L.pts) { x0 = Math.min(x0, q[0]); x1 = Math.max(x1, q[0]); y0 = Math.min(y0, q[1]); y1 = Math.max(y1, q[1]); }
+    const txt = R.refs.map(([r, nm]) => nm + ' ' + f2(2 * r)), nCh = Math.max(...txt.map(t => [...t].reduce((a, c) => a + (c.charCodeAt(0) > 255 ? 1 : 0.58), 0)));
+    const c = nCh * 0.8 * 0.036 * 1.12, Wt = (x1 - x0) / Math.max(0.3, 1 - c), fs = Math.max(Wt, y1 - y0) * 1.12 * 0.036 * 0.8, xT = x1 + fs * 0.4;
+    const ord = R.refs.map(([r], i) => [pol(r, span)[1], i]).sort((a, b) => a[0] - b[0]), ex = []; let yPrev = -Infinity;
+    for (const [y, i] of ord) { const yy = Math.max(y - fs * 0.35, yPrev + fs * 1.15); yPrev = yy; ex.push([xT, yy, txt[i], undefined, 0.8]); }
+    lay.push({ pts: [[xT + Wt - (x1 - x0), y0]], stroke: 'none' });
+    hxSvg(svg, lay, ex, 0.06);
+    const nm = { sprocket: '链轮', cyclo: '摆线齿轮', serr: '三角花键', ratchet: '棘轮' }[R.sub];
+    $('sc1').textContent = nm + ' · 端面'; svg.previousElementSibling.firstChild.textContent = nm + '齿槽 ';
+    $('lgT').innerHTML = '<span><i style="background:var(--ink)"></i>零件端面</span><span><i style="background:var(--tin)"></i>刀具廓形（含外延）</span>' + (R.sub === 'serr' || R.sub === 'sprocket' ? '<span><i style="background:var(--accent)"></i>' + (R.sub === 'sprocket' ? '量柱（= 滚子）' : '量棒') + '</span>' : '');
+  }
+  function spurBuild3D(R, steel, hi, capC, tin, sh) {
+    // 3D 只用于显示：每个齿距抽稀，整圈不超过约 4000 点（手机上也流畅）；计算与坐标表仍用全部点
+    const ph = 2 * PI / R.z, all = spurPitch(R), stp = Math.max(1, Math.ceil(all.length * R.z / 4000)), one = all.filter((q, i) => i % stp === 0 || i === all.length - 1), ring = [];
+    for (let k = 0; k < R.z; k++) one.forEach(q => ring.push(rotPsi(q, k * ph)));
+    const n = ring.length, Lz = R.bw, z0 = -Lz / 2, z1 = Lz / 2, rs = R.refs.map(q => q[0]), rMin = Math.min(...rs), rMax = Math.max(...rs);
+    const rIn = R.isInt ? rMax + Math.max(0.15 * rMax, 2) : Math.max(0.35 * rMin, rMin - 8 * (rMax - rMin));
+    const pos = [], col = [], idx = [];
+    const quad = (a, b, c, d, cl) => { const o = pos.length / 3; for (const v of [a, b, c, d]) { pos.push(...v); col.push(...cl); } idx.push(o, o + 1, o + 2, o, o + 2, o + 3); };
+    for (let i = 0; i < n; i++) {
+      const A = ring[i], B = ring[(i + 1) % n], cl = Math.abs(vLen(A) - R.rTip) < 1e-6 * R.rTip + 1e-6 ? steel : hi;
+      quad([A[0], A[1], z0], [B[0], B[1], z0], [B[0], B[1], z1], [A[0], A[1], z1], cl);
+      const a = vMul(vUnit(A), rIn), b = vMul(vUnit(B), rIn);
+      quad([A[0], A[1], z1], [B[0], B[1], z1], [b[0], b[1], z1], [a[0], a[1], z1], capC);
+      quad([A[0], A[1], z0], [a[0], a[1], z0], [b[0], b[1], z0], [B[0], B[1], z0], capC);
+      quad([a[0], a[1], z0], [a[0], a[1], z1], [b[0], b[1], z1], [b[0], b[1], z0], steel);
+    }
+    meshes.push(mkMesh(new Float32Array(pos), new Uint32Array(idx), new Float32Array(col)));
+    scene.nGear = meshes.length; scene.hxR = R.rTip; scene.hxL = Lz; scene.hxZ0 = z0;
+    const C = R.curves[0].pts, hTot = R.hTot, sg = R.isInt ? -1 : 1;
+    if (R.tool === 'finger') {
+      const gen = C.map(q => [q[1], q[0]]), Rm = gen[gen.length - 1][1];
+      const prof = [[0, 0]].concat(gen, [[hTot * 2.5, Rm], [hTot * 2.5, 0]]), Cn = [0, R.y0, 0], a = [0, sg, 0];
+      R.tp = { a, C: Cn }; hxRevolve(prof, Cn, a, tin, sh, gen.length + 1);
+    } else if (R.tool === 'disc') {
+      const Rd = Math.max(R.Dc / 2, hTot + 5), gen = C.map(q => [q[0], Rd - q[1]]), rIn2 = Math.min(...gen.map(q => q[1])) * 0.55;
+      const prof = gen.concat([[gen[gen.length - 1][0], rIn2], [gen[0][0], rIn2], gen[0]]);
+      if (R.ang) {   // 单角铣刀：刀轴沿工作面法向
+        const g = R.ang, c2 = vAdd(g.E, vMul(g.w, g.sMin + Rd)), Cn = [c2[0], c2[1], 0], a = [g.n[0], g.n[1], 0];
+        R.tp = { a, C: Cn }; hxRevolve(prof, Cn, a, tin, sh, gen.length);
+      } else {
+        const Cn = [0, R.yDeep + sg * Rd, 0];
+        R.tp = { a: [1, 0, 0], C: Cn }; hxRevolve(prof, Cn, [1, 0, 0], tin, sh, gen.length);
+      }
+    } else {
+      const sec = C.map(q => [q[0], R.yDeep + sg * q[1] / R.kH]), tp = R.yDeep + sg * hTot * 2.2 / R.kH;
+      hxPrism(sec.concat([[sec[sec.length - 1][0], tp], [sec[0][0], tp]]), z1 - Math.min(Lz * 0.3, 3 * hTot), z1 + 2 * hTot, tin, sh, 'xy');
+      R.tp = { a: [0, 0, 1], C: [0, 0, 0] };
+    }
+    scene.nCut0 = scene.nGear;
+  }
+
   // ---------- 结果 ----------
   // 三针测量：简化式（齿条近似，不计导程角）和按螺旋面精确计算（含导程角）两种读数
   let wireCache = { k: '', r: null };
@@ -4466,12 +4944,14 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       note = '开粗刀只按蜗轮各截面齿槽的公共部分（再减余量）计算，精加工仍用滚刀或飞刀。' + (h.mode === 'arc' ? '沿喉部圆弧径向插补：刀具沿齿宽 w（从中间平面量起）走刀时，刀尖到蜗轮轴线的距离按上式变化，同时蜗轮按走刀螺旋线转动。' : '') + '3D 只表示开粗齿槽的螺旋走向，未画出喉部圆弧。';
     } else if (R.kind === 'rack') {
       rackResults(R, rows, hl); note = R.note || '';
+    } else if (R.kind === 'spur') {
+      spurResults(R, rows, hl); note = R.note || '';
     } else if (R.kind === 'rotor') {
       if (R.info.tri) rows.push(['螺杆', R.info.which === 'power' ? '主动螺杆' : '从动螺杆'], ['节圆直径', f3(2 * R.info.r)], ['中心距', f3(R.info.A)]);
       rows.push(['齿顶圆（外径）', f3(2 * R.ra)], ['齿根圆', f3(2 * R.rf)], ['导程', f3(R.lead)], ['齿顶处导程角', (Math.atan(Math.abs(R.p) / R.ra) * 180 / PI).toFixed(3) + '°']);
       if (R.starts) rows.push(['头数', String(R.starts)]);
     }
-    if (R.kind === 'rack') { /* 刀具结果已在 rackResults 里 */ }
+    if (R.kind === 'rack' || R.kind === 'spur') { /* 刀具结果已在 rackResults / spurResults 里 */ }
     else if (R.kind === 'form') {
       rows.push(['刀具形式', R.ftype === 'round' ? '圆体成形车刀' : '棱体成形车刀'], ['前角 / 后角', (R.g * 180 / PI).toFixed(1) + '° / ' + (R.al * 180 / PI).toFixed(1) + '°'],
         ['零件最小 / 最大直径', f3(2 * R.rmin) + ' / ' + f3(2 * R.rmax)], ['零件廓形深度', f3(R.rmax - R.rmin)]);
@@ -4526,6 +5006,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   function hxDrawPart() {
     const R = hxR, svg = $('svgT');
     if (R.kind === 'rack') return rackDrawPart(R, svg);
+    if (R.kind === 'spur') return spurDrawPart(R, svg);
     if (R.kind === 'form') {
       const P = R.part.map(q => [q[0], q[1]]), z0 = Math.min(...P.map(q => q[0])), z1 = Math.max(...P.map(q => q[0]));
       const body = P.concat([[z1, 0], [z0, 0]]);
@@ -4572,6 +5053,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   function hxToolCurves() {
     const R = hxR, T = R.tp;
     if (R.kind === 'rack') return rackToolCurves(R);
+    if (R.kind === 'spur') return R.curves;
     if (R.kind === 'form') return [{ nm: R.ftype === 'round' ? '圆体刀' : '棱体刀', pts: R.res.map(q => [q.z, q.P]), eff: R.res.map(() => true) }];
     if (R.tool === 'disc') return [{ nm: '盘形铣刀', pts: T.prof.map(q => [q[1], q[0]]), eff: T.prof.map(q => q[2]) }];
     if (R.tool === 'finger') {
@@ -4610,8 +5092,8 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       off = Math.max(...P.map(q => q[0])) + w * (cs.length > 1 ? 0.6 : 0.35);
     });
     hxSvg(svg, lay, tx, 0.12);
-    $('hC').firstChild.textContent = R.kind === 'rack' ? (R.tool === 'finger' ? '指型铣刀轴向廓形 ' : R.tool === 'disc' ? '盘形铣刀刀齿廓形 ' : '成形插刀刀齿廓形 ') : R.kind === 'form' ? '成形车刀廓形 ' : R.tool === 'turn' ? '车刀刃口廓形 ' : R.tool === 'disc' ? '盘形铣刀刀齿廓形 ' : '指型铣刀轴向廓形 ';
-    $('capC').textContent = R.kind === 'rack' ? '齿条刀具：刀尖在下，' + (R.tool === 'finger' ? '横向为刀具半径（左右对称显示）' : '横向为' + (R.tool === 'disc' ? '沿刀轴' : '') + '刀齿宽度') + '，纵向为高度 H（自刀尖起算），虚线以上为外延段。廓形 = 齿条法向截面齿槽' + (R.q > 0 ? '（两侧已收窄留磨量）' : '') + (R.tool === 'slot' && R.kH !== 1 ? '，齿高已按所选截面换算' : '') + '。' : R.kind === 'form' ? (R.ftype === 'round' ? '圆体刀：纵向为刀具半径减少量（R0 − Rx），横向为轴向位置。' : '棱体刀：纵向为垂直于后刀面量的廓形深度，横向为轴向位置。')
+    $('hC').firstChild.textContent = (R.kind === 'rack' || R.kind === 'spur') ? (R.tool === 'finger' ? '指型铣刀轴向廓形 ' : R.tool === 'disc' ? '盘形铣刀刀齿廓形 ' : '成形插刀刀齿廓形 ') : R.kind === 'form' ? '成形车刀廓形 ' : R.tool === 'turn' ? '车刀刃口廓形 ' : R.tool === 'disc' ? '盘形铣刀刀齿廓形 ' : '指型铣刀轴向廓形 ';
+    $('capC').textContent = R.kind === 'spur' ? (R.ang ? '单角铣刀刀齿：横向 u 沿刀轴（垂直于棘轮工作面，u = 0 为端面刃），纵向 H 沿工作面、自刀尖起算；锥面刃铣齿背。直齿件沿轴向走刀；虚线以上为外延段。' : R.tool === 'finger' ? '指型铣刀：刀尖在下，横向为刀具半径（左右对称显示），纵向为高度 H（自刀尖起算）。' : (R.tool === 'disc' ? '盘形铣刀刀齿' : '成形插刀') + '：刀尖在下，横向为刀齿宽度，纵向为高度 H（自刀尖起算）。') + '直齿件沿轴向走刀，廓形 = 端面齿槽形状；虚线以上为外延段。' : R.kind === 'rack' ? '齿条刀具：刀尖在下，' + (R.tool === 'finger' ? '横向为刀具半径（左右对称显示）' : '横向为' + (R.tool === 'disc' ? '沿刀轴' : '') + '刀齿宽度') + '，纵向为高度 H（自刀尖起算），虚线以上为外延段。廓形 = 齿条法向截面齿槽' + (R.q > 0 ? '（两侧已收窄留磨量）' : '') + (R.tool === 'slot' && R.kH !== 1 ? '，齿高已按所选截面换算' : '') + '。' : R.kind === 'form' ? (R.ftype === 'round' ? '圆体刀：纵向为刀具半径减少量（R0 − Rx），横向为轴向位置。' : '棱体刀：纵向为垂直于后刀面量的廓形深度，横向为轴向位置。')
       : R.tool === 'disc' ? '盘形铣刀刀齿：刀尖在下，横向为沿刀轴的宽度，虚线以上为外延段。非对称型线时左右两侧不同。'
       : R.tool === 'finger' ? '指型铣刀：刀尖在下，横向为刀具半径（左右对称显示）。' : (R.tp.k !== 1 ? '车刀后刀面法向截面（磨刀用）。' : '车刀前刀面内的刃口形状。') + '刀尖在下，虚线以上为外延段。';
   }
@@ -4648,6 +5130,15 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
       for (const [y, nm] of [[R.yT, '齿顶线 '], [R.hf, '分度线 '], [0, '齿根线 ']]) {
         out.push('0', 'LINE', '8', 'PART_REF', '10', (a0 + dx - 0.08 * (a1 - a0)).toFixed(5), '20', y.toFixed(5), '30', '0', '11', (a1 + dx + 0.08 * (a1 - a0)).toFixed(5), '21', y.toFixed(5), '31', '0');
         labs.push({ layer: 'PART_REF', x: a1 + dx + 0.08 * (a1 - a0), y, t: nm + 'H = ' + y.toFixed(3) }); }
+    } else if (hxR.kind === 'spur') {
+      // 零件端面（中间齿槽及左右各一个齿距）画在刀具右侧，不与刀具轮廓相交
+      let tw = 0; for (const c of hxToolCurves()) { const xs = c.pts.map(q => q[0]); tw += (c.sym ? 2 * Math.max(...xs.map(Math.abs)) : Math.max(...xs) - Math.min(...xs)) * 1.5 + 5; }
+      const R = hxR, ph = 2 * PI / R.z, one = spurPitch(R), ol = []; for (const k of [-1, 0, 1]) one.forEach(q => ol.push(rotPsi(q, k * ph)));
+      const xs = ol.map(q => q[0]), a0 = Math.min(...xs), a1 = Math.max(...xs), dx = tw - a0 + 0.2 * (a1 - a0) + 2;
+      const pl = (pts, layer) => { out.push('0', 'POLYLINE', '8', layer, '66', '1', '70', '0', '10', '0', '20', '0', '30', '0'); for (const q of pts) out.push('0', 'VERTEX', '8', layer, '10', (q[0] + dx).toFixed(5), '20', q[1].toFixed(5), '30', '0'); out.push('0', 'SEQEND', '8', layer); };
+      pl(ol, 'SPACE_TRANSVERSE');
+      labs.push({ layer: 'SPACE_TRANSVERSE', x: a1 + dx, y: Math.max(...ol.map(q => q[1])), row: -1.2, t: '零件端面（零件坐标，原点在零件中心，整体右移 ' + dx.toFixed(3) + '）' });
+      for (const [r, nm] of R.refs) { pl(HX.linspace(-1.7 * ph, 1.7 * ph, 60).map(t => pol(r, t)), 'PART_REF'); const q = pol(r, 1.7 * ph); labs.push({ layer: 'PART_REF', x: q[0] + dx, y: q[1], t: nm + ' %%c' + (2 * r).toFixed(3) }); }
     } else if (hxR.kind !== 'form') {
       // 零件轴向齿形画在刀具右侧（整体右移），不与刀具轮廓重叠，方便单独选取刀具轮廓
       let tw = 0; for (const c of hxToolCurves()) { const xs = c.pts.map(q => q[0]); tw += (c.sym ? 2 * Math.max(...xs.map(Math.abs)) : Math.max(...xs) - Math.min(...xs)) * 1.5 + 5; }
@@ -4675,6 +5166,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     if (!gl) return;
     freeMeshes(); const R = hxR; scene.hx = true; scene.slot = false; scene.disc = false;
     const steel = col3('--g3d', '#B3BAC2'), hi = col3('--hl3d', '#7599BD'), capC = col3('--cap3d', '#CCD1D9'), tin = col3('--cut3d', '#DBA829'), sh = col3('--shank3d', '#8C949E');
+    if (R.kind === 'spur') { spurBuild3D(R, steel, hi, capC, tin, sh); hxView('tool'); requestDraw(); return; }
     if (R.kind === 'rack') { rackBuild3D(R, steel, hi, capC, tin, sh); hxView('tool'); if (R.tool === 'disc') { cam.tgt = [0, R.yT * 1.5, 0]; cam.dist = Math.max(R.yT * 6, R.Dc * 0.9); } requestDraw(); return; }
     if (R.kind === 'form') {
       // 回转体零件 + 棱体刀
@@ -4790,7 +5282,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     if (anim.playing) anim.hph = ((anim.hph || 0) + dt / 9) % 1;
     const u = anim.hph || 0, sweep = 0.5 - 0.5 * Math.cos(2 * PI * u);
     if (R.kind === 'form') { const feed = (1 - sweep) * (R.rmax - R.rmin) * 0.9; return { gM: M4.mul(M4.tr(0, 0, 0), M4.rz(anim.spin * 0.6)), cM: M4.tr(0, feed, 0) }; }
-    const rk = R.kind === 'rack', z = (sweep - 0.5) * (rk ? R.bw / Math.cos(R.b) : R.L) * 0.6, phi = rk ? 0 : z / R.p;   // 齿条：沿齿向直线进给
+    const rk = R.kind === 'rack' || R.kind === 'spur', z = (sweep - 0.5) * (rk ? R.bw / Math.cos(R.b) : R.L) * 0.6, phi = rk ? 0 : z / R.p;   // 齿条：沿齿向直线进给
     const gM = M4.mul(M4.tr(0, 0, z), M4.rz(phi));
     let cM = M4.tr(0, 0, 0);
     if (R.tool === 'disc' || R.tool === 'finger') {
