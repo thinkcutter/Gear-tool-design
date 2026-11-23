@@ -1018,21 +1018,38 @@ var G = (function () {
         for (const k of b) { const [x1, y1, x2, y2] = seg[k], dx = x2 - x1, dy = y2 - y1, L2 = dx * dx + dy * dy;
           let t = L2 ? ((h - x1) * dx + (r - y1) * dy) / L2 : 0; t = t < 0 ? 0 : t > 1 ? 1 : t; const ex2 = h - x1 - t * dx, ey2 = r - y1 - t * dy, d = ex2 * ex2 + ey2 * ey2; if (d < best) best = d; } }
       best = Math.min(Math.sqrt(best), cs); return inside ? -best : best; };
+    // 点随工件转过 θ 时到刀盘表面的有向距离 f(θ)（负 = 被切到）。f 只取决于点在刀盘子午面里的坐标 (|H|, ρ)，
+    // 而 sd 在子午面里是 1-Lipschitz 的，所以 |df/dθ| ≤ 点在子午面内的速度 m(θ) = √((v·a)² + (v·e_ρ)²)（不含绕刀盘轴线的周向分量）。
+    // 刀盘顺着齿槽方向装，点经过刀齿时主要沿刀盘周向运动，m 比空间速度 L = √(r² + p²) 小得多，用它作界剪枝快得多。
+    // m 本身随 θ 变化：|dm/dθ| ≤ |dv/dθ| + 2|v|·|de_φ/dθ| ≤ r + 2L²/ρ，由区间两端的 m 得到区间内 m 的上界 —— 仍是严格的界，不会漏掉窄的低谷。
+    let lastM = 0, lastR = 0;
     const g = (q, th) => { const c = Math.cos(th), s = Math.sin(th), X = q[0] * c - q[1] * s, Y = q[0] * s + q[1] * c - Ac, Z = p * th;
-      const H = X * a[0] + Y * a[1] + Z * a[2], rho = Math.sqrt(Math.max(0, X * X + Y * Y + Z * Z - H * H)); return sd(Math.abs(H), rho); };
-    // 点随工件转过 θ 时到刀盘表面的有向距离的最小值（负 = 被切到）。点的空间速度 |dQ/dθ| = √(r² + p²) 是该函数的
-    // Lipschitz 常数，按“区间下界 = 端点值 − L·Δ/2”剪枝细分（分支定界），不会漏掉窄的低谷；最终步长对应点位移 < 0.1 µm。
+      const H = X * a[0] + Y * a[1] + Z * a[2], rho = Math.sqrt(Math.max(0, X * X + Y * Y + Z * Z - H * H));
+      const vx = -(Y + Ac), vy = X, vz = p, vH = vx * a[0] + vy * a[1] + vz * a[2];
+      const vR = rho > 1e-12 ? (vx * (X - H * a[0]) + vy * (Y - H * a[1]) + vz * (Z - H * a[2])) / rho : 0;
+      lastM = Math.sqrt(vH * vH + vR * vR); lastR = rho;
+      return sd(Math.abs(H), rho); };
     const gmin = q => {
-      const L = Math.hypot(hyp(q[0], q[1]), p); let D = Math.min(2 * thm, 0.05 * m / L), n0 = Math.ceil(2 * thm / D); D = 2 * thm / n0;
-      let ts = [], fs = []; for (let k = 0; k <= n0; k++) { const t = -thm + D * k; ts.push(t); fs.push(g(q, t)); }
+      const r = hyp(q[0], q[1]), L = Math.hypot(r, p); let D = Math.min(2 * thm, 0.05 * m / L), n0 = Math.ceil(2 * thm / D); D = 2 * thm / n0;
+      const mk = (t0, f0, m0, r0, t1, f1, m1, r1) => {   // 区间 [t0, t1]：x[8] = 区间内子午面速度的上界
+        const w = t1 - t0, rl = Math.min(r0, r1) - L * w / 2;
+        const M = rl > 1e-9 ? Math.min(L, (m0 + m1) / 2 + (r + 2 * L * L / rl) * w / 2) : L;
+        return [t0, f0, t1, f1, m0, m1, r0, r1, M]; };
+      const ts = [], fs = [], ms = [], rs = [];
+      for (let k = 0; k <= n0; k++) { const t = -thm + D * k; ts.push(t); fs.push(g(q, t)); ms.push(lastM); rs.push(lastR); }
       let U = Math.min(...fs), iv = [];
-      for (let k = 0; k < n0; k++) iv.push([ts[k], fs[k], ts[k + 1], fs[k + 1]]);
+      for (let k = 0; k < n0; k++) iv.push(mk(ts[k], fs[k], ms[k], rs[k], ts[k + 1], fs[k + 1], ms[k + 1], rs[k + 1]));
+      const lb = x => Math.min(x[1], x[3]) - x[8] * (x[2] - x[0]) / 2;
       for (let lev = 0; lev < 12 && iv.length; lev++) {
-        const lb = x => Math.min(x[1], x[3]) - L * (x[2] - x[0]) / 2;
-        iv = iv.filter(x => lb(x) < U - 1e-9); if (!iv.length || L * (iv[0][2] - iv[0][0]) < 1e-4) break;
+        if (U <= -cs) break;   // sd 最小就是 −cs（深入刀盘内部时被截断），已经到底，不必再找
+        iv = iv.filter(x => lb(x) < U - 1e-9); if (!iv.length) break;
+        // 剩下的区间内 f 的变化都已小于 1e-4（0.1 µm），精度够了
+        let mx = 0; for (const x of iv) mx = Math.max(mx, x[8] * (x[2] - x[0])); if (mx < 1e-4) break;
         if (iv.length > 400) { iv.sort((x, y) => lb(x) - lb(y)); iv = iv.slice(0, 400); }
         const nx = [];
-        for (const x of iv) { let t0 = x[0], f0 = x[1]; for (let k = 1; k <= 4; k++) { const t1 = x[0] + (x[2] - x[0]) * k / 4, f1 = k === 4 ? x[3] : g(q, t1); if (f1 < U) U = f1; nx.push([t0, f0, t1, f1]); t0 = t1; f0 = f1; } }
+        for (const x of iv) { let t0 = x[0], f0 = x[1], m0 = x[4], r0 = x[6];
+          for (let k = 1; k <= 4; k++) { const t1 = x[0] + (x[2] - x[0]) * k / 4; let f1, m1, r1; if (k === 4) { f1 = x[3]; m1 = x[5]; r1 = x[7]; } else { f1 = g(q, t1); m1 = lastM; r1 = lastR; }
+            if (f1 < U) U = f1; nx.push(mk(t0, f0, m0, r0, t1, f1, m1, r1)); t0 = t1; f0 = f1; m0 = m1; r0 = r1; } }
         iv = nx;
       }
       return U; };
@@ -1044,10 +1061,18 @@ var G = (function () {
       const u = pts[Math.min(n - 1, i + 1)], v = pts[Math.max(0, i - 1)]; let tx = u[0] - v[0], ty = u[1] - v[1]; const L = hyp(tx, ty) || 1; tx /= L; ty /= L;
       const nx = isExt ? ty : -ty, ny = isExt ? -tx : tx;          // 指向材料一侧
       const F = t => gmin([q[0] + nx * t, q[1] + ny * t]);
-      let t0, t1;
-      if (f0 < 0) { t0 = 0; t1 = 0.002 * m; while (t1 < 2 * m && F(t1) < 0) { t0 = t1; t1 *= 2; } }       // 切多了：往材料里找边界
-      else { t1 = 0; t0 = -0.002 * m; while (t0 > -2 * m && F(t0) >= 0) { t1 = t0; t0 *= 2; } if (F(t0) >= 0) continue; }   // 切不到：往槽里找边界
-      for (let it = 0; it < 40; it++) { const tm = (t0 + t1) / 2; if (F(tm) < 0) t0 = tm; else t1 = tm; }
+      // 边界：F(t) 由负变正处。先倍增步长夹住，再用 Illinois 割线法求根（F 近似是有向距离，割线法几步就收敛；
+      // 旧做法二分 40 次，每次都要算一遍 gmin，是整个核查最费时的地方）
+      let t0, t1, f0a, f1a;
+      if (f0 < 0) { t0 = 0; f0a = f0; t1 = 0.002 * m; f1a = F(t1); while (t1 < 2 * m && f1a < 0) { t0 = t1; f0a = f1a; t1 *= 2; f1a = F(t1); } }   // 切多了：往材料里找边界
+      else { t1 = 0; f1a = f0; t0 = -0.002 * m; f0a = F(t0); while (t0 > -2 * m && f0a >= 0) { t1 = t0; f1a = f0a; t0 *= 2; f0a = F(t0); } if (f0a >= 0) continue; }   // 切不到：往槽里找边界
+      let side = 0;
+      for (let it = 0; it < 60 && t1 - t0 > 1e-7; it++) {
+        let tm = f1a > f0a ? t1 - f1a * (t1 - t0) / (f1a - f0a) : (t0 + t1) / 2;
+        if (!(tm > t0 && tm < t1)) tm = (t0 + t1) / 2;
+        const fm = F(tm); if (Math.abs(fm) < 1e-7) { t0 = t1 = tm; break; }
+        if (fm < 0) { t0 = tm; f0a = fm; if (side === -1) f1a /= 2; side = -1; } else { t1 = tm; f1a = fm; if (side === 1) f0a /= 2; side = 1; }
+      }
       const t = (t0 + t1) / 2, rq = hyp(q[0], q[1]); out[i] = [q[0] + nx * t, q[1] + ny * t]; if (Math.abs(t) > dAll) { dAll = Math.abs(t); rAll = rq; }
       if (t > dmax) { dmax = t; rAt = rq; }
       if (t > dFl && (isExt ? rq > rMid : rq < rMid)) { dFl = t; rFl = rq; }   // 齿面（刀齿顶处理影响不到）多切
