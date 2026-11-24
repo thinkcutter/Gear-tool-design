@@ -3987,7 +3987,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     h_rho: '齿根圆角系数，圆角 = 系数 × mx。GB/T 10087 规定 ρf = 0.3m，必要时允许 0.2m～0.4m，也允许做成单圆弧。ZA 在轴向截面、ZN 在法平面、ZI 在端面内做圆角；ZK 为生成刀具的刀尖圆角。',
     h_sx: '分度圆上的轴向齿厚 sx，可写公差，例如 6.28 -0.05 -0.10（取中值）。0 表示 πmx/2（无侧隙）。法向齿厚 sn ≈ sx·cosγ。',
     h_da: '齿顶圆直径，0 = d1 + 2ha*·mx。可写公差。', h_df: '齿根圆直径，0 = d1 − 2(ha*+c*)·mx。可写公差。',
-    h_D0: 'ZK 蜗杆按这个直径的双锥面刀具包络生成（刀具按分度圆导程角安装、刀尖到达齿根）。0 = 自动取 max(60, 12mx)。',
+    h_D0: 'ZK 蜗杆按这个直径的双锥面刀具（砂轮或盘铣刀）包络生成（刀具按分度圆导程角安装、刀尖到达齿根）。DIN 3975 的 K 型齿面就是这样定义的，轴向齿形随刀具直径变化（刀具越小越接近 ZN 型）；导程角大、模数大时差别可达 0.1 mm 以上（结果里给出“刀具直径减小 10% 时齿形变化”）。标准没有规定刀具直径，请按实际砂轮或铣刀直径填写；0 = 暂按 max(60, 12mx)（程序取值）并提示。',
     h_L: '只影响 3D 显示。',
     h_rs: '压缩机阴阳转子、双螺杆泵等型线多为厂家自有，按客户提供的端面坐标导入；三螺杆泵按标准摆线型线自动生成。',
     h_txt: '每行一对 x, y（逗号、空格、分号分隔都可以），单位 mm，原点在转子中心。可以是整圈封闭型线，也可以只给一个齿槽（从一个齿顶到下一个齿顶）。也可以用下面“读取文件”打开 CSV / TXT / DXF。',
@@ -4255,6 +4255,14 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     if (o.ha < 0 || o.ha > 3 || o.cc < 0 || o.cc > 3 || o.rho < 0 || o.rho > 1.5) throw new Error('齿顶高、顶隙或圆角系数超出合理范围（0～3、0～3、0～1.5），请核对');
     if (o.mx > 100 || o.d1 > 5000) throw new Error('模数或分度圆直径过大，请核对');
     const w = HX.worm(o); W.push(...w.W.filter(s => !/^ZK 生成刀具/.test(s)));
+    if (w.zkTool) {
+      // ZK 齿形随生成刀具（砂轮 / 铣刀）直径变化（DIN 3975 K 型齿面由锥面刀具包络而成）：刀具直径减小 10% 再算一次，给出工作齿高内的齿形变化（法向）
+      const w2 = HX.worm(Object.assign({}, o, { D0: 0.9 * w.zkTool.D0 })), fz = (A, R) => { for (let i = 1; i < A.length; i++) { const a = A[i - 1], b = A[i]; if (a[1] <= 0 || b[1] <= 0) continue; if ((a[0] - R) * (b[0] - R) <= 0 && a[0] !== b[0]) return a[1] + (b[1] - a[1]) * (R - a[0]) / (b[0] - a[0]); } return NaN; };
+      const R0 = w.r1 - o.ha * o.mx, R1 = w.ra - 0.02 * o.mx; let dv = 0;
+      for (let k = 0; k <= 100; k++) { const R = R0 + (R1 - R0) * k / 100, d = fz(w2.A, R) - fz(w.A, R); if (isFinite(d)) dv = Math.max(dv, Math.abs(d) * Math.cos(o.al * PI / 180)); }
+      w.zkSens = { D: 0.9 * w.zkTool.D0, dev: dv };
+      if (!(o.D0 > 0)) W.push('ZK 生成刀具直径没填，暂按 Ø' + f2(w.zkTool.D0) + '（max(60, 12m)，程序取值，不是标准值）计算。ZK 齿形随砂轮或铣刀直径变化，本例刀具直径减小 10% 时齿形就变化 ' + (dv * 1000).toFixed(1) + ' µm，请按实际砂轮或铣刀直径填写');
+    }
     // 整圈端面型线（3D）：每头一个齿槽，齿槽之间接齿顶圆
     const Aeff = w.A.filter(q => q[0] <= w.ra + 1e-9);
     const G = HX.axialToEnd(Aeff, w.p);
@@ -5287,6 +5295,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
         ['轴向齿距 px', f3(w.px)], ['分度圆轴向齿厚 sx', f3(w.sx)], ['法向齿厚 sn≈sx·cosγ1', f3(w.sx * Math.cos(w.g1))], ['分度圆轴向槽宽（核算）', f3(w.exChk)]);
       if (isFinite(R.rb)) rows.push(['基圆直径 db', f3(2 * R.rb)]);
       if (w.zkTool) rows.push(['ZK 生成刀具', `Ø${f2(w.zkTool.D0)}，分度处刀厚 ${f3(w.zkTool.w)}`]);
+      if (w.zkSens) rows.push(['刀具直径减小 10%（Ø' + f2(w.zkSens.D) + '）时齿形变化', (w.zkSens.dev * 1000).toFixed(1) + ' µm（工作齿高内，法向）']);
       wireRows(rows, w, w.px, 2 * w.r1, '分度圆');
     } else if (R.kind === 'thread') {
       const w = R.w, o = R.o, D = 180 / PI;
