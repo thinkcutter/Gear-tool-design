@@ -1760,7 +1760,7 @@ const SK = (() => {
       'FLANK_SECTION：后刀面在刀尖端面（w = 0）的横截面廓形，按各侧导程做螺旋面即为后刀面', 'EDGE_NEW：新刀刃口在端面的投影（锥形 / 阶梯前刀面上的刃口不在同一端面内）'];
     for (const t of lines) { E.push('0', 'TEXT', '8', 'NOTES', '10', f(x), '20', f(y), '40', f(th), '1', dxfStr(t), '7', 'CN'); y -= th * 1.7; }
     const lay = [['0', 7], ['FLANK_SECTION', 1], ['EDGE_NEW', 4], ['CENTER', 8], ['NOTES', 2]];
-    const Hd = ['0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '0', 'ENDSEC', '0', 'SECTION', '2', 'TABLES',
+    const Hd = ['0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '9', '$INSUNITS', '70', '4', '0', 'ENDSEC', '0', 'SECTION', '2', 'TABLES',
       '0', 'TABLE', '2', 'LTYPE', '70', '1', '0', 'LTYPE', '2', 'CONTINUOUS', '70', '0', '3', 'Solid line', '72', '65', '73', '0', '40', '0.0', '0', 'ENDTAB',
       '0', 'TABLE', '2', 'STYLE', '70', '1', '0', 'STYLE', '2', 'CN', '70', '0', '40', '0.0', '41', '1.0', '50', '0.0', '71', '0', '42', String(th), '3', 'gbenor.shx', '4', 'gbcbig.shx', '0', 'ENDTAB',
       '0', 'TABLE', '2', 'LAYER', '70', String(lay.length)];
