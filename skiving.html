@@ -205,7 +205,8 @@ textarea.meas{width:100%;box-sizing:border-box;min-height:96px;background:var(--
     <p><b>轴交角</b>：内齿 Σ = β<sub>刀</sub> − β<sub>工件</sub>，外齿 Σ = −(β<sub>刀</sub> + β<sub>工件</sub>)，右旋为正。直齿工件要用斜齿刀，斜齿工件可以用直齿刀。</p>
     <p><b>后刀面与重磨</b>：顶刃后角 α<sub>e</sub> 使刀尖圆随重磨变小，中心距随之调整以保持齿根圆。分别求出新刀、重磨一半、重磨到底三个状态的精确刃口，每侧后刀面取一个螺旋面（一个导程 + 一条横截面廓形，便于磨削）：导程用新、旧刃口拟合，廓形取三个状态里最窄的包络，保证整个寿命内都不过切。再用“新位置的前刀面 ∩ 这个后刀面”得到实际刃口，切削模拟给出重磨后的齿形误差。</p>
     <p><b>校核方法</b>：把刃口加密到 0.01 mm，按运动每 0.02° 取一个位置，映射到工件端面，按半径分格求到左右齿面的最小法向距离：0 = 切到理论齿面，正值 = 没切到（多留），负值 = 过切。另外用平行轴的极限情况（Σ = 0，相当于插齿刀）检验过求解程序：刃口与理论渐开线的偏差在 1 µm 以内，齿厚与无侧隙啮合公式一致到 0.03 µm。</p>
-    <p><b>独立核验（2026-11-24）</b>：另写了一个不调用本页代码的正向切削模拟（按上面的运动定义：刀具绕中心距方向转 Σ、再绕切向转 κ，偏置 e，工件按传动比转动，按螺旋映射到端面，与独立写出的理论渐开线比较），用本页给出的实际刃口复算 5 种配置（内齿 / 外齿、直齿 / 斜齿、阶梯 / 锥形 / 平前刀面、有倾角和偏置）× 新刀、半磨、磨到底 3 个状态，齿形误差与本页逐格一致；重磨后调整：按本页给出的中心距、轴交角和相位复算一致，并在中心距 ±4 µm、轴交角 ±2′ 网格上复算，本页给出的点就是最小；实测刀具预测：刃口两侧加厚 5 µm，独立偏移后复算，平均误差一致（−4.79 / −4.56 µm）；切入长度复算 12.681 mm，本页 12.677 mm。</p>
+    <p><b>独立核验（2026-11-24）</b>：另写了一个不调用本页代码的正向切削模拟（按上面的运动定义：刀具绕中心距方向转 Σ、再绕切向转 κ，偏置 e，工件按传动比转动，按螺旋映射到端面，与独立写出的理论渐开线比较），用本页给出的实际刃口复算 5 种配置（内齿 / 外齿、直齿 / 斜齿、阶梯 / 锥形 / 平前刀面、有倾角和偏置）× 新刀、半磨、磨到底 3 个状态，齿形误差与本页逐格一致；重磨后调整：按本页给出的中心距、轴交角和相位复算一致，并在中心距 ±4 µm、轴交角 ±2′ 网格上复算，本页给出的点就是最小；实测刀具预测：刃口两侧加厚 5 µm，独立偏移后复算，平均误差一致（−4.79 / −4.56 µm）；切入长度复算 12.681 mm，本页 12.677 mm；刀体允许最大半径复算 22.20348 / 本页 22.20354 mm；刀齿后部间隙复算一致（新刀 5.04 µm）；实际前角逐点一致，实际后角按后刀面曲面法向复算，发现并修正了一处坐标系混用（旧版左侧后角最多偏 0.8°），修正后中段一致到 0.01°；后刀面导程与“变位沿轴向线性变化的斜齿插齿刀”理论式 1/p = (tanβc ∓ tanαe·tanαt)/rc 一致到 0.2%（例：466.6 / 465.9 mm，385.6 / 386.5 mm）。</p>
+    <p><b>磨刀数据与校核的关系</b>：设计后刀面是逐点表格（三个刃磨状态的最窄包络），校核按它进行；“磨刀数据”给的是每侧拟合的一个渐开螺旋面（展成磨削能磨出的面）。两者有差别，阶梯前刀面时可能明显（默认算例右侧：设计 2.8 µm，按磨刀数据磨出 12.4 µm，主要在工件齿顶附近）。磨刀数据表里给出按它磨出后的齿形误差，差别大时提示该侧需按坐标成形磨削。</p>
     <p><b>切削速度</b>：取刃口上最接近工件分度圆的点，按刀具、工件转速求两者速度差。与文献常用式 v<sub>c</sub> ≈ π·d<sub>0</sub>·n<sub>0</sub>·sinΣ / cosβ<sub>2</sub>（CIRP Annals 2021、Mechanism and Machine Theory 2022 综述）一致（例：52.56 / 52.59 m/min，67.79 / 67.81 m/min）。这是节点处的速度，切削轨迹末端的速度更高。</p>
     <p><b>倾角、偏置</b>：刀具姿态 = 先绕中心距方向转 Σ，再绕切削点切向转 κ；刀具中心沿切向偏 e。刃口仍按包络求，中心距按“实际刀尖（含刀尖圆角）切得最深处正好到齿根圆”迭代求出，工件相位让齿槽对准最深点。</p>
     <p><b>修形与试切补偿</b>：把修形量（法向）加到目标齿面上，再按包络求刃口，所以刀具直接切出修形齿形；校核里的误差是相对修形后的目标。试切补偿把实测偏差原样加进目标（实体多的地方多去），斜率、鼓形补偿都以分度圆为零点，不改变齿厚。</p>
@@ -653,7 +654,8 @@ const SK = (() => {
         v = v.map(x => x * vsign);
         // 后刀面法向：刃口切线 × 螺旋方向，指向齿外
         const sc = [-Math.sin(q.th) * q.rho * F.ip, Math.cos(q.th) * q.rho * F.ip, 1];
-        let nF = nz(cr(dirFixed(b.rho * Math.cos(b.th) - a.rho * Math.cos(a.th), b.rho * Math.sin(b.th) - a.rho * Math.sin(a.th), b.w - a.w, 0), sc));
+        // 刃口切线与螺旋方向都在刀具坐标里取（旧版切线先换成了机床坐标再与刀具坐标的螺旋方向叉乘，坐标系混用，后角有误差，2026-11-24 修正）
+        let nF = nz(cr([b.rho * Math.cos(b.th) - a.rho * Math.cos(a.th), b.rho * Math.sin(b.th) - a.rho * Math.sin(a.th), b.w - a.w], sc));
         const eth = [-Math.sin(q.th), Math.cos(q.th), 0]; if (dot(nF, eth) * sg < 0) nF = nF.map(x => -x);
         nF = nz(dirFixed(nF[0], nF[1], nF[2], q.pc));
         let qh = nz(cr(v, t)); if (dot(qh, nF) > 0) qh = qh.map(x => -x);
@@ -785,6 +787,26 @@ const SK = (() => {
     return out;
   }
 
+  // ---------------- 按磨刀数据（每侧一个渐开螺旋面：拟合的基圆、导程）磨出的刀具，校核齿形 ----------------
+  // 设计里的后刀面是逐点表格 Φ(ρ)（三个刃磨状态的最窄包络）；展成磨削只能磨出渐开螺旋面，两者有差别，这里按实际能磨出的面重建刃口再校核
+  function verifyGround(D, S, formLim) {
+    const act = {};
+    for (const sd of ['L', 'R']) {
+      const F = D.flank[sd], sg = sd === 'L' ? -1 : 1, RK = S.E.rake, out = [];
+      const phiOf = q => q.rho > F.rbF && isFinite(F.cF) ? F.cF - sg * inv(Math.acos(F.rbF / q.rho)) : q.phi;   // 基圆以下仍用表格（需成形磨削）
+      const ph0 = interpBy(F.Phi, 'rho', S.ra - 1e-4, q => q.phi);
+      const rows = (isFinite(ph0) ? [{ rho: S.ra - 1e-4, phi: ph0 }] : []).concat(F.Phi.filter(q => q.rho < S.ra - 1e-4));
+      for (const q of rows) {
+        const ph = phiOf(q); let th = ph + S.wTip * F.ip - S.wTip * F.hx, w = 0;
+        for (let it = 0; it < 30; it++) { w = RK.w(q.rho, th); th = ph + (w + S.wTip) * F.ip - S.wTip * F.hx; }
+        out.push({ rho: q.rho, th, w: RK.w(q.rho, th) });
+      }
+      act[sd] = out;
+    }
+    const P = densify(polyFrom(act.L, act.R, S.E.rake, D.cp.rc0 || 0), 0.01);
+    return verify(D, S, true, formLim, { pts: P, noCham: true });   // 齿顶处的多切也计入（不按“齿顶棱边”单列）
+  }
+
   // ---------------- 实测刀具 → 预测工件齿形 ----------------
   // rows：[{ rho 刀具半径, dL, dR 端面投影内刃口法向偏差 µm（+ = 刀齿实体多、齿更厚）}]
   function measured(D, rows, formLim) {
@@ -873,7 +895,7 @@ const SK = (() => {
     return out;
   }
 
-  return { optimize, cutPlan, collide, grindData, measured, basics, work, sdWork, setup, place, mapPt, toFix, dirFix, minSd, rake, makeD, edge, design, simulate, edgePolyline, densify, polyFrom, verify, angles, speed, interpBy, inv, D2R, R2D };
+  return { optimize, cutPlan, collide, grindData, measured, verifyGround, basics, work, sdWork, setup, place, mapPt, toFix, dirFix, minSd, rake, makeD, edge, design, simulate, edgePolyline, densify, polyFrom, verify, angles, speed, interpBy, inv, D2R, R2D };
 })();
 // ==== SK-CORE-END ====
 
@@ -954,7 +976,8 @@ const SK = (() => {
         () => { const a = SK.verify(D, D.states[2], false); st.V[2] = SK.verify(D, D.states[2], true, a.formR); st.V[2].formEx = a.formR; }, () => { st.Ag = SK.angles(D, D.states[0]); }];
       if (pv.adj !== 'none') { st.O = []; for (const j of [0, 1, 2]) steps.push(() => { st.O[j] = SK.optimize(D, D.states[j], pv.adj, j ? st.V[j].formEx : st.Vx.formR); }); }
       steps.push(() => { st.plan = SK.cutPlan(D, { n: pv.n, fin: pv.fin, mode: pv.mode, faR: pv.faR, faF: pv.faF, nc: cp.nc, safe: pv.safe }); },
-        () => { st.coll = SK.collide(D, { Bc: bv.Bc, Dh: sv.Dh, Lh: sv.Lh, g: hv.g, Ds: hv.sh === 'none' ? 0 : hv.Ds, shoulder: hv.sh }); st.gr = SK.grindData(D); });
+        () => { st.coll = SK.collide(D, { Bc: bv.Bc, Dh: sv.Dh, Lh: sv.Lh, g: hv.g, Ds: hv.sh === 'none' ? 0 : hv.Ds, shoulder: hv.sh }); st.gr = SK.grindData(D); },
+        () => { st.Vg = [SK.verifyGround(D, D.states[0], st.Vx.formR), SK.verifyGround(D, D.states[2], st.V[2].formEx)]; });
       let k = 0;
       const next = () => { if (my !== job) return; if (k === 5) { showVerify(); drawAngles(); drawErr(); showBasics(); }
         if (k >= steps.length) { $('busy').textContent = ''; showVerify(); drawAngles(); drawErr(); showBasics(); showAdj(); showPlan(); showColl(); showGrind(); try { showBody(); } catch (e) { $('bodyW').textContent = '外形图出错：' + e.message; } return; }
@@ -997,6 +1020,7 @@ const SK = (() => {
     const cells = V.map((v, j) => {
       const okF = !(wp.dFf > 0) || (W.isInt ? 2 * v.formR >= wp.dFf : 2 * v.formR <= wp.dFf);
       const og = v.gouge < -0.001 && v.chamDepth < 0.001;
+      if (!(v.n > 0) || v.formR == null) return [['bad', '无有效段'], ['', um(v.dThick)], ['bad', '—'], ['', f3(2 * v.rootR)], [v.chamDepth < 0.002 ? 'ok' : 'bad', um(v.chamDepth)], [og ? 'bad' : 'ok', og ? um(-v.gouge) : '0']];
       return [[Math.max(v.maxL, v.maxR) < 0.005 ? 'ok' : 'bad', um(v.maxL) + ' / ' + um(v.maxR)], ['', um(v.dThick)], [okF ? 'ok' : 'bad', f3(2 * v.formR)],
         ['', f3(2 * v.rootR)], [v.chamDepth < 0.002 ? 'ok' : 'bad', um(v.chamDepth)], [og ? 'bad' : 'ok', og ? um(-v.gouge) : '0']];
     });
@@ -1004,6 +1028,9 @@ const SK = (() => {
     let h = '<tr><th>项目</th>' + nm.map((n, j) => `<th>${n}<br><small>退 ${f2(D.states[j].dlt)}</small></th>`).join('') + '</tr>';
     items.forEach((it, k) => { h += `<tr><td>${it}</td>` + cells.map(c => `<td class="${c[k][0]}">${c[k][1]}</td>`).join('') + '</tr>'; });
     $('vt').innerHTML = h;
+    // 精确刃口从齿顶往下没有一段误差 < 2 µm 的渐开线（校核范围为空）时，不能显示成 0 µm（2026-11-24 修正）
+    if (!(Vx.n > 0) || Vx.formR == null) { const e = Vx.prof && Vx.prof.length ? Math.max(...Vx.prof.slice(0, 20).map(q => Math.max(Math.abs(q[1]), Math.abs(q[2])))) : NaN;
+      $('warn').textContent = '刃口切不出齿顶附近的渐开线（齿顶下误差约 ' + (isFinite(e) ? um(e) : '—') + ' µm），校核范围为空，结果不可用：请检查刀具齿数、螺旋角（轴交角）和外径'; }
     $('vnote').innerHTML = `精确刃口（新刀）本身：齿形误差 ${um(Vx.maxL)} / ${um(Vx.maxR)} µm，齿厚变化 ${um(Vx.dThick)} µm，过切 ${um(Math.max(0, -Vx.gouge))} µm。表中为按“磨出的后刀面”得到的实际刃口；齿形误差在齿顶到渐开线起始圆之间（两端各让开一点）统计。齿厚变化为分度圆处端面弧齿厚，正值 = 齿厚（齿槽窄），负值 = 齿薄（齿槽宽）。${W.mod.any ? '齿形误差是相对修形后的目标齿形。' : ''}`;
   }
   // ---------- 图：刀齿端面投影 ----------
@@ -1106,13 +1133,17 @@ const SK = (() => {
     const F = G.flank, rows = [['基圆直径 db', s => f3(F[s].db)], ['基圆螺旋角 βb', s => f3(F[s].betaB) + '°'], ['导程 / 旋向', s => f2(Math.abs(F[s].lead)) + ' ' + F[s].hand],
       ['分度圆螺旋角', s => f3(Math.abs(F[s].betaP)) + '°'], ['展成范围 Ø', s => f3(C ? 2 * C.rhoAct : F[s].dLo) + ' → ' + f3(F[s].dHi)],
       ['展开角范围', s => { const rb = F[s].db / 2, xi = r => r > rb ? Math.sqrt(r * r - rb * rb) / rb * 180 / Math.PI : 0; return f2(xi(C ? C.rhoAct : F[s].dLo / 2)) + '° → ' + f2(F[s].xiHi) + '°'; }],
-      ['横截面与渐开线偏差', s => um(F[s].dev) + ' µm']];
+      ['横截面与渐开线偏差', s => um(F[s].dev) + ' µm'],
+      ['按本数据磨出后齿形误差 新刀 / 磨到底', s => st.Vg ? st.Vg.map(v => v.n > 0 ? um(v['max' + s]) : '—').join(' / ') + ' µm（含齿顶处）' : '…'],
+      ['（设计后刀面校核值 新刀 / 磨到底）', s => st.V && st.V[0] && st.V[2] ? um(st.V[0]['max' + s]) + ' / ' + um(st.V[2]['max' + s]) + ' µm' : '…']];
     let h = '<tr><th>后刀面</th><th>左侧</th><th>右侧</th></tr>';
     for (const r of rows) h += `<tr><td>${r[0]}</td><td>${r[1]('L')}</td><td>${r[1]('R')}</td></tr>`;
     $('grT').innerHTML = h;
     const R = G.rake;
     const lowB = C ? ['L', 'R'].filter(s => C.rhoAct < F[s].db / 2).map(s => s === 'L' ? '左' : '右') : [];
-    $('grN').innerHTML = (lowB.length ? `<span class="bad2">${lowB.join('、')}侧刃口的切削段最低点（Ø${f3(2 * C.rhoAct)}）低于该侧后刀面基圆，基圆以下一段不能用平面砂轮展成，这一段需成形磨削，或调整刀具参数（齿数、外径、螺旋角）后再看。</span><br>` : '') + `后刀面：每侧为渐开线螺旋面，可用平面砂轮展成磨削 —— 砂轮工作平面与刀具基圆柱相切，平面内母线与刀具轴线成基圆螺旋角 βb，刀具每转 Δφ 平面相对移动 rb·Δφ，同时按导程轴向移动。横截面与渐开线的偏差可修整到砂轮上或忽略（小于 1 µm 时）。` +
+    const vgBad = st.Vg && st.V[0] && st.V[2] ? ['L', 'R'].filter(sd => [0, 1].some(j => st.Vg[j]['max' + sd] > Math.max(2 * st.V[j ? 2 : 0]['max' + sd], st.V[j ? 2 : 0]['max' + sd] + 0.002))) : [];
+    const vgNote = vgBad.length ? `<span class="bad2">按上表的展成磨削数据（每侧一个渐开螺旋面）磨出的刀具，${vgBad.map(s => s === 'L' ? '左' : '右').join('、')}侧齿形误差明显大于设计后刀面的校核值：设计后刀面不是严格的渐开螺旋面，展成磨削只能逼近它。要达到设计精度，这一侧后刀面需按刀具廓形坐标成形磨削（坐标见输出）。</span><br>` : '';
+    $('grN').innerHTML = vgNote + (lowB.length ? `<span class="bad2">${lowB.join('、')}侧刃口的切削段最低点（Ø${f3(2 * C.rhoAct)}）低于该侧后刀面基圆，基圆以下一段不能用平面砂轮展成，这一段需成形磨削，或调整刀具参数（齿数、外径、螺旋角）后再看。</span><br>` : '') + `后刀面：每侧为渐开线螺旋面，可用平面砂轮展成磨削 —— 砂轮工作平面与刀具基圆柱相切，平面内母线与刀具轴线成基圆螺旋角 βb，刀具每转 Δφ 平面相对移动 rb·Δφ，同时按导程轴向移动。横截面与渐开线的偏差可修整到砂轮上或忽略（小于 1 µm 时）。` +
       `<br>前刀面：${R.kind}${R.nAxis != null ? `，每齿平面法向与刀具轴线夹角 ${f3(R.nAxis)}°（螺旋角 ${R.beta}°、前角 ${R.gamma}°）` : R.gamma ? `，锥面母线与端面夹角 ${f2(R.gamma)}°` : ''}；每次重磨沿刀具轴向磨去。` +
       `<br>顶刃：外圆锥半角 αe = ${G.tip.alphaE}°，新刀 Ø${f3(G.tip.d0)} → 重磨到底 Ø${f3(G.tip.d2)}（可重磨量 ${G.tip.regrind} mm）。磨床 NC 程序与机床有关，这里不生成。`;
   }
