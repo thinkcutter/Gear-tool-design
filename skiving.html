@@ -1444,6 +1444,7 @@ const SK = (() => {
         else { arrow(a1, u); arrow(b1, [-u[0], -u[1]]); const e1 = a1.slice(); e1[k] -= sg * 2 * ar; const e2 = b1.slice(); e2[k] += sg * 2 * ar; out.push({ t: 'line', a: e1, b: a1, ly: 'DIM' }, { t: 'line', a: b1, b: e2, ly: 'DIM' }); }
         const mid = [(a1[0] + b1[0]) / 2, (a1[1] + b1[1]) / 2], fit = wtx < L - 2 * ar;
         if (isH) { const x = fit ? mid[0] : Math.max(a1[0], b1[0]) + 2.4 * ar + wtx / 2; out.push({ t: 'text', p: [x, c + 0.35 * h], s: o.s, h, an: 'middle', ly: 'DIM' }); }
+        else if (!fit && o.side) out.push({ t: 'text', p: [o.side > 0 ? c + 0.5 * h : c - 0.5 * h, mid[1] - 0.35 * h], s: o.s, h, an: o.side > 0 ? 'start' : 'end', ly: 'DIM' });
         else { const y = fit ? mid[1] : Math.max(a1[1], b1[1]) + 2.4 * ar + wtx / 2; out.push({ t: 'text', p: [c - 0.35 * h, y], s: o.s, h, an: 'middle', rot: 90, ly: 'DIM' }); }
       } else if (o.t === 'lead') {
         const h = o.h, ar = 1.1 * h, wtx = tw(o.s, h), dx = o.dx >= 0 ? 1 : -1, q2 = [o.q[0] + dx * (wtx + 0.6 * h), o.q[1]];
@@ -1498,9 +1499,9 @@ const SK = (() => {
     F.add({ t: 'lead', p: L45(K.rc, 140 * DR), q: L45(ra0 + 4 * h, 140 * DR), s: `分度圆 Ø${f3(2 * K.rc)}`, h, dx: -1 });
     F.add({ t: 'lead', p: L45(rootC, -60 * DR), q: L45(ra0 + 4 * h, -60 * DR), s: `齿根 Ø${f3(2 * rootC)}`, h, dx: 1 });
     if (d) {
-      F.add({ t: 'dim', a: [-d / 2, -d * 0.18], b: [d / 2, -d * 0.18], dir: 'h', at: -d * 0.18, s: `Ø${f3(d)}`, h });
-      if (kb) { F.add({ t: 'dim', a: [-kb / 2, d / 2 + kt], b: [kb / 2, d / 2 + kt], dir: 'h', at: d / 2 + kt + 2.5 * h, s: f3(kb), h });
-        F.add({ t: 'dim', a: [kb / 2, d / 2 + kt], b: [0, -d / 2], dir: 'v', at: d / 2 + 3 * h, s: f3(d + kt), h }); }
+      F.add({ t: 'dim', a: [-d / 2, -d * 0.18], b: [d / 2, -d * 0.18], dir: 'h', at: -d * 0.18, s: `内孔 Ø${f3(d)}`, h });
+      if (kb) { F.add({ t: 'dim', a: [-kb / 2, d / 2 + kt], b: [kb / 2, d / 2 + kt], dir: 'h', at: d / 2 + kt + 2.5 * h, s: `键槽宽 ${f3(kb)}`, h });
+        F.add({ t: 'dim', a: [kb / 2, d / 2 + kt], b: [0, -d / 2], dir: 'v', at: d / 2 + 3 * h, s: `孔+键槽 ${f3(d + kt)}`, h }); }
     }
     F.add({ t: 'text', p: [0, -ra0 - 5 * h], s: `z = ${zc}，${cp.beta ? (cp.beta > 0 ? '右旋' : '左旋') + ' βc ' + Math.abs(cp.beta) + '°' : '直齿'}`, h, an: 'middle', ly: 'TEXT' });
     // 侧面：过刀齿中心（与键槽同一方向）的轴向剖视，x = −w（前刀面在左），上半部过键槽
@@ -1520,14 +1521,14 @@ const SK = (() => {
     S.add({ t: 'line', a: [-3 * h, 0], b: [B + 3 * h, 0], ly: 'CENTER' });
     for (const s of [1, -1]) S.add({ t: 'line', a: [-G.wFront(rootC), s * rootC], b: [Bc, s * G.rootAt(-Bc)], ly: 'HIDDEN' });
     const xr = B + 4 * h;
-    S.add({ t: 'dim', a: [0, -ra0], b: [B, -ra0], dir: 'h', at: -ra0 - 5 * h, s: f3(B), h });
-    if (B > Bc + 1e-9) S.add({ t: 'dim', a: [0, ra0], b: [Bc, G.rtip(-Bc)], dir: 'h', at: ra0 + 3 * h, s: f3(Bc), h });
-    S.add({ t: 'dim', a: [0, ra0], b: [0, -ra0], dir: 'v', at: -4 * h - Math.max(0, -G.wFront(0)), s: `Ø${f3(2 * ra0)}`, h });
-    S.add({ t: 'dim', a: [Bc, G.rtip(-Bc)], b: [Bc, -G.rtip(-Bc)], dir: 'v', at: xr + 6 * h, s: `Ø${f3(2 * G.rtip(-Bc))}`, h });
-    if (B > Bc + 1e-9) S.add({ t: 'dim', a: [B, rW], b: [B, -rW], dir: 'v', at: xr + 3 * h, s: `Ø${f3(2 * rW)}`, h });
-    if (r2 > 0) { S.add({ t: 'dim', a: [B - t2, r2], b: [B - t2, -r2], dir: 'v', at: xr, s: `Ø${f3(2 * r2)}`, h }); S.add({ t: 'dim', a: [B - t2, -r2], b: [B, -r2], dir: 'h', at: -r2 - 2.5 * h, s: f3(t2), h }); }
-    if (d) S.add({ t: 'dim', a: [B * 0.5, -d / 2], b: [B * 0.5, kb ? d / 2 + kt : d / 2], dir: 'v', at: B * 0.5, s: kb ? `${f3(d + kt)}` : `Ø${f3(d)}`, h });
-    if (d && kb) S.add({ t: 'dim', a: [B * 0.35, -d / 2], b: [B * 0.35, d / 2], dir: 'v', at: B * 0.3, s: `Ø${f3(d)}`, h });
+    S.add({ t: 'dim', a: [0, -ra0], b: [B, -ra0], dir: 'h', at: -ra0 - 5 * h, s: `总厚 ${f3(B)}`, h });
+    if (B > Bc + 1e-9) S.add({ t: 'dim', a: [0, ra0], b: [Bc, G.rtip(-Bc)], dir: 'h', at: ra0 + 3 * h, s: `齿部长 ${f3(Bc)}`, h });
+    S.add({ t: 'dim', a: [0, ra0], b: [0, -ra0], dir: 'v', at: -4 * h - Math.max(0, -G.wFront(0)), s: `外径 Ø${f3(2 * ra0)}`, h });
+    S.add({ t: 'dim', a: [Bc, G.rtip(-Bc)], b: [Bc, -G.rtip(-Bc)], dir: 'v', at: xr + 6 * h, s: `齿部末端 Ø${f3(2 * G.rtip(-Bc))}`, h });
+    if (B > Bc + 1e-9) S.add({ t: 'dim', a: [B, rW], b: [B, -rW], dir: 'v', at: xr + 3 * h, s: `刀体 Ø${f3(2 * rW)}`, h });
+    if (r2 > 0) { S.add({ t: 'dim', a: [B - t2, r2], b: [B - t2, -r2], dir: 'v', at: xr, s: `沉孔 Ø${f3(2 * r2)}`, h }); S.add({ t: 'dim', a: [B - t2, -r2], b: [B, -r2], dir: 'h', at: -r2 - 2.5 * h, s: `沉孔深 ${f3(t2)}`, h }); }
+    if (d) S.add({ t: 'dim', a: [B * 0.5, -d / 2], b: [B * 0.5, kb ? d / 2 + kt : d / 2], dir: 'v', at: B * 0.5, s: kb ? `孔+键槽 ${f3(d + kt)}` : `内孔 Ø${f3(d)}`, h });
+    if (d && kb) S.add({ t: 'dim', a: [B * 0.35, -d / 2], b: [B * 0.35, d / 2], dir: 'v', at: B * 0.3, s: `内孔 Ø${f3(d)}`, h });
     S.add({ t: 'lead', p: [Bc * 0.5, G.rtip(-Bc * 0.5)], q: [Bc * 0.5 + 3 * h, ra0 + 7 * h], s: `顶刃后角 αe ${cp.alphaE}°`, h, dx: 1 });
     S.add({ t: 'lead', p: [-G.wFront((ra0 + rootC) / 2), (ra0 + rootC) / 2], q: [-6 * h, ra0 + 7 * h], s: G.step ? `阶梯前刀面 γ ${cp.gamma}°` : (cp.gamma ? `前刀面锥角 γ ${cp.gamma}°` : '平前刀面'), h, dx: -1 });
     // 背面（从后往前看，左右镜像）：刀齿在 w = −Bc 处的截面、刀体、沉孔、内孔
@@ -1566,21 +1567,22 @@ const SK = (() => {
     // 齿槽底（齿根）：剖切面后面看得见的轮廓线，一直到齿槽在过渡锥上收尾处
     for (const sg of [1, -1]) S.add({ t: 'line', a: [sg * rootC, -G.wFront(rootC)], b: [sg * bi.rR, bi.xR], ly: 'OUTLINE' });
     S.add({ t: 'lead', p: [bi.rR, bi.xR], q: [ra0 + 2 * h, bi.xR + 1.2 * h], s: `齿槽收尾 ${f3(bi.xR)}`, h, dx: 1 });
-    if (bi.ch > 0) S.add({ t: 'lead', p: [-(bi.rN - bi.ch / 2), H - bi.ch / 2], q: [-ra0 - 1 * h, H + 4 * h], s: `C${f2(bi.ch)}`, h, dx: -1 });
+    if (bi.ch > 0) S.add({ t: 'lead', p: [-(bi.rN - bi.ch / 2), H - bi.ch / 2], q: [-ra0 - 1 * h, H + 4 * h], s: `顶面倒角 C${f2(bi.ch)}`, h, dx: -1 });
     const xF0 = Math.max(0, -G.wFront(bi.rIn)), yB = -Math.max(0, -G.wFront(0));
-    S.add({ t: 'dim', a: [-bi.rIn, xF0], b: [bi.rIn, xF0], dir: 'h', at: yB - 2.5 * h, s: `Ø${f3(2 * bi.rIn)}`, h });
-    S.add({ t: 'dim', a: [-bi.rFl, bw.Hf], b: [bi.rFl, bw.Hf], dir: 'h', at: yB - 5 * h, s: `Ø${f3(2 * bi.rFl)}`, h });
-    S.add({ t: 'dim', a: [-ra0, 0], b: [ra0, 0], dir: 'h', at: yB - 7.5 * h, s: `Ø${f3(2 * ra0)}`, h });
-    if (d) S.add({ t: 'dim', a: [-(kb ? d / 2 + kt : d / 2), H], b: [d / 2, H], dir: 'h', at: H + 2.5 * h, s: kb ? f3(d + kt) : `Ø${f3(d)}`, h });
-    S.add({ t: 'dim', a: [-bi.rN, H], b: [bi.rN, H], dir: 'h', at: H + 5 * h, s: `Ø${f3(2 * bi.rN)}`, h });
-    S.add({ t: 'dim', a: [-ra0, 0], b: [-bi.rN, H], dir: 'v', at: -ra0 - 5 * h, s: f3(H), h });
-    S.add({ t: 'dim', a: [-ra0, 0], b: [-bi.rt, Bc], dir: 'v', at: -ra0 - 2.2 * h, s: f3(Bc), h });
-    S.add({ t: 'lead', p: [bi.rt, Bc], q: [ra0 + 2 * h, Bc + 2.5 * h], s: `Ø${f3(2 * bi.rt)}`, h, dx: 1 });
-    S.add({ t: 'dim', a: [bi.rFl, bw.Hf], b: [bi.rIn, xF0], dir: 'v', at: ra0 + 5 * h, s: f3(bw.Hf - xF0), h });
-    if (d) S.add({ t: 'dim', a: [d / 2, bw.Hf], b: [d / 2, H], dir: 'v', at: d / 2 + 1.6 * h, s: f3(H - bw.Hf), h });
-    S.add({ t: 'lead', p: [-G.rtip(-Bc * 0.5), Bc * 0.5], q: [-ra0 - 3 * h, Bc + 6 * h], s: `αe ${cp.alphaE}°`, h, dx: -1 });
+    S.add({ t: 'dim', a: [-bi.rIn, xF0], b: [bi.rIn, xF0], dir: 'h', at: yB - 2.5 * h, s: `前端内径 Ø${f3(2 * bi.rIn)}`, h });
+    S.add({ t: 'dim', a: [-bi.rFl, bw.Hf], b: [bi.rFl, bw.Hf], dir: 'h', at: yB - 5 * h, s: `螺栓面 Ø${f3(2 * bi.rFl)}`, h });
+    S.add({ t: 'dim', a: [-ra0, 0], b: [ra0, 0], dir: 'h', at: yB - 7.5 * h, s: `外径 Ø${f3(2 * ra0)}`, h });
+    if (d) S.add({ t: 'dim', a: [-(kb ? d / 2 + kt : d / 2), H], b: [d / 2, H], dir: 'h', at: H + 2.5 * h, s: kb ? `孔+键槽 ${f3(d + kt)}` : `内孔 Ø${f3(d)}`, h });
+    S.add({ t: 'dim', a: [-bi.rN, H], b: [bi.rN, H], dir: 'h', at: H + 5 * h, s: `顶部外径 Ø${f3(2 * bi.rN)}`, h });
+    S.add({ t: 'dim', a: [-ra0, 0], b: [-bi.rN, H], dir: 'v', at: -ra0 - 10 * h, s: `总高 ${f3(H)}`, h });
+    S.add({ t: 'dim', a: [-ra0, 0], b: [-bi.rt, Bc], dir: 'v', at: -ra0 - 2.2 * h, s: `齿长 ${f3(Bc)}`, h, side: -1 });
+    S.add({ t: 'lead', p: [bi.rt, Bc], q: [ra0 + 2 * h, Bc + 2.5 * h], s: `齿部末端 Ø${f3(2 * bi.rt)}`, h, dx: 1 });
+    S.add({ t: 'dim', a: [bi.rFl, bw.Hf], b: [bi.rIn, xF0], dir: 'v', at: ra0 + 5 * h, s: `螺栓面深 ${f3(bw.Hf - xF0)}`, h, side: 1 });
+    if (d) S.add({ t: 'dim', a: [d / 2, bw.Hf], b: [d / 2, H], dir: 'v', at: d / 2 + 1.6 * h, s: `壁厚 ${f3(H - bw.Hf)}`, h, side: -1 });
+    S.add({ t: 'lead', p: [-G.rtip(-Bc * 0.5), Bc * 0.5], q: [-ra0 - 3 * h, Bc + 6 * h], s: `顶刃后角 αe ${cp.alphaE}°`, h, dx: -1 });
     S.add({ t: 'lead', p: [-(ra0 + rootC) / 2, -G.wFront((ra0 + rootC) / 2)], q: [-ra0 - 2 * h, -4 * h], s: G.step ? `阶梯前刀面 γ ${cp.gamma}°` : (cp.gamma ? `前刀面 γ ${cp.gamma}°` : '平前刀面'), h, dx: -1 });
-    if (bi.Rn > 0) { const m = bi.arc[6]; S.add({ t: 'lead', p: [-m[1], m[0]], q: [-ra0 - 1 * h, H + 1.5 * h], s: `R${f2(bi.Rn)}`, h, dx: -1 }); }
+    if (bi.Rn > 0) { const m = bi.arc[6]; S.add({ t: 'lead', p: [-m[1], m[0]], q: [-ra0 - 1 * h, H + 1.5 * h], s: `顶部圆角 R${f2(bi.Rn)}`, h, dx: -1 }); }
+    if (d && bi.cb > 0) S.add({ t: 'lead', p: [d / 2 + bi.cb / 2, H - bi.cb / 2], q: [d / 2 + 4 * h, H + 1.2 * h], s: `孔口倒角 C${f2(bi.cb)}`, h, dx: 1 });
     { const p = [(bi.T1[1] + bi.rt) / 2, (bi.T1[0] + Bc) / 2]; S.add({ t: 'lead', p, q: [ra0 + 1 * h, H + 1.5 * h], s: `过渡锥 ${f2(bw.aT / DR)}°`, h, dx: 1 }); }
     { const yy = (xF0 + bw.Hf) / 2, x = bi.rIn - (yy - xF0) * Math.tan(bw.aIn); S.add({ t: 'lead', p: [x, yy], q: [x * 0.45, yy - 1.2 * h], s: `内锥 ${f2(bw.aIn / DR)}°`, h, dx: -1 }); }
     // 背面：从顶面往前看（左右镜像）
@@ -1600,7 +1602,7 @@ const SK = (() => {
     return [['齿数 zc', cp.z], ['法向模数 mn', D.W.mn], ['法向压力角 αn', D.wp.an + '°'], ['分度圆螺旋角 βc', `${Math.abs(cp.beta)}° ${cp.beta > 0 ? '右旋' : cp.beta < 0 ? '左旋' : ''}`],
       ['前刀面', `${G.step ? '阶梯' : cp.gamma ? '锥形' : '平面'}，前角 γ ${cp.gamma}°`], ['顶刃后角 αe', cp.alphaE + '°'], ['新刀外径', 'Ø' + f3(2 * ra0)], ['重磨到底外径', 'Ø' + f3(BB.st[2].da)],
       ['可重磨量（轴向）', f3(cp.regrind)], ['齿根圆', 'Ø' + f3(2 * rootC)], ['刀具形式', G.type === 'bowl' ? '碗形（螺栓压紧）' : '盘形（装心轴）'], ['齿部长度 / 总' + (G.type === 'bowl' ? '高' : '厚'), f3(Bc) + ' / ' + f3(B)], ['内孔', d ? 'Ø' + (+d.toFixed(3)) + (G.boreAuto ? '（自动选的标准孔径）' : '') + (kb ? `，键槽 ${f3(kb)} × ${f3(d + kt)}` : '') : '—'],
-      ...(G.type === 'bowl' ? [['前端内径 / 内锥半角', 'Ø' + f3(G.bw.Din) + ' / ' + f2(G.bw.aIn / DR) + '°'], ['螺栓面 深度 / 直径', f3(G.bw.Hf - Math.max(0, -G.wFront(G.bw.Din / 2))) + ' / Ø' + f3(2 * G.bowlInfo.rFl)], ['顶部外径 / 圆角 / 过渡锥', 'Ø' + f3(G.bw.DN) + ' / R' + f2(G.bowlInfo.Rn) + ' / ' + f2(G.bw.aT / DR) + '°'], ['齿槽收尾（自前端）/ 收尾处直径', f3(G.bowlInfo.xR) + ' / Ø' + f3(2 * G.bowlInfo.rR)], ['倒角 顶面外缘 / 内孔两端', G.bowlInfo.ch > 0 || G.bowlInfo.cb > 0 ? 'C' + f2(G.bowlInfo.ch) + ' / C' + f2(G.bowlInfo.cb) : '无']] : []),
+      ...(G.type === 'bowl' ? [['总高（DIN 1829：b1；GOST 9323：B）', f3(G.bw.H)], ['壁厚（内孔处，GOST 9323：凸台宽 b1）', f3(G.bw.H - G.bw.Hf)], ['前端内径（沉孔，GOST 9323：d2）/ 内锥半角', 'Ø' + f3(G.bw.Din) + ' / ' + f2(G.bw.aIn / DR) + '°'], ['螺栓面 深度 / 直径', f3(G.bw.Hf - Math.max(0, -G.wFront(G.bw.Din / 2))) + ' / Ø' + f3(2 * G.bowlInfo.rFl)], ['顶部外径（夹紧面，DIN 1829：d1；GOST 9323：d3）/ 圆角 / 过渡锥', 'Ø' + f3(G.bw.DN) + ' / R' + f2(G.bowlInfo.Rn) + ' / ' + f2(G.bw.aT / DR) + '°'], ['齿槽收尾（自前端）/ 收尾处直径', f3(G.bowlInfo.xR) + ' / Ø' + f3(2 * G.bowlInfo.rR)], ['倒角 顶面外缘 / 内孔两端', G.bowlInfo.ch > 0 || G.bowlInfo.cb > 0 ? 'C' + f2(G.bowlInfo.ch) + ' / C' + f2(G.bowlInfo.cb) : '无']] : []),
       ['刀尖圆角', 'R' + (cp.rc0 || 0)], ['左 / 右后刀面导程', f2(Math.abs(D.flank.L.lead)) + ' / ' + f2(Math.abs(D.flank.R.lead))],
       ['轴交角 Σ / 中心距（新刀）', f3(BB.Sig) + '° / ' + f4(BB.st[0].A)], ['工件', `${D.wp.kind === 'int' ? '内齿' : '外齿'} mn${D.wp.mn} z${D.wp.z} αn${D.wp.an}° β${D.wp.beta}° x${D.wp.x}`]];
   }
