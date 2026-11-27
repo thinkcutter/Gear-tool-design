@@ -71,6 +71,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 .tag{display:inline-block;font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 6px;margin-left:6px;vertical-align:2px}
 .tw{overflow-x:auto}
 </style>
+<script src="terms.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -1067,5 +1068,6 @@ const loop = now => { if (!paused) { const t = Math.max(0, (now - t0) / 1000); s
 requestAnimationFrame(loop);
 })();
 </script>
+<script>window.addEventListener('load', () => TC.observe(document.body));   // 参数名能对上术语表的自动加 “?”（英文名、符号、出处）</script>
 </body>
 </html>

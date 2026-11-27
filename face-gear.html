@@ -12,6 +12,7 @@
 <meta name="apple-mobile-web-app-title" content="铣刀计算">
 <meta name="theme-color" content="#0F1012">
 <style>:root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<script src="terms.js"></script>
 </head>
 <body>
 <style>
@@ -179,13 +180,15 @@ input[type=range]{width:100%;accent-color:var(--accent);margin:8px 0 0}
   </section>
   <section class="card">
     <h2>盘铣刀刃口轮廓</h2>
+    <div class="tc-sw" id="langSwF"></div>
     <svg class="dw" id="rimSvg" viewBox="0 0 520 330"></svg>
+    <div id="legRim"></div>
     <div class="cap">刃口截面（过刀轴的平面），刀尖朝下；“下载刀具刃口 DXF”里 CUTTER 层就是这条轮廓线。刃部以里的刀体在齿顶面以外，可按刚性加厚。</div>
   </section>
   <section class="card">
     <h2>齿槽截面与刀位</h2>
     <div class="two">
-      <div><svg class="dw" id="secSvg" viewBox="0 0 520 360"></svg>
+      <div><svg class="dw" id="secSvg" viewBox="0 0 520 360"></svg><div id="legSec"></div>
         <div class="lg"><span><i style="border-color:#9EA3A9"></i>齿槽（内端 / 中间 / 外端三个半径）</span><span><i style="border-color:var(--accent)"></i>盘铣刀刃口（中间半径、几个层位）</span></div></div>
       <div><svg class="dw" id="psiSvg" viewBox="0 0 420 300"></svg>
         <div class="cap">A 轴随动摆角 ψ（相对齿槽分度位置）沿半径的变化：左齿面，从齿顶面到槽底的几层</div></div>
@@ -882,6 +885,8 @@ const FG = (() => {
   // ---------- 计算 ----------
   let T = null, st = null;
   const later = (() => { let t = 0; return () => { clearTimeout(t); t = setTimeout(run, 350); }; })();
+  TC.switcher($('langSwF'), () => { if (st) { draw(st); drawRim(st); } });
+  setTimeout(() => TC.observe(document.body), 0);   // 输入框和结果表：能对上术语表的自动加 “?”
   function geoNow() {
     if (src === 'xt') {
       if (!xtText) throw new Error('请先在“齿形来源”里选择 x_t 文件');
@@ -957,19 +962,20 @@ const FG = (() => {
   function draw(s) {
     const svg = $('secSvg'), ps = $('psiSvg');
     if (!s) { svg.innerHTML = ''; ps.innerHTML = ''; drawRim(null); build3d(null); return; }
-    const { M, tool, P } = s, h = M.h;
+    const { M, tool, P } = s, h = M.h; TC.used.clear(); TC.used.add('radL');
     const Ls = [M.Lmin + 0.2, (M.Lmin + M.Lmax) / 2, M.Lmax - 0.2];
     let ymax = 0; for (const L of Ls) ymax = Math.max(ymax, Math.abs(M.f(-1, L, 0).y), Math.abs(M.f(1, L, 0).y));
     const W = 520, H = 360, pad = 22, sc = Math.min((W - 2 * pad) / (2 * ymax + 0.4), (H - 2 * pad) / (h + 1.0));
     const X = y => W / 2 + y * sc, Y = d => pad + (d + 0.75) * sc;
-    let o = `<line x1="${pad}" x2="${W - pad}" y1="${Y(0)}" y2="${Y(0)}" stroke="#2F3237" stroke-dasharray="4 3"/><text x="${W - pad}" y="${Y(0) - 4}" fill="#9EA3A9" font-size="11" text-anchor="end">齿顶面</text>`;
-    o += `<line x1="${pad}" x2="${W - pad}" y1="${Y(h)}" y2="${Y(h)}" stroke="#2F3237" stroke-dasharray="4 3"/><text x="${W - pad}" y="${Y(h) + 13}" fill="#9EA3A9" font-size="11" text-anchor="end">槽底 ${f3(h)}</text>`;
+    let o = `<line x1="${pad}" x2="${W - pad}" y1="${Y(0)}" y2="${Y(0)}" stroke="#2F3237" stroke-dasharray="4 3"/><text x="${W - pad}" y="${Y(0) - 4}" fill="#9EA3A9" font-size="11" text-anchor="end">${TC.lab('topLand')}</text>`;
+    o += `<line x1="${pad}" x2="${W - pad}" y1="${Y(h)}" y2="${Y(h)}" stroke="#2F3237" stroke-dasharray="4 3"/><text x="${W - pad}" y="${Y(h) + 13}" fill="#9EA3A9" font-size="11" text-anchor="end">${TC.lab('slotBot', f3(h))}</text>`;
     const cols = ['#7D838B', '#C9CED4', '#5D6268'];
     Ls.forEach((L, i) => {
       for (const sd of [-1, 1]) { let d = ''; for (let k = 0; k <= 80; k++) { const dd = h * k / 80; d += (k ? 'L' : 'M') + X(M.f(sd, L, dd).y).toFixed(1) + ' ' + Y(dd).toFixed(1); } o += `<path d="${d}" fill="none" stroke="${cols[i]}" stroke-width="1.6"/>`; }
       o += `<line x1="${X(M.f(-1, L, h).y)}" x2="${X(M.f(1, L, h).y)}" y1="${Y(h)}" y2="${Y(h)}" stroke="${cols[i]}" stroke-width="1.6"/>`;
       o += `<text x="${pad}" y="${H - pad - 30 + i * 13}" fill="${cols[i]}" font-size="10.5">— L = ${L.toFixed(2)}</text>`;
     });
+    $('legSec').innerHTML = TC.legendHtml(TC.used);
     // 刀位：中间半径，左侧三层 + 右侧一层
     const Lm = Ls[1], rc = tool.rc, tb = Math.tan(tool.beta), Hr = val('t', 'Hr');
     const prof = (side, d) => {
@@ -997,14 +1003,16 @@ const FG = (() => {
     let q = `<rect x="${l2}" y="${t2}" width="${w2 - l2 - r2}" height="${h2 - t2 - b2}" fill="none" stroke="#2F3237"/>`;
     for (let k = 0; k <= 4; k++) { const v = pmin + (pmax - pmin) * k / 4; q += `<text x="${l2 - 5}" y="${YY(v) + 4}" fill="#9EA3A9" font-size="10.5" text-anchor="end">${v.toFixed(2)}°</text><line x1="${l2}" x2="${w2 - r2}" y1="${YY(v)}" y2="${YY(v)}" stroke="#24262A"/>`; }
     for (let k = 0; k <= 4; k++) { const L = M.Lmin + (M.Lmax - M.Lmin) * k / 4; q += `<text x="${XX(L)}" y="${h2 - b2 + 15}" fill="#9EA3A9" font-size="10.5" text-anchor="middle">${L.toFixed(1)}</text>`; }
-    q += `<text x="${(w2 + l2) / 2}" y="${h2 - 6}" fill="#9EA3A9" font-size="11" text-anchor="middle">半径 L (mm)</text>`;
+    q += `<text x="${(w2 + l2) / 2}" y="${h2 - 6}" fill="#9EA3A9" font-size="11" text-anchor="middle">${TC.lab('radL', '(mm)')}</text>`;
     const pc = ['#4FC3F7', '#7FD19B', '#FF7A2E', '#F2F2F0'];
     pick.forEach((ps, i) => { let d = ''; for (const p of ps.pts) if (p.L >= M.Lmin && p.L <= M.Lmax) d += (d ? 'L' : 'M') + XX(p.L).toFixed(1) + ' ' + YY(p.psi * FG.R2D).toFixed(1); q += `<path d="${d}" fill="none" stroke="${pc[i]}" stroke-width="1.6"/><text x="${w2 - r2 - 4}" y="${t2 + 14 + i * 13}" fill="${pc[i]}" font-size="10.5" text-anchor="end">层深 ${ps.d.toFixed(2)}</text>`; });
     ps.innerHTML = q;
   }
   // ---------- 盘铣刀刃口轮廓图 ----------
+  let usedRim = new Set();
   function drawRim(s) {
-    const svg = $('rimSvg'); if (!s) { svg.innerHTML = ''; return; }
+    const svg = $('rimSvg'); if (!s) { svg.innerHTML = ''; $('legRim').innerHTML = ''; return; }
+    TC.used.clear();
     const { tool, M } = s, rc = tool.rc, a = tool.t / 2 - rc, be = tool.beta, tb = Math.tan(be), Hr = val('t', 'Hr');
     const W = 520, H = 330, top = 34, bot = 270, sc = (bot - top) / Hr, cx = 230;
     const X = x => cx + x * sc, Y = r => bot - r * sc;    // r = 自刀尖往刀心的距离
@@ -1019,22 +1027,22 @@ const FG = (() => {
     let o = `<path d="${d}" fill="rgba(255,107,26,.10)" stroke="${ac}" stroke-width="2"/>`;
     o += `<line x1="${cx}" x2="${cx}" y1="${top - 14}" y2="${bot + 16}" stroke="#5D6268" stroke-dasharray="8 3 2 3"/>`;
     // 槽深线
-    o += `<line x1="${X(-1.7)}" x2="${X(1.7)}" y1="${Y(M.h)}" y2="${Y(M.h)}" stroke="#4FC3F7" stroke-dasharray="4 3"/><text x="${X(-1.75)}" y="${Y(M.h) + 4}" fill="#4FC3F7" font-size="11" text-anchor="end">槽深 ${f3(M.h)}</text>`;
+    o += `<line x1="${X(-1.7)}" x2="${X(1.7)}" y1="${Y(M.h)}" y2="${Y(M.h)}" stroke="#4FC3F7" stroke-dasharray="4 3"/><text x="${X(-1.75)}" y="${Y(M.h) + 4}" fill="#4FC3F7" font-size="11" text-anchor="end">${TC.lab('slotDepth', f3(M.h))}</text>`;
     // 尺寸：刀尖宽
     o += `<line x1="${X(-tool.t / 2)}" x2="${X(-tool.t / 2)}" y1="${bot + 2}" y2="${bot + 26}" stroke="${mu}"/><line x1="${X(tool.t / 2)}" x2="${X(tool.t / 2)}" y1="${bot + 2}" y2="${bot + 26}" stroke="${mu}"/>`;
-    o += `<line x1="${X(-tool.t / 2) - 22}" x2="${X(tool.t / 2) + 22}" y1="${bot + 22}" y2="${bot + 22}" stroke="${mu}"/><text x="${X(tool.t / 2) + 26}" y="${bot + 26}" fill="var(--ink)" font-size="12">刀尖宽 ${tool.t}</text>`;
+    o += `<line x1="${X(-tool.t / 2) - 22}" x2="${X(tool.t / 2) + 22}" y1="${bot + 22}" y2="${bot + 22}" stroke="${mu}"/><text x="${X(tool.t / 2) + 26}" y="${bot + 26}" fill="var(--ink)" font-size="12">${TC.lab('tipWidth', tool.t)}</text>`;
     // R 角
-    o += `<text x="${X(a) + 14}" y="${Y(0) - 6}" fill="var(--ink)" font-size="12">两角 R${tool.rc}</text>`;
+    o += `<text x="${X(a) + 14}" y="${Y(0) - 6}" fill="var(--ink)" font-size="12">${TC.lab('cornerR', 'R' + tool.rc)}</text>`;
     // 侧刃角
     const xr = sideX + (Hr - sideY) * tb;
-    o += `<line x1="${X(xr)}" x2="${X(xr)}" y1="${Y(Hr)}" y2="${Y(Hr * 0.45)}" stroke="${mu}" stroke-dasharray="3 3"/><text x="${X(xr) + 6}" y="${Y(Hr * 0.62)}" fill="var(--ink)" font-size="12">两侧各 ${(be * FG.R2D).toFixed(1)}°</text>`;
+    o += `<line x1="${X(xr)}" x2="${X(xr)}" y1="${Y(Hr)}" y2="${Y(Hr * 0.45)}" stroke="${mu}" stroke-dasharray="3 3"/><text x="${X(xr) + 6}" y="${Y(Hr * 0.62)}" fill="var(--ink)" font-size="12">${TC.lab('flankAng', (be * FG.R2D).toFixed(1) + '°')}</text>`;
     // 刃部高度
     o += `<line x1="${X(-xr) - 30}" x2="${X(-xr) - 30}" y1="${Y(0)}" y2="${Y(Hr)}" stroke="${mu}"/><line x1="${X(-xr) - 36}" x2="${X(-xr)}" y1="${Y(Hr)}" y2="${Y(Hr)}" stroke="${mu}"/><line x1="${X(-xr) - 36}" x2="${X(-0.08)}" y1="${Y(0)}" y2="${Y(0)}" stroke="${mu}" stroke-dasharray="2 3"/>`;
-    o += `<text x="${X(-xr) - 36}" y="${Y(Hr / 2)}" fill="var(--ink)" font-size="12" text-anchor="end">刃部高度 ${Hr}</text>`;
-    o += `<text x="${cx}" y="${Y(Hr) - 6}" fill="${mu}" font-size="11" text-anchor="middle">此处厚 ${f3(2 * xr)}</text>`;
-    o += `<text x="${W - 8}" y="${bot - 60}" fill="var(--ink)" font-size="12.5" text-anchor="end">盘铣刀外径 Ø${tool.D}</text><text x="${W - 8}" y="${bot - 43}" fill="${mu}" font-size="11.5" text-anchor="end">刀尖在外径上，往上为刀心方向</text>`;
-    o += `<text x="${W - 8}" y="${bot - 26}" fill="${mu}" font-size="11.5" text-anchor="end">槽底宽 ${f3(M.wbMin)}～${f3(M.wbMax)}</text><text x="${W - 8}" y="${bot - 9}" fill="${mu}" font-size="11.5" text-anchor="end">齿形角 ${M.amin.toFixed(1)}°～${M.amax.toFixed(1)}°</text>`;
-    svg.innerHTML = o;
+    o += `<text x="${X(-xr) - 36}" y="${Y(Hr / 2)}" fill="var(--ink)" font-size="12" text-anchor="end">${TC.lab('edgeHt', Hr)}</text>`;
+    o += `<text x="${cx}" y="${Y(Hr) - 6}" fill="${mu}" font-size="11" text-anchor="middle">${TC.lab('thickHere', f3(2 * xr))}</text>`;
+    o += `<text x="${W - 8}" y="${bot - 60}" fill="var(--ink)" font-size="12.5" text-anchor="end">${TC.lab('discD', 'Ø' + tool.D)}</text><text x="${W - 8}" y="${bot - 43}" fill="${mu}" font-size="11.5" text-anchor="end">${TC.lang() === 'en' ? 'Tip on OD, up = to cutter centre' : '刀尖在外径上，往上为刀心方向'}</text>`;
+    o += `<text x="${W - 8}" y="${bot - 26}" fill="${mu}" font-size="11.5" text-anchor="end">${TC.lab('slotBotW', f3(M.wbMin) + '～' + f3(M.wbMax))}</text><text x="${W - 8}" y="${bot - 9}" fill="${mu}" font-size="11.5" text-anchor="end">${TC.lab('profAng', M.amin.toFixed(1) + '°～' + M.amax.toFixed(1) + '°')}</text>`;
+    svg.innerHTML = o; $('legRim').innerHTML = TC.legendHtml(TC.used); usedRim = new Set(TC.used);
   }
 
   // ---------- 加工过程 3D（WebGL） ----------
@@ -1246,8 +1254,13 @@ const FG = (() => {
     e.push('0', 'LINE', '8', 'MARK', '10', f(-1.2), '20', f(-M.h), '11', f(1.2), '21', f(-M.h));
     const txt = (x, y, ht, t) => e.push('0', 'TEXT', '8', 'NOTES', '10', f(x), '20', f(y), '40', f(ht), '1', dxfStr(t), '7', 'CN');
     const th = 0.12; let y = 0.2;
-    for (const t of ['端面齿盘铣刀 刃口截面（刀尖在 0，往刀心为负）', `外径 Ø${tool.D}  刀尖宽 ${tool.t}  两角 R${tool.rc}  两侧刃角各 ${val('t', 'beta')}°  刃部高度 ${Hr}`,
-      `槽深 ${f3(M.h)}（MARK 线）  槽底宽 ${f3(M.wbMin)}～${f3(M.wbMax)}  齿形角 ${M.amin.toFixed(2)}°～${M.amax.toFixed(2)}°`, '刃部以里的刀体可按刚性加厚（已在齿顶面以外）', '单位 mm；CUTTER 层只有刃口轮廓一条线']) { txt(2.0, y, th, t); y -= th * 1.7; }
+    const EN = TC.lang() !== 'zh', L = k => TC.lab(k, undefined, EN ? 'en' : 'zh');
+    const lines = EN ? ['Face gear disk cutter: cutting edge section (tip at 0, negative towards cutter centre)', `${L('discD')} Ø${tool.D}  ${L('tipWidth')} ${tool.t}  ${L('cornerR')} R${tool.rc}  ${L('flankAng')} ${val('t', 'beta')}°  ${L('edgeHt')} ${Hr}`,
+      `${L('slotDepth')} ${f3(M.h)} (MARK line)  ${L('slotBotW')} ${f3(M.wbMin)}～${f3(M.wbMax)}  ${L('profAng')} ${M.amin.toFixed(2)}°～${M.amax.toFixed(2)}°`, 'Cutter body inside the cutting edge may be thickened for rigidity (outside the top land)', 'Unit mm; layer CUTTER holds only the cutting edge outline']
+      : ['端面齿盘铣刀 刃口截面（刀尖在 0，往刀心为负）', `外径 Ø${tool.D}  刀尖宽 ${tool.t}  两角 R${tool.rc}  两侧刃角各 ${val('t', 'beta')}°  刃部高度 ${Hr}`,
+      `槽深 ${f3(M.h)}（MARK 线）  槽底宽 ${f3(M.wbMin)}～${f3(M.wbMax)}  齿形角 ${M.amin.toFixed(2)}°～${M.amax.toFixed(2)}°`, '刃部以里的刀体可按刚性加厚（已在齿顶面以外）', '单位 mm；CUTTER 层只有刃口轮廓一条线'];
+    const LR = TC.legendRows(usedRim); if (LR.length) { lines.push('', EN ? 'Legend (Chinese / English / Symbol)' : '标注对照（中文 / English / 符号）'); for (const r of LR) lines.push(r.join(' / ')); }
+    for (const t of lines) { txt(2.0, y, th, t); y -= th * 1.7; }
     const lay = [['0', 7], ['CUTTER', 1], ['CENTER', 8], ['MARK', 4], ['NOTES', 2]];
     const H = ['0', 'SECTION', '2', 'HEADER', '9', '$ACADVER', '1', 'AC1009', '0', 'ENDSEC', '0', 'SECTION', '2', 'TABLES',
       '0', 'TABLE', '2', 'LTYPE', '70', '1', '0', 'LTYPE', '2', 'CONTINUOUS', '70', '0', '3', 'Solid line', '72', '65', '73', '0', '40', '0.0', '0', 'ENDTAB',

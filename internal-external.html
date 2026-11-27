@@ -63,6 +63,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 .ctl input[type=number],.ctl input[type=text]{width:100%;font-size:16px;padding:6px 8px;background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:8px}
 .res{margin-top:14px;background:var(--chip);border-radius:10px;padding:12px 14px;line-height:1.6;min-height:60px}
 </style>
+<script src="terms.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -468,5 +469,6 @@ const loop = now => { if (!paused) { const t = (now - t0) / 1000; scenes.forEach
 requestAnimationFrame(loop);
 })();
 </script>
+<script>window.addEventListener('load', () => TC.observe(document.body));   // 参数名能对上术语表的自动加 “?”（英文名、符号、出处）</script>
 </body>
 </html>

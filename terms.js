@@ -25,6 +25,7 @@
     ISO14: 'ISO 14:1982（= GB/T 1144）矩形花键',
     ISO1101: 'ISO 1101 几何公差（线轮廓度）',
     ISO5459: 'ISO 5459 基准',
+    ISO5408: 'ISO 5408:2009 螺纹术语',
     SITE: '本站译名（标准中未查到对应英文名或符号）'
   };
   // [中文, 英文, 图上短英文(空=同英文), 符号, 出处代码…]
@@ -68,8 +69,8 @@
     Mdim: ['跨棒距', 'Dimension over pins / balls', '', 'M', 'SITE'],
     DM: ['量棒直径', 'Measuring pin / ball diameter', '', '—', 'SITE'],
     grade: ['精度等级', 'Accuracy grade', '', '—', 'ISO1328'],
-    majDia: ['大径', 'Major diameter', '', '—', 'ISO4156', 'ISO14'],
-    minDia: ['小径', 'Minor diameter', '', '—', 'ISO4156', 'ISO14'],
+    majDia: ['大径', 'Major diameter', '', '—', 'ISO4156', 'ISO14', 'ISO5408'],
+    minDia: ['小径', 'Minor diameter', '', '—', 'ISO4156', 'ISO14', 'ISO5408'],
     formDia: ['成形直径', 'Form diameter', '', 'D|F', 'ISO4156'],
     Nspl: ['键数', 'Number of splines', '', 'N', 'ISO14'],
     Bspl: ['键宽', 'Spline width', '', 'B', 'ISO14'],
@@ -90,6 +91,29 @@
     arcR: ['圆弧', 'Arc tip radius', 'Arc', 'R', 'SITE'],
     profTol: ['线轮廓度', 'Profile tolerance of a line', '', '⌒', 'ISO1101'],
     datumA: ['基准 A', 'Datum A', '', 'A', 'ISO5459'],
+    topLand: ['齿顶面', 'Top land', '', '—', 'SITE'],
+    slotBot: ['槽底', 'Slot bottom', '', '—', 'SITE'],
+    radL: ['半径 L', 'Radius L', '', 'L', 'SITE'],
+    slotDepth: ['槽深', 'Slot depth', '', '—', 'SITE'],
+    tipWidth: ['刀尖宽', 'Tip width', '', '—', 'SITE'],
+    cornerR: ['两角圆角', 'Corner radius', 'Corner', 'R', 'SITE'],
+    flankAng: ['侧刃角（每侧）', 'Flank angle (each side)', 'Flank angle', '—', 'SITE'],
+    edgeHt: ['刃部高度', 'Cutting edge height', 'Edge height', '—', 'SITE'],
+    thickHere: ['此处厚', 'Width at this height', '', '—', 'SITE'],
+    discD: ['盘铣刀外径', 'Disk cutter outside diameter', 'Cutter dia.', '—', 'SITE'],
+    slotBotW: ['槽底宽', 'Slot bottom width', '', '—', 'SITE'],
+    profAng: ['齿形角', 'Profile angle', '', '—', 'SITE'],
+    pitchDia: ['中径', 'Pitch diameter', '', '—', 'ISO5408'],
+    pitchP: ['螺距', 'Pitch', '', 'P', 'ISO5408'],
+    nStarts: ['线数', 'Number of starts', '', 'n', 'SITE'],
+    threadAng: ['牙型角', 'Thread angle', '', '—', 'SITE'],
+    mu: ['摩擦系数', 'Coefficient of friction', '', 'μ', 'SITE'],
+    qDia: ['直径系数', 'Diameter factor', '', 'q', 'SITE'],
+    z2w: ['蜗轮齿数', 'Number of wheel teeth', '', 'z|2', 'ISO1122b'],
+    x2w: ['蜗轮变位系数', 'Profile shift coefficient of wheel', '', 'x|2', 'ISO1122b'],
+    fEq: ['当量摩擦系数', 'Equivalent coefficient of friction', '', 'f′', 'SITE'],
+    n1w: ['蜗杆转速', 'Worm speed', '', 'n|1', 'SITE'],
+    rollAng: ['滚动角', 'Roll angle', '', 'φ', 'SITE'],
     // ---- 滚插刀：齿部 ----
     z0: ['刀具齿数', 'Number of cutter teeth', 'Teeth', 'z|0', 'LBH'],
     beta0: ['刀具螺旋角', 'Cutter helix angle', 'Helix', 'β|0', 'ISO1122'],
@@ -163,7 +187,7 @@
   const LS = 'tc.drawLang';
   const ZHSYM = new Set(['alphaE']);   // 中文模式下图上也带符号的项目
   // 标签文字 → 术语键（自动给输入框和结果表加 “?”）
-  const ALIAS = { '分度圆': 'refDia', '基圆': 'baseDia', '齿顶圆': 'da', '齿顶圆（外径）': 'da', '齿根圆': 'df', '齿高': 'h', '齿高系数': 'haStar', '法向齿高系数': 'haStar', '推荐跨齿数': 'kSpan', '量棒尺寸': 'Mdim', '棒间距': 'Mdim', '本次量棒直径': 'DM', '量棒理想直径': 'DM', '头数': 'z1', '插齿刀齿数': 'z0', '插齿刀齿顶圆': 'tipDia0', '刀具齿数': 'z0', '新刀外径': 'tipDia0', '刀具螺旋角': 'beta0', '刀具倾角': 'kappa', '偏置': 'offset', '刀尖圆角': 'tipR', '齿部轴向长度': 'toothW', '刀具总厚度': 'totB', '内孔直径': 'bore', '自定义内孔直径': 'bore', '背面沉孔直径': 'backCb', '沉孔深度': 'backCbD', '刀体直径': 'bodyDia', '键槽深': 'keyT', '刀具齿根圆直径': 'rootDia0', '齿形参数制': '', '要求的渐开线起始圆': 'dFf', '齿顶修缘量': 'Ca', '齿根修缘量': 'Cf', '齿形鼓形量': 'Cal', '刀具齿根圆直径最大允许': 'rootMax', '刃口切削最低点直径': 'lowCut', '粗切进给': 'feedAx', '精切进给': 'feedAx', '心轴螺母 / 刀柄直径': 'nutDia', '螺母 / 刀柄长度': 'nutLen', '台肩位置': 'shoulder', '台肩到齿端距离': 'shoulder', '台肩直径': 'shoulder', '蜗杆分度圆直径': 'd1w', '分度圆直径 d1': 'd1w', '前角 / 后角': ['gamma', 'alphaO'], '轴交角 / 中心距': ['sigma', 'cdist'], '留顶隙 c': 'rootSafe' };
+  const ALIAS = { '分度圆': 'refDia', '基圆': 'baseDia', '齿顶圆': 'da', '齿顶圆（外径）': 'da', '齿根圆': 'df', '齿高': 'h', '齿高系数': 'haStar', '法向齿高系数': 'haStar', '推荐跨齿数': 'kSpan', '量棒尺寸': 'Mdim', '棒间距': 'Mdim', '本次量棒直径': 'DM', '量棒理想直径': 'DM', '头数': 'z1', '插齿刀齿数': 'z0', '插齿刀齿顶圆': 'tipDia0', '刀具齿数': 'z0', '新刀外径': 'tipDia0', '刀具螺旋角': 'beta0', '刀具倾角': 'kappa', '偏置': 'offset', '刀尖圆角': 'tipR', '齿部轴向长度': 'toothW', '刀具总厚度': 'totB', '内孔直径': 'bore', '自定义内孔直径': 'bore', '背面沉孔直径': 'backCb', '沉孔深度': 'backCbD', '刀体直径': 'bodyDia', '键槽深': 'keyT', '刀具齿根圆直径': 'rootDia0', '齿形参数制': '', '要求的渐开线起始圆': 'dFf', '齿顶修缘量': 'Ca', '齿根修缘量': 'Cf', '齿形鼓形量': 'Cal', '刀具齿根圆直径最大允许': 'rootMax', '刃口切削最低点直径': 'lowCut', '粗切进给': 'feedAx', '精切进给': 'feedAx', '心轴螺母 / 刀柄直径': 'nutDia', '螺母 / 刀柄长度': 'nutLen', '台肩位置': 'shoulder', '台肩到齿端距离': 'shoulder', '台肩直径': 'shoulder', '蜗杆分度圆直径': 'd1w', '分度圆直径 d1': 'd1w', '前角 / 后角': ['gamma', 'alphaO'], '轴交角 / 中心距': ['sigma', 'cdist'], '留顶隙 c': 'rootSafe', '导程角': 'gammaL', '拉出绳子的角度': 'rollAng', '小径 / 牙底': 'minDia', '牙高': 'h', '牙高（外螺纹）': 'h' };
   const subPlain = s => s.replace('|', '');
   const subHtml = s => { const i = s.indexOf('|'); return i < 0 ? s : s.slice(0, i) + '<sub>' + s.slice(i + 1) + '</sub>'; };
   const TC = {
@@ -249,7 +273,7 @@
     keysOf(txt) {
       const k = TC.keyOf(txt); if (k) return Array.isArray(k) ? k : [k];
       const parts = String(txt || '').replace(/[（(][^）)]*[）)]?/g, '').split(/\s*\/\s*/); if (parts.length < 2) return null;
-      const ks = parts.map(p => TC.keyOf(p)).filter(Boolean).flat(); return ks.length ? ks : null;
+      const ks = parts.map(p => TC.keyOf(p)); return ks.every(Boolean) ? ks.flat() : null;   // 每一段都对得上才加，避免张冠李戴
     },
     labelText(el) { const c = el.cloneNode(true); c.querySelectorAll('b,.q,button').forEach(x => x.remove()); return c.textContent; },
     // 自动加 “?”：输入框标签（.f > label）和结果表（.res 行、带 data-tc 的表格第一列）
@@ -257,6 +281,13 @@
       root = root || document;
       root.querySelectorAll('.f > label').forEach(lab => { if (lab.querySelector('.q')) return; const ks = TC.keysOf(TC.labelText(lab)); if (ks) { const f = lab.parentElement; TC.qButton(lab, ks, '', () => TC.rowEnd(f)); } });
       root.querySelectorAll('.res > div > span:first-child').forEach(sp => { if (sp.querySelector('.q')) return; const ks = TC.keysOf(sp.textContent); if (ks) TC.qButton(sp, ks, '', sp.parentElement); });
+      // 其他标签（不在 .f 里的滑块、选择框标签）
+      root.querySelectorAll('label').forEach(lab => { if (lab.closest('.f') || lab.querySelector('.q') || lab.closest('.tc-sw')) return; const ks = TC.keysOf(TC.labelText(lab)); if (ks) TC.qButton(lab, ks, '', () => lab.closest('div,p,li') || lab); });
+      // 说明页的参数表：表头是“参数 / 名称 / 项目 / 含义”的那一列
+      root.querySelectorAll('table:not([data-tc]):not(.acctbl)').forEach(tb => {
+        const hs = [...tb.querySelectorAll('thead th, tr:first-child th')].map(th => th.textContent.trim()); const ci = hs.findIndex(h => ['参数', '名称', '项目', '含义'].includes(h)); if (ci < 0) return;
+        tb.querySelectorAll('tbody tr').forEach(tr => { const td = tr.children[ci]; if (!td || td.tagName !== 'TD' || td.querySelector('.q') || tr.classList.contains('tc-tr')) return; const ks = TC.keysOf(td.textContent); if (ks) TC.qButton(td, ks, '', () => { const n = document.createElement('tr'), c = document.createElement('td'), sp = document.createElement('span'); n.className = 'tc-tr'; c.colSpan = tr.children.length; c.appendChild(sp); n.appendChild(c); tr.after(n); return sp; }); });
+      });
       root.querySelectorAll('table[data-tc] tbody tr > td:first-child, table.acctbl tbody tr > td:first-child').forEach(td => { if (td.querySelector('.q') || td.parentElement.classList.contains('tc-tr')) return; const ks = TC.keysOf(td.textContent); if (ks) TC.qButton(td, ks, '', () => { const tr = td.parentElement, n = document.createElement('tr'), c = document.createElement('td'), sp = document.createElement('span'); n.className = 'tc-tr'; c.colSpan = tr.children.length; c.appendChild(sp); n.appendChild(c); tr.after(n); return sp; }); });
     },
     observe(root) {

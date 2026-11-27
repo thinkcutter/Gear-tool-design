@@ -66,6 +66,7 @@ table.aa td:nth-child(n+3),table.aa th:nth-child(n+3){text-align:right;font-fami
 footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
 
 </style>
+<script src="terms.js"></script>
 </head>
 <body>
 <div class="wrap">
@@ -640,5 +641,6 @@ requestAnimationFrame(loop);
 
 })();
 </script>
+<script>window.addEventListener('load', () => TC.observe(document.body));   // 参数名能对上术语表的自动加 “?”（英文名、符号、出处）</script>
 </body>
 </html>
