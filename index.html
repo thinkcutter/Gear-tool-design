@@ -13,6 +13,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0F1012">
 <style>:root{color-scheme:dark;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<script src="terms.js"></script>
 </head>
 <body>
 <style>
@@ -228,16 +229,19 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
     </div>
   </section>
 
+  <div class="tc-sw" id="langSwI"></div>
   <div class="two">
     <section class="card">
       <h2>端面齿槽与刀具 <span id="sc1"></span></h2>
       <svg class="dw" id="svgT" viewBox="0 0 100 70"></svg>
       <div class="lg" id="lgT"></div>
+      <div id="legT"></div>
     </section>
     <section class="card">
       <h2 id="hC">刀具轴向廓形 <span>单位 mm</span></h2>
       <svg class="dw" id="svgC" viewBox="0 0 100 100"></svg>
       <div class="cap" id="capC"></div>
+      <div id="legC"></div>
     </section>
   </div>
 
@@ -2293,6 +2297,8 @@ if (typeof module !== 'undefined') module.exports = HX;
         document.querySelectorAll('.f label .q[aria-expanded="true"]').forEach(x => x.setAttribute('aria-expanded', 'false'));
         if (open) return;
         const h = document.createElement('div'); h.className = 'hint'; h.textContent = HINT[hintKey(ctl)];
+        // 术语表里有的：第一行加英文名、符号和出处
+        const tk = window.TC && TC.keysOf(TC.labelText(lab)); if (tk) { h.classList.add('tc'); h.insertAdjacentHTML('afterbegin', TC.hintHtml(tk)); }
         // 放在这一行（两列网格）之后，手机和电脑上都不挤
         let after = f; const top = f.offsetTop; let n = f.nextElementSibling;
         while (n && !n.hidden && n.classList.contains('f') && n.offsetTop === top) { after = n; n = n.nextElementSibling; }
@@ -2586,6 +2592,8 @@ if (typeof module !== 'undefined') module.exports = HX;
     return { Fa: items[2][2] };
   }
   ['pr_z', 'pr_x', 'pr_a'].forEach(id => $(id).addEventListener('input', schedule));
+  TC.switcher($('langSwI'), () => schedule());
+  TC.observe(document.body);   // 输入框和结果表：能对上术语表的自动加 “?”
   $('a_std').addEventListener('change', schedule);
   $('a_q').addEventListener('input', schedule);
   ['a_dA', 'a_dTG', 'a_dTa'].forEach(id => $(id).addEventListener('input', schedule));
@@ -3035,7 +3043,9 @@ if (typeof module !== 'undefined') module.exports = HX;
   // ---------- 2D：端面视图 ----------
   const NS = 'http://www.w3.org/2000/svg';
   const pathD = (pts, close) => pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(4) + ' ' + (-p[1]).toFixed(4)).join('') + (close ? 'Z' : '');
+  let usedT = new Set(), usedC = new Set();
   function drawTransverse() {
+    TC.used.clear();
     const svg = $('svgT'), half = halfRes(140);
     const isExt = geo.kind === 'ext';
     const ol = outline(half, -1, 1);
@@ -3064,7 +3074,8 @@ if (typeof module !== 'undefined') module.exports = HX;
       return `<path d="${pathD(pts)}" fill="none" stroke="${col}" stroke-width="0.9" stroke-dasharray="${dash}" ${sw}/>` +
         `<text x="${(W * 0.97).toFixed(3)}" y="${(-ly - fs * 0.3).toFixed(3)}" font-size="${fs.toFixed(3)}" text-anchor="end" fill="var(--muted)">${lab}</text>`;
     };
-    const lab = (n, R) => n + ' ' + (2 * R).toFixed(2);
+    // 图上标注：中文 / 符号模式保持原来的符号，English 模式换成英文；同时记下本图用到的术语，图下列对照表
+    const LK = { d: 'refDia', db: 'baseDia', da: 'da', di: 'diInt', df: 'df' }, lab = (n, R) => { TC.used.add(LK[n]); return (TC.lang() === 'en' ? TC.name(LK[n], 'en') : n) + ' ' + (2 * R).toFixed(2); };
     if (P.type !== 'rect') {
       s += circ(geo.r, 'var(--muted)', '6 3 1.5 3', lab('d', geo.r));
       if (geo.rb > 0 && Math.abs(geo.rb - geo.rf) > 0.3 * m && Math.abs(geo.rb - geo.ra) > 0.3 * m) s += circ(geo.rb, 'var(--steel)', '2 3', lab('db', geo.rb));
@@ -3094,11 +3105,13 @@ if (typeof module !== 'undefined') module.exports = HX;
       + (mhOn ? `<span style="flex-basis:100%">橙色点线压在白色齿廓上（看起来白橙相间）表示铣出的槽形与设计齿形重合；两线分开的地方才有偏差。</span>` : '');
     $('sc1').textContent = geo.kind === 'int' ? '内齿（刀尖朝外）' : '';
     svg.previousElementSibling.firstChild.textContent = '端面齿槽与刀具 ';   // 从蜗杆 / 转子页切回来时恢复标题
+    usedT = new Set(TC.used); $('legT').innerHTML = TC.legendHtml(usedT);
   }
 
   // ---------- 2D：刀具图 ----------
   let toolTol = null;   // 刀具公差建议（renderResults 里算，drawCutter 里标到图上）：{ up, lo, prof }
   function drawCutter() {
+    TC.used.clear(); TC.used.add(cut.formTool ? 'toothWH' : 'cutDiaH'); TC.used.add('edgeH');
     // 成形插刀 / 盘形铣刀：图按坐标表所选截面和齿高基准画，图上尺寸和坐标表一致
     const cp = cut.formTool ? profOut() : cut.prof, svg = $('svgC');
     const mapP = hh => { const P0 = cut.prof; for (let i = 1; i < P0.length; i++) { const a = P0[i - 1][0], b = P0[i][0]; if ((hh - a) * (hh - b) <= 0 && a !== b) { const t = (hh - a) / (b - a); return [cp[i - 1][0] + (cp[i][0] - cp[i - 1][0]) * t, cp[i - 1][1] + (cp[i][1] - cp[i - 1][1]) * t]; } } return [hh, NaN]; };
@@ -3148,15 +3161,16 @@ if (typeof module !== 'undefined') module.exports = HX;
       const sm = (yy, t) => `<text x="${x0 + wMain + fs * 0.15}" y="${-yy}" font-size="${fs * 0.72}" fill="var(--accent)" text-anchor="start" style="font-family:var(--f-num)">${t}</text>`;
       s += sm(ty + fs * 0.62, TT.up) + sm(ty - fs * 0.12, TT.lo);
     }
-    if (cut.flatFail) s += `<text x="0" y="${-(-Hmax * 0.07 - fs * (arcTip && !geo.k ? 3.4 : 2.2))}" font-size="${fs}" fill="var(--warn)" text-anchor="middle">选了直线刀齿顶，但圆角放不下，已按圆弧</text>`;
-    if (arcTip && !geo.k) { const yR = -Hmax * 0.07 - fs * 2.2; const kS = cut.slot && slotSec().sec !== 'ref' ? slotSec().k : 1; s += txt(0, yR, `圆弧 R${geo.rf.toFixed(3)}（${cut.isExt ? '凹' : '凸'} ${(cut.arcDepth * kS).toFixed(3)}）`); }
+    if (cut.flatFail) s += `<text x="0" y="${-(-Hmax * 0.07 - fs * (arcTip && !geo.k ? 3.4 : 2.2))}" font-size="${fs}" fill="var(--warn)" text-anchor="middle">${TC.lang() === 'en' ? 'Straight tip selected, fillets do not fit: arc used' : '选了直线刀齿顶，但圆角放不下，已按圆弧'}</text>`;
+    if (arcTip && !geo.k) { const yR = -Hmax * 0.07 - fs * 2.2; const kS = cut.slot && slotSec().sec !== 'ref' ? slotSec().k : 1; s += txt(0, yR, TC.lab('arcR', `R${geo.rf.toFixed(3)}（${TC.lang() === 'en' ? (cut.isExt ? 'concave' : 'convex') : (cut.isExt ? '凹' : '凸')} ${(cut.arcDepth * kS).toFixed(3)}）`)); }
     // 高度
     const xh = -mx * 0.98 - Hmax * 0.04;
     s += `<line x1="${xh - fs * 0.3}" y1="0" x2="${-tipRd}" y2="0" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
     s += `<line x1="${xh - fs * 0.3}" y1="${-hEdge}" x2="${-e[1]}" y2="${-hEdge}" stroke="var(--accent)" stroke-width="0.6" ${sw}/>`;
     s += arrow(xh, 0, xh, hEdge) + txt(xh - fs * 0.35, hEdge / 2, hEdge.toFixed(3), 'middle', true);
-    if (isFinite(hPm[0])) s += `<line x1="${-mx}" y1="${-hPm[0]}" x2="${mx}" y2="${-hPm[0]}" stroke="var(--muted)" stroke-width="0.7" stroke-dasharray="6 3 1.5 3" ${sw}/>` + `<text x="${mx}" y="${-hPm[0] + (TT.lo ? fs * 1.0 : -fs * 0.25)}" font-size="${fs * 0.85}" fill="var(--muted)" text-anchor="end">分度圆 H=${hPm[0].toFixed(3)}</text>`;
+    if (isFinite(hPm[0])) s += `<line x1="${-mx}" y1="${-hPm[0]}" x2="${mx}" y2="${-hPm[0]}" stroke="var(--muted)" stroke-width="0.7" stroke-dasharray="6 3 1.5 3" ${sw}/>` + `<text x="${mx}" y="${-hPm[0] + (TT.lo ? fs * 1.0 : -fs * 0.25)}" font-size="${fs * 0.85}" fill="var(--muted)" text-anchor="end">${TC.lab('refH', 'H=' + hPm[0].toFixed(3))}</text>`;
     if (TT.prof > 0) {
+      TC.used.add('profTol'); TC.used.add('datumA');
       // 引线：从右侧齿面（分度圆与刃区上限之间）引到右上方的轮廓度框 [⌒ | 公差 | A]
       const hq = isFinite(hPm[0]) ? (hPm[0] + hEdge) / 2 : hEdge * 0.6, rq = G.xAtY(cp.map(q => [q[1], q[0]]), hq);
       const bw = [fs * 1.5, fs * 4.1, fs * 1.4], bh = fs * 1.45, bx = W / 2 - fs * 0.4 - bw[0] - bw[1] - bw[2], by = Hmax + shank + bh + fs * 0.6;
@@ -3175,6 +3189,7 @@ if (typeof module !== 'undefined') module.exports = HX;
     svg.innerHTML = s;
     $('hC').firstChild.textContent = cut.slot ? '成形插刀刀齿廓形 ' : cut.disc ? '盘形铣刀刀齿廓形 ' : '刀具轴向廓形 ';
     $('capC').textContent = cut.slot ? `成形插刀刀齿廓形，按坐标表所选截面（${$('t_sec').selectedOptions[0] ? $('t_sec').selectedOptions[0].text : ''}）绘制，图上尺寸与坐标表一致；刀齿顶在下，标注值为刀齿宽度。` : cut.disc ? '盘形铣刀刀齿廓形，刀齿顶在下，横向是齿宽方向，标注值为刀齿宽度。点划线为分度圆位置，虚线以上为外延段。' : `刀尖在下。点划线为分度圆位置，虚线为${geo.kind === 'int' ? '内径' : '齿顶圆'}对应高度，以上为外延段。`;
+    usedC = new Set(TC.used); $('legC').innerHTML = TC.legendHtml(usedC);
     if (TT.prof > 0 || TT.lo) $('capC').textContent += (TT.lo ? `分度圆处${cut.formTool ? '刀齿宽' : '刀径'}的上下偏差按齿厚公差的 1/4 给出；` : '') + (TT.prof > 0 ? `轮廓度 ${TT.prof.toFixed(3)} 为刃区廓形的线轮廓度，以${cut.formTool ? '刀齿对称中心线' : '刀具轴线'} A 为基准（按 Fα/4）。` : '');
   }
 
@@ -3268,11 +3283,11 @@ if (typeof module !== 'undefined') module.exports = HX;
     // 刀具轮廓：CUTTER 层只有这一条线（拟合时为一条带圆弧的多段线），其他标注都不与它相交、不共点
     if (fitOn() && fitRes) fitDxf(out, 'CUTTER'); else poly(L.concat(R), 'CUTTER', false);
     if (pure) { out.push('0', 'ENDSEC', '0', 'EOF'); return dxfDoc(out, { pure: true }); }
-    labs.push({ layer: 'NOTES', x: top[0], y: top[1], t: tnm + '（H 自刀尖起算）' });   // 名称放 NOTES 层：CUTTER 层只留刀具轮廓一条线
+    labs.push({ layer: 'NOTES', x: top[0], y: top[1], t: TC.lang() === 'en' ? (cut.slot ? 'Form shaper tooth profile' : cut.disc ? 'Disk cutter tooth profile' : 'Finger cutter axial profile') + ' (H from cutter tip)' : tnm + '（H 自刀尖起算）' });   // 名称放 NOTES 层：CUTTER 层只留刀具轮廓一条线
     const hTop = Math.max(...po.map(q => q[0])), hBot = Math.min(...po.map(q => q[0])), span = Math.max(1e-3, hTop - hBot), gap = 0.03 * span;
     // 中心线：从刀尖上方一点开始，不碰刀尖
     line('CENTER', 0, hBot + gap, 0, hTop + 2 * gap + 0.05 * span);
-    labs.push({ layer: 'CENTER', x: 0, y: hTop + 2 * gap + 0.05 * span, t: cut.formTool ? '刀齿中心线' : '刀具轴线' });
+    labs.push({ layer: 'CENTER', x: 0, y: hTop + 2 * gap + 0.05 * span, t: TC.lang() === 'en' ? (cut.formTool ? 'Tooth centre line' : 'Cutter axis') : cut.formTool ? '刀齿中心线' : '刀具轴线' });
     // 标记线：画在轮廓右侧外面，从轮廓外 gap 处引到统一的标注位置，不穿过、不接触轮廓
     const xMaxAt = h => { let m = -Infinity; for (let i = 1; i < po.length; i++) { const a = po[i - 1], b = po[i]; if ((a[0] - h) * (b[0] - h) <= 0) { const x = a[0] === b[0] ? Math.max(a[1], b[1]) : a[1] + (b[1] - a[1]) * (h - a[0]) / (b[0] - a[0]); if (x > m) m = x; } }
       if (!isFinite(m)) { let best = po[0]; for (const q of po) if (Math.abs(q[0] - h) < Math.abs(best[0] - h)) best = q; m = best[1]; } return m; };
@@ -3330,6 +3345,8 @@ if (typeof module !== 'undefined') module.exports = HX;
       .replace(/[^\x20-\x7e]/g, c => '\\U+' + c.codePointAt(0).toString(16).toUpperCase().padStart(4, '0'));
   }
   // 说明栏：零件、刀具、输入参数、计算结果、图层说明
+  // English / 符号模式下，DXF 说明里能对上术语表的名称换成英文（对不上的保留中文）
+  const tcName = n => { if (TC.lang() === 'zh') return n; const ks = TC.keysOf(n); return ks ? ks.map(k => TC.en(k)).join(' / ') : n; };
   function dxfNoteLines(opt) {
     const tp = (document.querySelector('.seg button[data-t][aria-pressed="true"]') || {}).textContent || '';
     const d = new Date(), ds = d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
@@ -3341,14 +3358,15 @@ if (typeof module !== 'undefined') module.exports = HX;
       const name = [...lab.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim(), unit = (lab.querySelector('b') || {}).textContent || '';
       let v = el.tagName === 'SELECT' ? (el.selectedOptions[0] || {}).text || '' : el.value; if (v === '' || (v === '0' && /0\s*=/.test(unit))) continue;
       const u = el.tagName === 'SELECT' ? '' : unit.replace(/\s*0\s*=.*$/, '').trim();
-      L.push({ t: name + ' = ' + v + (u ? (u === '°' ? u : ' ' + u) : '') });
+      L.push({ t: tcName(name) + ' = ' + v + (u ? (u === '°' ? u : ' ' + u) : '') });
     }
     for (const id of ['ext', 't_kind', 't_D', 't_tip']) { const el = $(id); if (!el || el.offsetParent === null) continue; const lab = document.querySelector('label[for="' + id + '"]'); if (!lab) continue;
       const name = [...lab.childNodes].filter(n => n.nodeType === 3).map(n => n.textContent).join('').trim(); if (L.some(q => q.t.startsWith(name + ' ='))) continue;
       L.push({ t: name + ' = ' + (el.tagName === 'SELECT' ? (el.selectedOptions[0] || {}).text : el.value) }); }
     L.push({ t: '' }, { t: '计算结果', big: true });
     const sp = [...document.querySelectorAll('#res span')].map(e => e.textContent.trim());
-    for (let i = 0; i + 1 < sp.length; i += 2) L.push({ t: sp[i] + ' = ' + sp[i + 1] });
+    for (let i = 0; i + 1 < sp.length; i += 2) L.push({ t: tcName(sp[i]) + ' = ' + sp[i + 1] });
+    { const LR = TC.legendRows(new Set([...usedT, ...usedC])); if (LR.length) { L.push({ t: '' }, { t: TC.lang() === 'zh' ? '标注对照（中文 / English / 符号）' : 'Legend (Chinese / English / Symbol)', big: true }); for (const r of LR) L.push({ t: r.join(' / ') }); } }
     const wn = ($('warn').textContent || '').split('；').map(t => t.trim()).filter(Boolean);
     if (wn.length) { L.push({ t: '' }, { t: '提示', big: true }); for (const t of wn) L.push({ t: '· ' + t }); }
     L.push({ t: '' }, { t: '图层说明', big: true });
@@ -3494,7 +3512,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
   // 输入有误、算不出结果时，清掉上一次的图、表和 3D，避免显示的是别的零件或别的刀具
   // 图例里的线型小样（与图中线型一致）
   const lgLine = (c, dash, round) => `<svg width="24" height="6" style="vertical-align:middle;margin-right:4px"><line x1="1" y1="3" x2="23" y2="3" stroke="${c}" stroke-width="2" stroke-dasharray="${dash}"${round ? ' stroke-linecap="round"' : ''}/></svg>`;
-  function clearOut() { for (const id of ['svgT', 'svgC', 'lgT', 'res', 'tb']) if ($(id)) $(id).innerHTML = ''; $('hC').firstChild.textContent = '刀具廓形 '; $('svgT').previousElementSibling.firstChild.textContent = '零件截面 '; $('sc1').textContent = ''; if (gl) { freeMeshes(); requestDraw(); } }
+  function clearOut() { for (const id of ['svgT', 'svgC', 'lgT', 'legT', 'legC', 'res', 'tb']) if ($(id)) $(id).innerHTML = ''; $('hC').firstChild.textContent = '刀具廓形 '; $('svgT').previousElementSibling.firstChild.textContent = '零件截面 '; $('sc1').textContent = ''; if (gl) { freeMeshes(); requestDraw(); } }
   function freeMeshes() { for (const m of meshes) for (const b of ['p', 'n', 'c', 'i']) gl.deleteBuffer(m[b]); meshes = []; }
   const col3 = (n, d) => hexRGB(css(n) || d);
   const hexRGB = h => { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); const n = parseInt(h, 16); return [(n >> 16 & 255) / 255, (n >> 8 & 255) / 255, (n & 255) / 255]; };
@@ -5380,6 +5398,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     svg.innerHTML = s; return { fs, vb };
   }
   function hxDrawPart() {
+    if ($('legT')) $('legT').innerHTML = ''; usedT = new Set();
     const R = hxR, svg = $('svgT');
     if (R.kind === 'rack') return rackDrawPart(R, svg);
     if (R.kind === 'spur') return spurDrawPart(R, svg);
@@ -5440,6 +5459,7 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     return T.sides.map(sd => ({ nm: sd.nm, pts: sd.prof.map(q => [q[1], q[0] * T.k]), eff: sd.prof.map(q => q[2]) }));
   }
   function hxDrawTool() {
+    if ($('legC')) $('legC').innerHTML = ''; usedC = new Set();
     const R = hxR, svg = $('svgC'), cs = hxToolCurves(), lay = [], tx = [];
     let off = 0;
     cs.forEach((c, k) => {

@@ -1800,6 +1800,7 @@ const SK = (() => {
   function build3dBody() { const G = st.G; if (!G) return; const M = cutterMesh(G); st.mesh = M; if (v2) v2.set(M); }
   $('dlBody').addEventListener('click', bodyDXF);
   TC.switcher($('langSw'), () => { try { showBody(); } catch (e) {} });
+  TC.observe(document.querySelector('main') || document.body);   // 其余输入框和结果表：标签能对上术语表的自动加 “?”
   $('dlStl').addEventListener('click', () => { if (!st || !st.mesh) return; const blob = stlBin(st.mesh); download(blob, `skiving_cutter_z${st.cp.z}.stl`, 'model/stl'); });
 
   // ---------- 输出 ----------
