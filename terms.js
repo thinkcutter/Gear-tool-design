@@ -184,6 +184,11 @@
     disc: ['盘形（装心轴）', 'Disk type (arbor mounted)', '', '', 'NACHI'],
     intGear: ['内齿', 'Internal', '', '', 'ISO1122'], extGear: ['外齿', 'External', '', '', 'ISO1122']
   };
+  // 各术语用在哪些页面（2026-11-28 用浏览器逐页扫描生成；首页 14 种零件类型、滚插刀碗形 / 盘形都已切换）
+  const USED = {"DM": ["index", "formulas"], "kSpan": ["index"], "sideClr": ["index"], "grade": ["index"], "cdist": ["index", "skiving", "worm", "gear-params", "power-skiving"], "mn": ["index", "skiving", "worm", "power-skiving"], "z": ["index", "skiving", "worm", "gear-params", "formulas"], "an": ["index", "skiving"], "beta": ["index", "skiving", "formulas"], "hand": ["index"], "x": ["index", "skiving", "worm", "gear-params", "formulas"], "haStar": ["index", "formulas"], "cStar": ["index"], "rhoStar": ["index"], "dsRed": ["index"], "da": ["index", "skiving", "gear-params", "internal-external"], "df": ["index", "skiving", "gear-params", "internal-external"], "b": ["index", "skiving"], "refH": ["index"], "mt": ["index"], "at": ["index"], "refDia": ["index", "gear-params"], "baseDia": ["index", "gear-params"], "Wk": ["index"], "z0": ["index", "skiving", "power-skiving"], "x0": ["index"], "tipDia0": ["index", "skiving"], "m": ["index", "face-gear", "worm", "gear-params", "formulas"], "hfStar": ["index"], "splLen": ["index"], "majDia": ["index", "thread", "internal-external"], "minDia": ["index", "internal-external"], "Nspl": ["index"], "Bspl": ["index"], "ha": ["index", "gear-params"], "hf": ["index", "gear-params"], "h": ["index"], "Mdim": ["index"], "cutType": ["index", "skiving"], "discD": ["index", "face-gear"], "mx": ["index"], "z1": ["index", "worm"], "d1w": ["index"], "alpha": ["index", "gear-params", "power-skiving", "formulas"], "gamma": ["index", "skiving", "power-skiving-inspection"], "alphaO": ["index", "power-skiving"], "leadG": ["index", "worm"], "z2w": ["index", "worm"], "x2w": ["index", "worm"], "edgeHt": ["index", "face-gear"], "pitchP": ["index", "thread"], "pitchDia": ["index"], "gearKind": ["skiving"], "dFf": ["skiving"], "beta0": ["skiving", "power-skiving"], "rake": ["skiving"], "alphaE": ["skiving"], "regrind": ["skiving"], "tipR": ["skiving"], "Ca": ["skiving"], "Cf": ["skiving"], "Cal": ["skiving"], "fHa": ["skiving"], "kappa": ["skiving"], "offset": ["skiving"], "toothW": ["skiving"], "bore": ["skiving"], "totH": ["skiving"], "cbDia": ["skiving"], "innerCone": ["skiving"], "cbDepth": ["skiving"], "clampOut": ["skiving"], "topR": ["skiving"], "transCone": ["skiving"], "chTop": ["skiving"], "chBore": ["skiving"], "totB": ["skiving"], "bodyDia": ["skiving"], "backCb": ["skiving"], "backCbD": ["skiving"], "keyW": ["skiving"], "keyT": ["skiving"], "rootDia0": ["skiving"], "shoulder": ["skiving"], "nCut": ["skiving"], "nutDia": ["skiving"], "nutLen": ["skiving"], "adjRe": ["skiving"], "nPass": ["skiving"], "finAll": ["skiving"], "docMode": ["skiving"], "feedAx": ["skiving"], "safeD": ["skiving"], "sigma": ["skiving"], "refDia0": ["skiving"], "gashRun": ["skiving"], "clampIn": ["skiving"], "tipDiaEnd": ["skiving"], "webT": ["skiving"], "rakeStep": ["skiving"], "tipDiaWorn": ["skiving"], "lead": ["skiving"], "workpiece": ["skiving"], "clrBack": ["skiving"], "rootMax": ["skiving"], "rootSafe": ["skiving"], "lowCut": ["skiving"], "slotDepth": ["face-gear"], "tipWidth": ["face-gear"], "topLand": ["face-gear"], "slotBot": ["face-gear"], "radL": ["face-gear"], "cornerR": ["face-gear"], "flankAng": ["face-gear"], "thickHere": ["face-gear"], "slotBotW": ["face-gear"], "profAng": ["face-gear", "worm"], "qDia": ["worm"], "gammaL": ["worm"], "fEq": ["worm"], "n1w": ["worm"], "mu": ["thread"], "nStarts": ["thread"], "rollAng": ["gear-params"], "s": ["gear-params"], "e": ["gear-params"], "c": ["gear-params"]};
+  const PAGE = { index: '首页（铣刀计算）', skiving: '滚插刀', 'face-gear': '端面齿', worm: '蜗杆', thread: '螺纹', 'gear-params': '齿轮参数', 'internal-external': '内外齿', 'power-skiving': '滚插刀图解', 'power-skiving-inspection': '滚插刀检测', formulas: '公式', 'gear-contact': '齿轮接触' };
+  // 对应的国家标准（按标准名称对应；采用程度见术语对照页说明）
+  const GB = { ISO1122: 'GB/T 3374.1-2010', ISO1328: 'GB/T 10095.1', ISO4156: 'GB/T 3478.1-2008', ISO14: 'GB/T 1144', ISO53: 'GB/T 1356' };
   const LS = 'tc.drawLang';
   const ZHSYM = new Set(['alphaE']);   // 中文模式下图上也带符号的项目
   // 标签文字 → 术语键（自动给输入框和结果表加 “?”）
@@ -191,7 +196,7 @@
   const subPlain = s => s.replace('|', '');
   const subHtml = s => { const i = s.indexOf('|'); return i < 0 ? s : s.slice(0, i) + '<sub>' + s.slice(i + 1) + '</sub>'; };
   const TC = {
-    T, SRC,
+    T, SRC, USED, PAGE, GB,
     lang() { try { const v = localStorage.getItem(LS); return v === 'en' || v === 'sym' ? v : 'zh'; } catch (e) { return 'zh'; } },
     setLang(v) { try { localStorage.setItem(LS, v); } catch (e) {} document.dispatchEvent(new CustomEvent('tc-lang', { detail: v })); },
     has: k => !!T[k],
@@ -207,8 +212,8 @@
       return ZHSYM.has(k) && t[3] && t[3] !== '—' ? t[0] + ' ' + subPlain(t[3]) : t[0];
     },
     // 图上标注：名称 + 数值；同时记录本图用过的术语，供对照表使用
-    used: new Set(),
-    lab(k, val, lang) { TC.used.add(k); const n = TC.name(k, lang); if (val === undefined || val === '') return n; val = String(val); return val.startsWith(n) ? val : n + ' ' + val; },
+    used: new Set(), seen: new Set(),
+    lab(k, val, lang) { TC.used.add(k); TC.seen.add(k); const n = TC.name(k, lang); if (val === undefined || val === '') return n; val = String(val); return val.startsWith(n) ? val : n + ' ' + val; },
     word(k, lang) { return TC.name(k, lang); },
     srcText(k) { const t = T[k]; return t ? t.slice(4).map(c => SRC[c] || c).join('；') : ''; },
     // “?” 里的第一行：英文名 · 符号（出处）
@@ -218,11 +223,12 @@
     },
     hintHtml(keys, extra) {
       const ks = (Array.isArray(keys) ? keys : [keys]).filter(k => T[k]);
-      return ks.map(k => `<div class="tc-l">${T[k][0]}：${TC.lineHtml(k)}</div>`).join('') + (extra ? `<div class="tc-x">${extra}</div>` : '');
+      return ks.map(k => `<div class="tc-l">${T[k][0]}：${TC.lineHtml(k)}</div>`).join('') + (extra ? `<div class="tc-x">${extra}</div>` : '') + '<div class="tc-more"><a href="terms.html">全部术语对照 ›</a></div>';
     },
     // 在 label 后加 “?” 按钮，点开在 after 元素之后显示说明
     qButton(label, keys, extra, afterEl) {
       if (!label || label.querySelector('.q')) return;
+      (Array.isArray(keys) ? keys : [keys]).forEach(k => TC.seen.add(k));
       const b = document.createElement('button'); b.type = 'button'; b.className = 'q tc-q'; b.textContent = '?';
       b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-label', '英文名、符号和说明');
       b.addEventListener('click', e => {
@@ -247,7 +253,7 @@
     switcher(el, onChange) {
       if (!el) return;
       const opts = [['zh', '中文'], ['en', 'English'], ['sym', '符号']];
-      const draw = () => { const v = TC.lang(); el.innerHTML = '<span class="tc-swl">图上文字</span>' + opts.map(o => `<button type="button" class="btn${o[0] === v ? ' on' : ''}" data-l="${o[0]}">${o[1]}</button>`).join(''); };
+      const draw = () => { const v = TC.lang(); el.innerHTML = '<span class="tc-swl">图上文字</span>' + opts.map(o => `<button type="button" class="btn${o[0] === v ? ' on' : ''}" data-l="${o[0]}">${o[1]}</button>`).join('') + '<a class="tc-gl" href="terms.html">术语对照表 ›</a>'; };
       el.addEventListener('click', e => { const b = e.target.closest('[data-l]'); if (!b) return; TC.setLang(b.dataset.l); draw(); onChange && onChange(b.dataset.l); });
       draw();
     },
@@ -297,7 +303,7 @@
       run();
     },
     css: '.hint.tc{display:block!important;grid-column:1/-1;font-family:var(--f-ui,inherit)!important;text-align:left;white-space:normal}.hint.tc *{font-family:inherit}.hint.tc div{display:block!important;border:0!important;padding:1px 0!important;font-size:12.5px!important}.hint.tc span{font-family:inherit!important;font-size:11.5px!important;white-space:normal!important;color:var(--muted)!important}label.tc-lab{display:flex!important;align-items:center;min-width:0}label.tc-lab .tc-lt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}label.tc-lab .q{flex:none}.hint.tc .tc-l{margin:1px 0}.hint.tc .tc-src{color:var(--muted);font-size:11.5px}.hint.tc sub{font-size:75%}.hint.tc .tc-x{margin-top:4px}' +
-      '.tc-sw{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.tc-swl{font-size:12px;color:var(--muted)}' +
+      '.tc-gl,.tc-more a{font-size:12px;color:var(--accent);text-decoration:none;margin-left:6px}.hint.tc .tc-more{margin-top:3px}.tc-sw{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:4px 0 8px}.tc-swl{font-size:12px;color:var(--muted)}' +
       '.tc-q{display:inline-grid;place-items:center;width:17px;height:17px;margin-left:5px;border-radius:50%;border:1px solid var(--line);color:var(--muted);font-size:11px;line-height:1;cursor:pointer;background:transparent;font-family:var(--f-ui,inherit);vertical-align:1px;padding:0;flex:none}.tc-q[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}' +
       '.tc-leg{margin-top:10px;overflow-x:auto;font-family:var(--f-ui,inherit)}.tc-legt{font-size:12.5px;color:var(--muted);margin-bottom:4px}.tc-leg table{border-collapse:collapse;width:100%;font-size:12px}' +
       '.tc-leg th,.tc-leg td{font-family:var(--f-ui,inherit);white-space:normal;color:var(--ink);border:1px solid var(--line);padding:3px 6px;text-align:left;vertical-align:top}.tc-leg th{color:var(--muted);font-weight:500;white-space:nowrap}.tc-leg td:nth-child(3){white-space:nowrap}.tc-leg td:nth-child(4){color:var(--muted);font-size:11.5px}.tc-leg sub{font-size:75%}'

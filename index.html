@@ -142,6 +142,7 @@ textarea{width:100%;height:110px;font-family:var(--f-num);font-size:11.5px;backg
       <button data-t="form" aria-pressed="false">回转体车刀</button>
       <a class="lnk" href="face-gear.html" title="端面齿 / 面齿轮：盘铣刀分层铣刀路与 G 代码">端面齿 ›</a>
       <a class="lnk" href="skiving.html" title="滚插刀（Power Skiving）刀具设计">滚插刀 ›</a>
+      <a class="lnk" href="terms.html" title="全站术语：中文 / English / 符号 / 出处">术语对照 ›</a>
     </div>
     <div class="grid" id="hxForm" hidden></div>
     <div class="grid" id="hxTool" hidden></div>
@@ -2290,6 +2291,7 @@ if (typeof module !== 'undefined') module.exports = HX;
       const txt = HINT[hintKey(ctl)]; if (!txt) return;
       const b = document.createElement('button'); b.type = 'button'; b.className = 'q'; b.textContent = '?';
       b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-label', '说明');
+      if (window.TC) { const tk0 = TC.keysOf(TC.labelText(lab)); if (tk0) tk0.forEach(k => TC.seen.add(k)); }
       b.addEventListener('click', e => {
         e.preventDefault(); e.stopPropagation();
         const grid = f.parentElement, open = b.getAttribute('aria-expanded') === 'true';

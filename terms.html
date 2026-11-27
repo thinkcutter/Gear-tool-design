@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>术语对照表（中文 / English / 符号）</title>
+<link rel="manifest" href="manifest.webmanifest">
+<style>
+:root{--bg:#0F1012;--panel:#18191C;--ink:#F2F2F0;--muted:#9EA3A9;--line:#2F3237;--grid:#24262A;--accent:#FF6B1A;
+  --f-ui:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC","Source Han Sans SC",system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{background:var(--bg);color:var(--ink);margin:0}
+body{font-family:var(--f-ui);font-size:14px;line-height:1.55}
+.wrap{max-width:1180px;margin:0 auto;padding:16px 14px 40px}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 14px;border-bottom:2px solid var(--accent);padding-bottom:8px}
+h1{font-weight:400;font-size:26px;margin:0;letter-spacing:.04em}
+.sub{color:var(--muted);font-size:12.5px}
+a{color:var(--accent);text-decoration:none}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:12px 14px;margin-top:12px}
+.card h2{font-size:13px;letter-spacing:.1em;color:var(--muted);margin:0 0 8px;font-weight:600}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input[type=search],select{font:inherit;font-size:14px;background:var(--bg);color:var(--ink);border:1px solid var(--line);border-radius:4px;padding:6px 8px}
+input[type=search]{flex:1;min-width:180px}
+label.ck{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:4px}
+.btn{font:inherit;font-size:13px;padding:6px 12px;border-radius:4px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer}
+.btn.acc{border-color:var(--accent);color:var(--accent)}
+.cnt{font-size:12.5px;color:var(--muted)}
+.tw{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border-bottom:1px solid var(--grid);padding:6px 8px;text-align:left;vertical-align:top}
+th{color:var(--muted);font-weight:500;white-space:nowrap;position:sticky;top:0;background:var(--panel)}
+td.sym{white-space:nowrap;font-size:15px}
+td.src,td.gb,td.pg{color:var(--muted);font-size:12.5px}
+td.en{font-weight:500}
+sub{font-size:75%}
+.tag{display:inline-block;font-size:11px;border:1px solid var(--line);border-radius:3px;padding:0 4px;margin:1px 2px 1px 0;color:var(--muted)}
+td.src.site{color:#C9A56B}
+ul{margin:4px 0;padding-left:20px}li{margin:2px 0}
+.note{font-size:12.5px;color:var(--muted)}
+@media print{
+  :root{--bg:#fff;--panel:#fff;--ink:#000;--muted:#444;--line:#999;--grid:#bbb}
+  .noprint{display:none!important}.card{border:0;padding:0;box-shadow:none}th{position:static}
+  body{font-size:11px}table{font-size:10.5px}td.sym{font-size:12px}a{color:#000}
+}
+</style>
+<script src="terms.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>术语对照表</h1>
+    <span class="sub">中文 / English / 符号 / 出处 · 全站共用同一份术语表</span>
+    <a class="noprint" href="index.html" style="margin-left:auto">← 返回铣刀计算</a>
+  </header>
+
+  <section class="card noprint">
+    <h2>查找</h2>
+    <div class="bar">
+      <input type="search" id="q" placeholder="输入中文、英文或符号，如 齿顶圆 / tip / da">
+      <select id="pg"><option value="">全部页面</option></select>
+      <label class="ck"><input type="checkbox" id="std">只看有标准出处的</label>
+      <button class="btn acc" id="pr">打印 / 存为 PDF</button>
+      <span class="cnt" id="cnt"></span>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>术语</h2>
+    <div class="tw"><table>
+      <thead><tr><th>中文</th><th>English</th><th>符号</th><th>出处</th><th>对应国标</th><th>用在</th></tr></thead>
+      <tbody id="tb"></tbody>
+    </table></div>
+  </section>
+
+  <section class="card">
+    <h2>说明</h2>
+    <ul class="note">
+      <li><b>英文名和符号都要有出处。</b>出处里写“德文名称直译”的，表示该标准只有德文名称，英文是本站直译；写“本站译名”的（黄色），表示在标准里没有查到对应的英文名或符号，符号一律写“—”，不编造。</li>
+      <li><b>对应国标</b>按标准名称对应：GB/T 3374.1-2010 与 ISO 1122-1:1998 同名；GB/T 10095.1-2008 等同 ISO 1328-1:1995，GB/T 10095.1-2022 对应 ISO 1328-1:2013；GB/T 3478.1-2008 以 ISO 4156-1:2005 为基础；GB/T 1356 对应 ISO 53；GB/T 1144 对应 ISO 14。国标符号与 ISO 一致时不另列；采用程度（等同 / 修改）以标准正文为准，本页未逐一核对。</li>
+      <li><b>用在</b>：2026-11-28 用浏览器逐页扫描（首页 14 种零件类型、滚插刀碗形和盘形都切换过），列出出现过这个术语的页面。各页面里参数名能对上这张表的，标签后面会自动出现“?”，点开看英文名、符号和出处。</li>
+      <li>带尺寸标注的图纸（滚插刀外形图、首页两张图、端面齿两张图）上方有“中文 / English / 符号”开关，图下附标注对照表，DXF 按所选语言导出。</li>
+    </ul>
+  </section>
+
+  <section class="card">
+    <h2>出处</h2>
+    <ul class="note" id="srcs"></ul>
+  </section>
+</div>
+<script>
+(() => {
+  const $ = id => document.getElementById(id), T = TC.T;
+  const rows = Object.keys(T).filter(k => T[k][3] !== '').map(k => ({ k, zh: T[k][0], en: T[k][1], sym: TC.symHtml(k), symP: TC.symPlain(k), src: T[k].slice(4), pages: TC.USED[k] || [] }));
+  rows.sort((a, b) => a.zh.localeCompare(b.zh, 'zh-Hans-CN'));
+  for (const [id, nm] of Object.entries(TC.PAGE)) { const o = document.createElement('option'); o.value = id; o.textContent = nm; $('pg').appendChild(o); }
+  const draw = () => {
+    const q = $('q').value.trim().toLowerCase(), pg = $('pg').value, std = $('std').checked;
+    const L = rows.filter(r => (!q || (r.zh + ' ' + r.en + ' ' + r.symP).toLowerCase().includes(q)) && (!pg || r.pages.includes(pg)) && (!std || r.src.some(c => c !== 'SITE')));
+    $('tb').innerHTML = L.map(r => {
+      const site = r.src.length === 1 && r.src[0] === 'SITE';
+      const gb = [...new Set(r.src.map(c => TC.GB[c]).filter(Boolean))].join('；') || '—';
+      return `<tr><td>${r.zh}</td><td class="en">${r.en}</td><td class="sym">${r.sym}</td><td class="src${site ? ' site' : ''}">${TC.srcText(r.k)}</td><td class="gb">${gb}</td><td class="pg">${r.pages.map(p => `<a class="tag" href="${p}.html">${TC.PAGE[p] || p}</a>`).join('') || '—'}</td></tr>`;
+    }).join('');
+    $('cnt').textContent = `共 ${L.length} / ${rows.length} 条`;
+  };
+  ['q', 'pg', 'std'].forEach(id => $(id).addEventListener('input', draw));
+  $('pr').addEventListener('click', () => window.print());
+  $('srcs').innerHTML = Object.entries(TC.SRC).map(([c, t]) => `<li>${t}</li>`).join('');
+  draw();
+})();
+</script>
+</body>
+</html>
