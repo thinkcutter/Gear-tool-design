@@ -213,7 +213,7 @@ textarea.meas{width:100%;box-sizing:border-box;min-height:96px;background:var(--
     <p><b>重磨后调整</b>：刀具磨好后刃口就固定了，重磨后在机床上调整中心距、轴交角（可选偏置）和刀具—工件相位，使齿顶到渐开线起始圆之间左右齿面相对目标的偏差平方和最小（Gauss-Newton，数值求导），然后用精细模拟重新校核。</p>
     <p><b>切削分配</b>：径向切深从工件齿顶切到齿根；“等切除面积”按端面切除面积相等分配粗切（切深递减），最后一刀为精切余量。啮合长度 = 刃口在工件齿圈内的轴向范围，每刀行程 = 齿宽 + 啮合长度 + 两端安全距离，时间 = 行程 ÷（每工件转进给 × 工件转速）。</p>
     <p><b>干涉检查</b>：刀齿后部 —— 前刀面后面 0.2 mm 到刀齿长度范围内的后刀面点在运动中到已加工齿面的最小距离（负值 = 蹭齿面）；刀具齿根圆 —— 新刀、旧刀状态下刀体圆转一圈都不进入工件齿顶圆的最大直径；台肩 —— 刀具前后端圆、刀体、刀柄在切完最后一点时伸过齿端的最大轴向距离。</p>
-    <p><b>刀具外形图与 3D</b>：刀齿由两侧后刀面螺旋面、顶锥（顶刃后角）和前刀面围成，从前刀面一直到刀齿长度末端（碗形刀的齿槽再向后延伸到过渡锥上收尾）；刀体、内孔、键槽、背面沉孔按输入尺寸。正面为前刀面上的刃口及齿根，背面为刀齿末端截面（左右镜像），侧面为过刀齿中心和键槽的轴向剖视。碗形刀具：齿部在前端（大端），后接过渡锥、圆角和顶部外圆，内部为前端内孔 + 内锥 + 螺栓面 + 内孔，未填的尺寸按外径比例自动取（参数表列出实际值，比例和过渡锥 50°、齿槽在过渡锥上收尾、顶面和内孔倒角的画法参照 Ø64.8 碗形刀实物图纸）。齿槽不在齿部末端截止：齿根按后角继续收缩，一直磨到与过渡锥相交处收尾（参数表给出收尾位置），侧面剖视中齿槽底画成实线。刀具齿根圆默认取“不碰工件齿顶（留 0.1 m）且比刃口切削最低点低 0.3 m”；刃口计算范围以下的齿面按径向直线延伸到齿根。刀尖圆角只在参数表注明，图和 3D 中没有画出。3D 模型是封闭实体（每条边恰好两个三角形共用、法向朝外），可导出 STL；DXF 含轮廓、中心线、剖面线、尺寸和参数表，单位 mm。</p>
+    <p><b>刀具外形图与 3D</b>：刀齿由两侧后刀面螺旋面、顶锥（顶刃后角）和前刀面围成，从前刀面一直到刀齿长度末端（碗形刀的齿槽再向后延伸到过渡锥上收尾）；刀体、内孔、键槽、背面沉孔按输入尺寸。正面为前刀面上的刃口及齿根，背面为刀齿末端截面（左右镜像），侧面为过刀齿中心和键槽的轴向剖视。碗形刀具：齿部在前端（大端），后接过渡锥、圆角和顶部外圆，内部为前端内孔 + 内锥 + 螺栓面 + 内孔，未填的尺寸按外径比例自动取（参数表列出实际值，比例和过渡锥 50°、齿槽在过渡锥上收尾的画法参照 Ø64.8 碗形刀实物图纸）。这些比例已与 GB/T 6081-2001 碗形直齿插齿刀的系列尺寸对照：Φ50～Φ125 各档总高约为外径的 0.30～0.47、内孔为 Ø20 或 Ø31.743（约外径的 0.23～0.40），程序取总高 0.37、内孔按 0.33 倍外径选标准孔径，都落在这个范围内；插齿刀齿部比滚插刀长，所以只作量级参照。顶面外缘和内孔倒角未填时按 GB/T 6403.4-2008 附录 B 与直径相应的推荐值（如 Ø18～30 取 C1，Ø30～50 取 C1.6），并受壁厚限制。齿槽不在齿部末端截止：齿根按后角继续收缩，一直磨到与过渡锥相交处收尾（参数表给出收尾位置），侧面剖视中齿槽底画成实线。刀具齿根圆默认取“转一圈与工件齿顶圆之间留顶隙 c = max(0.25 m, 0.5 mm)，且比刃口切削最低点低 0.25 m”（插齿刀齿根高 = 工件齿顶高 + 顶隙，标准顶隙 0.25 m；刀具厂要求代用插齿刀齿根与齿轮齿顶间隙不小于 0.5 mm）；刃口计算范围以下的齿面按径向直线延伸到齿根。刀尖圆角只在参数表注明，图和 3D 中没有画出。3D 模型是封闭实体（每条边恰好两个三角形共用、法向朝外），可导出 STL；DXF 含轮廓、中心线、剖面线、尺寸和参数表，单位 mm。</p>
     <p><b>目前没有考虑</b>：进给量引起的走刀纹、切屑厚度与切削力、磨床的 NC 程序（与磨床型号有关，这里给出展成磨削的调整数据）。结果用于刀具设计和方案比较，正式制刀前建议再用实际磨削程序复核。</p>
   </section>
 </div>
@@ -750,6 +750,10 @@ const SK = (() => {
     const okR = r => Math.min(...[0, 2].map(j => Math.min(ringR(D.states[j], r, D.states[j].wTip), ringR(D.states[j], r, -Bc))));
     let lo = 0.2 * D.ra0, hi = D.ra0; for (let it = 0; it < 50; it++) { const m = (lo + hi) / 2; if (okR(m) > 0) lo = m; else hi = m; }
     out.rCoreMax = lo;
+    // 留顶隙后的齿根圆：刀具齿根（刀体圆）与工件齿顶圆之间至少留 c = max(0.25 m, 0.5 mm)
+    // 依据：插齿刀齿根高 = 工件齿顶高 + 顶隙 c（标准顶隙 0.25 m）；刀具厂代用插齿刀要求齿根与齿轮齿顶间隙不小于 0.5 mm
+    out.cMin = Math.max(0.25 * W.mn, 0.5); lo = 0.2 * D.ra0; hi = D.ra0; for (let it = 0; it < 50; it++) { const m = (lo + hi) / 2; if (okR(m) > out.cMin) lo = m; else hi = m; }
+    out.rCoreSafe = lo;
     // 刃口参与切削的最低点（切出工件齿顶圆的那一点）
     out.rhoAct = Math.max(...['L', 'R'].map(sd => { const e = D.states[2].E[sd].filter(Boolean); const x = interpBy(e, 'Rw', W.ra, q => q.rho); return isFinite(x) ? x : e[e.length - 1].rho; }));
     const S = D.states[0], K = S.K || D.K;
@@ -923,7 +927,7 @@ const SK = (() => {
     ['bore', '内孔直径', 'sel', [['auto', '自动（选标准孔径）'], ['16', 'Ø16'], ['19', 'Ø19'], ['20', 'Ø20'], ['22', 'Ø22'], ['25', 'Ø25'], ['27', 'Ø27'], ['31.75', 'Ø31.75（1¼″）'], ['32', 'Ø32'], ['40', 'Ø40'], ['44.45', 'Ø44.45（1¾″）'], ['50.8', 'Ø50.8（2″）'], ['custom', '自定义'], ['none', '无孔']]],
     ['dCus', '自定义内孔直径', 'mm', 20, 0.001],
     ['H', '总高（0 = 自动）', 'mm', 0, 0.5], ['Din', '前端内径（0 = 自动）', 'mm', 0, 0.1], ['aIn', '内锥半角（0 = 15°）', '°', 0, 0.5],
-    ['Hf', '螺栓面深度（自前端，0 = 自动）', 'mm', 0, 0.1], ['DN', '顶部外径（0 = 自动）', 'mm', 0, 0.1], ['Rn', '顶部圆角 R（0 = 自动）', 'mm', 0, 0.1], ['aT', '过渡锥与轴线夹角（0 = 50°）', '°', 0, 1], ['ch', '顶面、内孔倒角 C（0 = 自动，−1 = 不倒角）', 'mm', 0, 0.1],
+    ['Hf', '螺栓面深度（自前端，0 = 自动）', 'mm', 0, 0.1], ['DN', '顶部外径（0 = 自动）', 'mm', 0, 0.1], ['Rn', '顶部圆角 R（0 = 自动）', 'mm', 0, 0.1], ['aT', '过渡锥与轴线夹角（0 = 50°）', '°', 0, 1], ['ch', '顶面、内孔倒角 C（0 = 按 GB/T 6403.4 推荐值，−1 = 不倒角）', 'mm', 0, 0.1],
     ['B', '刀具总厚度（0 = 同齿长）', 'mm', 0, 0.5], ['dw', '刀体直径（0 = 同齿根）', 'mm', 0, 0.1],
     ['d2', '背面沉孔直径（0 = 无）', 'mm', 0, 0.1], ['t2', '沉孔深度', 'mm', 0, 0.1],
     ['kb', '键槽宽（0 = 无键槽）', 'mm', 0, 0.1], ['kt', '键槽深 t（自孔壁）', 'mm', 0, 0.1], ['dfc', '刀具齿根圆直径（0 = 自动）', 'mm', 0, 0.01]];
@@ -1119,7 +1123,7 @@ const SK = (() => {
     const rows = [], Wn = [];
     for (const b of C.back) { const ok = b.min > -0.001; rows.push([`刀齿后部最小间隙（${b.dlt ? '重磨到底' : '新刀'}）`, `<span class="${ok ? 'ok2' : 'bad2'}">${um(b.min)} µm</span>${b.at ? `（${b.at.sd === 'L' ? '左' : '右'}侧，前刀面后 ${b.at.dz} mm，ρ ${f3(b.at.rho)}）` : ''}`]); if (!ok) Wn.push(`${b.dlt ? '重磨到底' : '新刀'}刀齿后部蹭已加工齿面：加大顶刃后角，或缩短刀齿长度`); }
     const okC = C.rCoreMax < C.rhoAct;
-    rows.push(['刀具齿根圆直径最大允许', 'Ø' + f3(2 * C.rCoreMax)], ['刃口切削最低点直径（重磨到底）', `<span class="${okC ? 'ok2' : 'bad2'}">Ø${f3(2 * C.rhoAct)}</span>`]);
+    rows.push(['刀具齿根圆直径最大允许（刚好不碰工件齿顶）', 'Ø' + f3(2 * C.rCoreMax)], [`留顶隙 c = ${f2(C.cMin)} mm 时的齿根圆直径`, 'Ø' + f3(2 * C.rCoreSafe)], ['刃口切削最低点直径（重磨到底）', `<span class="${okC ? 'ok2' : 'bad2'}">Ø${f3(2 * C.rhoAct)}</span>`]);
     if (!okC) Wn.push('刀具齿根圆放不下：刃口需要切到的最低点已低于刀体允许的最大半径，减小刀具外径或刀齿数');
     if (isFinite(C.hub)) { rows.push(['刀柄径向余量', `<span class="${C.hub > 0 ? 'ok2' : 'bad2'}">${f3(C.hub)} mm</span>`]); if (C.hub <= 0) Wn.push('刀柄会碰到工件齿顶'); }
     rows.push(['切削点轴向范围（相对刀具中心）', f2(C.zLo) + ' ～ ' + f2(C.zHi) + ' mm']);
@@ -1308,11 +1312,11 @@ const SK = (() => {
     const ra0 = D.ra0, tanE = Math.tan(cp.alphaE * DR), zc = cp.z, tc = 2 * Math.PI / zc;
     const Bc = Math.max(bv.Bc || 0, (cp.regrind || 0) + 1);
     const FL = D.flank.L, FR = D.flank.R, lowPhi = Math.max(FL.Phi[FL.Phi.length - 1].rho, FR.Phi[FR.Phi.length - 1].rho);
-    const rootAuto = coll ? Math.min(coll.rCoreMax - 0.1 * mn, coll.rhoAct - 0.3 * mn) : lowPhi - 0.3 * mn;
+    const rootAuto = coll ? Math.min(coll.rCoreSafe, coll.rhoAct - 0.25 * mn) : lowPhi - 0.25 * mn;
     const rootC = bv.dfc > 0 ? bv.dfc / 2 : rootAuto;
     const type = bv.type === 'disc' ? 'disc' : 'bowl', da = 2 * ra0, auto = (v, k) => v > 0 ? v : k * da;
     const rootAt = w => rootC + Math.min(0, w) * tanE;                      // 齿根与齿顶同锥度（随重磨一起变小）
-    const bw = type === 'bowl' ? { H: auto(bv.H, 0.37), Din: auto(bv.Din, 0.664), aIn: (bv.aIn > 0 ? bv.aIn : 15) * DR, DN: auto(bv.DN, 0.694), Rn: auto(bv.Rn, 0.077), aT: (bv.aT > 0 ? bv.aT : 50) * DR, dB: auto(bv.dB, 0.309), ch: bv.ch > 0 ? bv.ch : bv.ch < 0 ? 0 : Math.max(0.3, Math.round(0.015 * da * 10) / 10) } : null;
+    const bw = type === 'bowl' ? { H: auto(bv.H, 0.37), Din: auto(bv.Din, 0.664), aIn: (bv.aIn > 0 ? bv.aIn : 15) * DR, DN: auto(bv.DN, 0.694), Rn: auto(bv.Rn, 0.077), aT: (bv.aT > 0 ? bv.aT : 50) * DR, dB: auto(bv.dB, 0.309), ch: bv.ch > 0 ? bv.ch : bv.ch < 0 ? 0 : null } : null;
     if (bw) bw.Hf = bv.Hf > 0 ? bv.Hf : 0.5 * bw.H;
     let B = bw ? bw.H : Math.max(Bc, bv.B > 0 ? bv.B : Bc), kbIn = Math.max(0, bv.kb || 0), ktIn = kbIn > 0 ? Math.max(0, bv.kt || 0) : 0;
     // 内孔：常用标准孔径中选；自动时按外径比例取不大于比例值的最大标准孔径（再按壁厚往下调）
@@ -1392,7 +1396,9 @@ const SK = (() => {
         if (b == null) err.push('齿根小于顶部外径，齿槽会一直通到顶面：减小顶部外径或加大刀具齿根圆'); else { for (let it = 0; it < 60; it++) { const m = (a + b) / 2; if (g(m) >= 0) b = m; else a = m; } xR = b; } }
       const rR = Math.min(rootAt(-xR), bodyR(xR));
       // 倒角：顶面外缘、内孔两端
-      let ch = bw.ch; const cb = d ? Math.min(ch, Math.max(0, (rFl - d / 2 - (kb ? kt : 0)) * 0.4), Math.max(0, (bw.H - bw.Hf) * 0.25)) : 0; ch = Math.min(ch, Math.max(0, (rN - d / 2) * 0.25), Math.max(0, (bw.H - C[0]) * 0.8));
+      // 未填倒角时按 GB/T 6403.4-2008 附录 B 表 B.1（与直径相应的倒角 C 推荐值）：顶面外缘按顶部外径，内孔按孔径
+      const c6403 = D => [[3, 0.2], [6, 0.4], [10, 0.6], [18, 0.8], [30, 1.0], [50, 1.6], [80, 2.0], [120, 2.5], [180, 3.0], [250, 4.0]].find(q => D <= q[0])?.[1] ?? 5.0;
+      let ch = bw.ch == null ? c6403(bw.DN) : bw.ch; const cb = d ? Math.min(bw.ch == null ? c6403(d) : bw.ch, Math.max(0, (rFl - d / 2 - (kb ? kt : 0)) * 0.4), Math.max(0, (bw.H - bw.Hf) * 0.25)) : 0; ch = Math.min(ch, Math.max(0, (rN - d / 2) * 0.25), Math.max(0, (bw.H - C[0]) * 0.8));
       bowlInfo = { rt, rN, rIn, Rn, xin, rFl, T1, C, arc, xR, rR, ch, cb };
       bowlSect = up => {
         const ri = d ? (up && kb ? d / 2 + kt : d / 2) : 0, P = [[xin, rIn]];
@@ -1605,7 +1611,7 @@ const SK = (() => {
     const hk = Math.min(1.9, Math.max(1, 560 / (($('vF').getBoundingClientRect().width) || 560))), V = views(G, hk); st.views = views(G);
     toSVG(V.F, $('vF'), '正面（看前刀面，一个刀齿朝上）'); toSVG(V.S, $('vS'), G.type === 'bowl' ? '侧面：轴向剖视（刀齿在下，左半过键槽）' : '侧面：轴向剖视（上半过键槽，左为前刀面）'); toSVG(V.Bk, $('vB'), '背面（从后往前看）');
     $('bodyT').innerHTML = paramRows(G).map(r => `<div><span>${r[0]}</span><span>${r[1]}</span></div>`).join('');
-    $('bodyN').textContent = G.rootC === G.rootAuto && !(st.bv.dfc > 0) ? `刀具齿根圆按“不碰工件齿顶（留 0.1 m）且低于刃口切削最低点 0.3 m”自动取 Ø${f3(2 * G.rootC)}。刃口最低点以下的齿面按径向直线延伸到齿根。` : '';
+    $('bodyN').textContent = G.rootC === G.rootAuto && !(st.bv.dfc > 0) ? `刀具齿根圆自动取 Ø${f3(2 * G.rootC)}：转一圈与工件齿顶圆之间至少留顶隙 c = max(0.25 m, 0.5 mm) = ${f2(st.coll ? st.coll.cMin : Math.max(0.25 * st.D.W.mn, 0.5))} mm，并且比刃口切削最低点低 0.25 m。依据：插齿刀齿根高 = 工件齿顶高 + 顶隙（标准顶隙 0.25 m），刀具厂对代用插齿刀要求齿根与齿轮齿顶间隙不小于 0.5 mm。刃口最低点以下的齿面按径向直线延伸到齿根。` : '';
     build3dBody();
   }
   // ---------- DXF ----------
