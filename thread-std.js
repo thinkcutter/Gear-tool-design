@@ -443,18 +443,31 @@
   const TAPUSE = { ISO1: '4H、5H', ISO2: 'ISO 2857：6H、4G、5G；GB/T 968：5G、6H', ISO3: 'ISO 2857：6G、7H、8H；GB/T 968：6G、7H、7G', H4: '6H、7H（GB/T 968）',
     F1: '4H、5H', F2: '5G、6H', F3: '6G、7H、7G', F4: '6H、7H' };
   const rnd = v => Math.round(v + 1e-9);   // 偏差圆整到 µm（四舍五入；如 0.55 × 75 = 41.25 → 41，1.05 × 75 = 78.75 → 79，GB/T 28253 表 8）
+  // GB/T 968-2007 表 1 原表（µm）：直径段 → 螺距 → [Js, H1 Em, Es, H2 Em, Es, H3 Em, Es, H4 Em, Es]，null = 表中“—”（不规定）
+  //   表中小螺距处有合并单元格，几行共用一个值（取较大者），因此个别行与附录 A 系数（资料性）算出的值差 1～3 µm，以表为准
+  const GB968 = [[1, 1.4, { 0.2: [20, 5, 15, null, null, null, null, 8, 33], 0.25: [22, 6, 17, null, null, null, null, 9, 39], 0.3: [24, 6, 18, 18, 30, null, null, 9, 39] }],
+    [1.4, 2.8, { 0.2: [21, 6, 17, null, null, null, null, 9, 39], 0.25: [24, 6, 18, null, null, null, null, 9, 39], 0.35: [27, 7, 20, 20, 34, null, null, 11, 46], 0.4: [28, 7, 21, 21, 36, null, null, 11, 46], 0.45: [30, 8, 23, 23, 38, null, null, 12, 52] }],
+    [2.8, 5.6, { 0.35: [28, 7, 21, 21, 36, null, null, 11, 46], 0.5: [32, 8, 24, 24, 40, 40, 56, 12, 52], 0.6: [36, 9, 27, 27, 45, 45, 63, 14, 59], 0.7: [38, 10, 29, 29, 48, 48, 67, 15, 65], 0.75: [38, 10, 29, 29, 48, 48, 67, 15, 65], 0.8: [40, 10, 30, 30, 50, 50, 70, 15, 65] }],
+    [5.6, 11.2, { 0.5: [36, 9, 27, 27, 45, 45, 63, 14, 59], 0.75: [42, 11, 32, 32, 53, 53, 74, 16, 69], 1: [47, 12, 35, 35, 59, 59, 83, 18, 77], 1.25: [50, 13, 38, 38, 63, 63, 88, 19, 81], 1.5: [56, 14, 42, 42, 70, 70, 98, 21, 91] }],
+    [11.2, 22.4, { 1: [50, 13, 38, 38, 63, 63, 88, 19, 81], 1.25: [56, 14, 42, 42, 70, 70, 98, 21, 91], 1.5: [60, 15, 45, 45, 75, 75, 105, 23, 98], 1.75: [64, 16, 48, 48, 80, 80, 112, 24, 104], 2: [68, 17, 51, 51, 85, 85, 119, 26, 111], 2.5: [72, 18, 54, 54, 90, 90, 126, 27, 117] }],
+    [22.4, 45, { 1: [53, 13, 40, 40, 66, 66, 92, 20, 86], 1.5: [64, 16, 48, 48, 80, 80, 112, 24, 104], 2: [72, 18, 54, 54, 90, 90, 126, 27, 117], 3: [85, 21, 64, 64, 106, 106, 148, 32, 138], 3.5: [90, 22, 67, 67, 112, 112, 157, null, null], 4: [94, 24, 71, 71, 118, 118, 165, null, null], 4.5: [100, 25, 75, 75, 125, 125, 175, null, null] }],
+    [45, 90, { 1.5: [68, 17, 51, 51, 85, 85, 119, null, null], 2: [76, 19, 57, 57, 95, 95, 133, null, null], 3: [90, 22, 67, 67, 112, 112, 157, null, null], 4: [100, 25, 75, 75, 125, 125, 175, null, null], 5: [106, 27, 80, 80, 133, 133, 186, null, null], 5.5: [112, 28, 84, 84, 140, 140, 196, null, null], 6: [120, 30, 90, 90, 150, 150, 210, null, null] }],
+    [90, 100, { 2: [80, 20, 60, 60, 100, 100, 140, null, null], 3: [94, 24, 71, 71, 118, 118, 165, null, null], 4: [106, 27, 80, 80, 133, 133, 186, null, null], 6: [126, 32, 95, 95, 158, 158, 221, null, null] }]];
+  function gb968Row(d, P) { const g = GB968.find(q => d > q[0] - 1e-9 && d <= q[1] + 1e-9 && (d > q[0] + 1e-9 || q[0] === 1)); return g ? g[2][P] || null : null; }
   function tapISO(o) {   // o: { d, P, cls, Em, Es（自定义，µm）, form }
     const d = +o.d, P = +o.P, t = tapT(d, P);
     if (t.v == null) throw new Error('这个直径超出 ISO 965-1 的直径段，无法确定公差单位 t');
     const cu = o.cls === 'custom', k = TAPK[o.cls] || [0, 0, o.form ? 0.8 : 0.4];
-    const Em = cu ? +o.Em : rnd(k[0] * t.v), Es = cu ? +o.Es : rnd(k[1] * t.v), mc = rnd(k[2] * t.v);
+    let Em = cu ? +o.Em : rnd(k[0] * t.v), Es = cu ? +o.Es : rnd(k[1] * t.v), mc = rnd(k[2] * t.v), tab = false, na = false;
+    const ci = ['ISO1', 'ISO2', 'ISO3', 'H4'].indexOf(o.cls), row = !o.form ? gb968Row(d, P) : null;
+    if (row) { if (!cu) mc = row[0]; if (ci >= 0) { if (row[1 + 2 * ci] == null) na = true; else { tab = Em !== row[1 + 2 * ci] || Es !== row[2 + 2 * ci] ? 'diff' : true; Em = row[1 + 2 * ci]; Es = row[2 + 2 * ci]; } } }
+    if (!row && !o.form && o.cls === 'H4' && (d > 45 + 1e-9 || P > 3 + 1e-9)) na = true;
     const D2 = d - 0.649519 * P;
     return { std: 'TAP-M', d, P, t: t.v, tsrc: t.src, cls: o.cls, Em, Es, mc, kJs: k[2], D2, d2min: D2 + Em / 1000, d2max: D2 + Es / 1000, dmin: d + mc / 1000, D1: d - 1.082532 * P,
-      use: TAPUSE[o.cls] || '', ang: tapAngle(P, o.cls), pit: tapPitch(P, o.cls) };
+      use: TAPUSE[o.cls] || '', ang: na && o.cls === 'H4' ? null : tapAngle(P, o.cls), pit: na && o.cls === 'H4' ? null : tapPitch(P, o.cls), gbTab: !!row, tabDiff: tab === 'diff', na };
   }
   // 牙型半角（牙侧角）偏差，分：ISO 2857/A1:1984 表 3 = IS 6173-1 表 3 = GB/T 28253 表 8 H1～H3 列（P ≤ 0.25 ±70′，≤ 0.4 ±50′，≤ 0.6 ±35′，≤ 0.8 ±30′，≤ 1.5 ±25′，≤ 3 ±20′，≤ 6 ±15′；“上限含”）
-  //   切削丝锥 H4（GB/T 968）：原文表 1 未能完整读到；搜索引擎收录的表 1 文字识别片段可辨认 P0.2 ±70′/±70′、P0.3 ±50′/±60′、P1.5 ±25′/±45′ 及 H4 螺距 ±20、±25、±35 µm，
-  //     与 GB/T 28253 表 8 H4 列逐项相同，故 P ≤ 3 按该列取值（P2～3 的 ±40′/±35′、P ≥ 2.5 的 ±50 µm 片段中未见）；P > 3 无数据
+  //   切削丝锥 H4（GB/T 968-2007 表 1 原表核对）：与 GB/T 28253 表 8 H4 列完全相同；H4 只规定到 P3、公称直径 45 mm，更大的表中为“—”
   //   挤压丝锥 H4：GB/T 28253 表 8 H4 列（≤ 0.25 ±70′，0.3～0.45 ±60′，0.5～1.25 ±50′，1.5～1.75 ±45′，2～2.5 ±40′，3 ±35′）
   function tapAngle(P, cls) {
     const e = 1e-9;
@@ -543,5 +556,5 @@
   // GB/T 28253 表 7 挤压锥形式：[名称, 牙数下限, 上限, 说明]；挤压锥小端直径 d − 0.7P（h13）
   const FLEAD = [['A', 6, 8, '≥ 6P，粗锥（初锥）'], ['C', 2, 3, '2～3P，精锥（底锥）'], ['D', 3.5, 5.5, '3.5～5.5P，单支挤压丝锥推荐'], ['E', 1, 2, '< 2P']];
   const CHAMF = [['A', 6, 8, '长切削锥，短通孔'], ['B', 3.5, 5, '中等，带螺旋刃尖（枪尖），通孔、深孔'], ['C', 2, 3, '短，盲孔；也常用于铝、灰铸铁、黄铜'], ['D', 3.5, 5, '中等，通孔和留有足够退刀距离的盲孔'], ['E', 1.5, 2, '很短，盲孔'], ['F', 1, 1.5, '极短，退刀距离很小的盲孔，尽量不用']];
-  window.TS = { tapD, tapNPT, tapNPS, NPSTAP, tapHtol, tapPipe, tapT, tapAngle, tapPitch, TAPUSE, FLEAD, tapISO, tapH, tapDrill, CHAMF, TAPK, millEnvelope, mj, unj, whit, acme, MJ_LIST, WHIT, ACMES, he4, pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
+  window.TS = { tapD, tapNPT, tapNPS, NPSTAP, GB968, gb968Row, tapHtol, tapPipe, tapT, tapAngle, tapPitch, TAPUSE, FLEAD, tapISO, tapH, tapDrill, CHAMF, TAPK, millEnvelope, mj, unj, whit, acme, MJ_LIST, WHIT, ACMES, he4, pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
 })();
