@@ -307,5 +307,80 @@
     if (cls === 'NPSF') { const t = NPSF[S.nm]; if (!t) throw new Error('NPSF（B1.20.3）只有 1/16～1'); Object.assign(out, { D2min: t[0], D2max: t[1], D1min: t[2], Lmin: t[3] }); }
     return out;
   }
-  window.TS = { pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
+
+  // ---------------- 航空螺纹 MJ（ISO 5855-2）、UNJ（ASME B1.15 / SAE AS8879） ----------------
+  // 两者都把内外螺纹小径加大，基本牙高 0.5625H；外螺纹牙底必须是圆弧，半径 0.15011P～0.18042P
+  //   外螺纹小径：d3max = d2max − 0.50518P，d3min = d2min − 0.56580P；内螺纹小径最小 D1min = D − 0.97428P
+  const MJ_LIST = [[1.6, 0.35], [2, 0.4], [2.5, 0.45], [3, 0.5], [3.5, 0.6], [4, 0.7], [5, 0.8], [6, 1], [7, 1], [8, 1], [10, 1.25], [12, 1.25], [14, 1.5], [16, 1.5], [18, 1.5], [20, 1.5], [22, 1.5], [24, 2], [27, 2], [30, 2], [33, 2], [36, 2], [39, 2]];
+  function mj(o) {   // o: { d, P, side, cls }：外 4h6h；内 4H5H（d ≥ 6）或 4H6H（d ≤ 5），按 ISO 5855-2 表 2
+    const d = +o.d, P = +o.P, ext = o.side !== 'int';
+    const cls = o.cls || (ext ? '4h6h' : (d <= 5 ? '4H6H' : '4H5H'));
+    const R = metric({ d, P, side: o.side, cls });
+    R.std = 'MJ'; R.d1 = d - 0.974279 * P; R.W = R.W || [];
+    if (ext) Object.assign(R, { d3max: R.d2max - 0.50518 * P, d3min: R.d2min - 0.56580 * P, Rmin: 0.15011 * P, Rmax: 0.18042 * P });
+    else { const t = R.TD1 / 1000; R.D1min = d - 0.974279 * P; R.D1max = R.D1min + t; }
+    if (!MJ_LIST.some(q => q[0] === d && q[1] === P)) R.W.push('不是 ISO 5855-2 表 1 中的规格，按同样规则计算');
+    return R;
+  }
+  function unj(o) {   // o: { D, tpi, cls: '3A' | '3B', LE }
+    const cls = String(o.cls || '3A').toUpperCase(); if (!/^3[AB]$/.test(cls)) throw new Error('UNJ 只有 3A（外）和 3B（内）');
+    const R = unified({ D: o.D, tpi: o.tpi, cls, LE: o.LE }), P = R.P, D = R.D, n = R.tpi;
+    R.std = 'UNJ'; R.D1 = D - 0.974279 * P;
+    if (cls === '3A') Object.assign(R, { d3max: r4(R.d2max - 0.50518 * P), d3min: r4(R.d2min - 0.56580 * P), Rmin: 0.15011 * P, Rmax: 0.18042 * P });
+    else {
+      // 内螺纹小径公差（ASME B1.1-2024 5.8.2(c)，UNJ）：13 牙/in 及更细 0.05P^(2/3) + 0.03P/D − 0.002，限在 0.13532P～0.25981P；12 牙/in 及更粗 0.12P
+      const t = n >= 13 ? Math.min(0.25981 * P, Math.max(0.13532 * P, 0.05 * Math.pow(P, 2 / 3) + 0.03 * P / D - 0.002)) : 0.12 * P;
+      Object.assign(R, { TD1: t, D1min: r4(D - 0.974279 * P), D1max: r4(D - 0.974279 * P + t) });
+      R.W = (R.W || []).filter(w => !/小径极限/.test(w));
+    }
+    return R;
+  }
+  // ---------------- 惠氏螺纹 BSW / BSF（BS 84） ----------------
+  const BSW = '1/8:40 3/16:24 1/4:20 5/16:18 3/8:16 7/16:14 1/2:12 9/16:12 5/8:11 11/16:11 3/4:10 7/8:9 1:8 1 1/8:7 1 1/4:7 1 1/2:6 1 3/4:5 2:4.5 2 1/4:4 2 1/2:4 2 3/4:3.5 3:3.5 3 1/4:3.25 3 1/2:3.25 3 3/4:3 4:3 4 1/2:2.875 5:2.75 5 1/2:2.625 6:2.5';
+  const BSF = '3/16:32 7/32:28 1/4:26 9/32:26 5/16:22 3/8:20 7/16:18 1/2:16 9/16:16 5/8:14 11/16:14 3/4:12 7/8:11 1:10 1 1/8:9 1 1/4:9 1 3/8:8 1 1/2:8 1 5/8:8 1 3/4:7 2:7 2 1/4:6 2 1/2:6 2 3/4:6 3:5 3 1/4:5 3 1/2:4.5 3 3/4:4.5 4:4.5 4 1/4:4';
+  const pl = str => { const E = []; for (const t of str.split(' ')) { if (E.length && !E[E.length - 1].includes(':')) E[E.length - 1] += ' ' + t; else E.push(t); }
+    return E.map(t => { const [nm, n] = t.split(':'); return { nm, n: +n, D: nm.split(' ').reduce((v, q) => v + (q.includes('/') ? q.split('/')[0] / q.split('/')[1] : +q), 0) }; }); };
+  const WHIT = { BSW: pl(BSW), BSF: pl(BSF) };
+  function whit(o) {   // o: { ser: 'BSW'|'BSF', size, side, cls: 'close'|'medium'|'free'（外） / 'medium'|'normal'（内）, LE }
+    const S = (WHIT[o.ser] || []).find(q => q.nm === o.size); if (!S) throw new Error('BS 84 中没有这个规格');
+    const D = S.D, p = 1 / S.n, h = r4(0.640327 * p), D2 = D - h, D1 = D - 2 * h, ext = o.side !== 'int', sp = Math.sqrt(p);
+    const LE = o.LE > 0 ? +o.LE : D;
+    // BS 84 附录 B：中等级中径公差 = 0.002∛D + 0.003√Le + 0.005√p（in），表中 Le 取公称直径
+    const Tm = 0.002 * Math.cbrt(D) + 0.003 * Math.sqrt(LE) + 0.005 * sp;
+    const out = { std: o.ser, size: S.nm, D, n: S.n, P: p, H: 0.960491 * p, h, r: 0.137329 * p, D2, D1, side: ext ? 'ext' : 'int', LE, Tm, W: [] };
+    if (ext) {
+      const cl = ['close', 'medium', 'free'].includes(o.cls) ? o.cls : 'medium', k = { close: 2 / 3, medium: 1, free: 1.5 }[cl];
+      const t2 = r4(k * Tm), td = r4(t2 + r4(0.01 * sp)), t1 = r4(t2 + r4((cl === 'close' ? 0.013 : 0.02) * sp));
+      const es = cl !== 'close' && D <= 0.75 + 1e-9 ? r4(Math.max(0.3 * Tm, 0.0012)) : 0;
+      Object.assign(out, { cls: cl, es, Td: td, Td2: t2, Td1: t1, dmax: r4(D - es), dmin: r4(D - es - td), d2max: r4(D2 - es), d2min: r4(D2 - es - t2), d1max: r4(D1 - es), d1min: r4(D1 - es - t1) });
+    } else {
+      const cl = o.cls === 'normal' ? 'normal' : 'medium', t2 = r4((cl === 'normal' ? 1.5 : 1) * Tm), t1 = r4(0.2 * p + (S.n >= 26 ? 0.004 : S.n >= 22 ? 0.005 : 0.007));
+      Object.assign(out, { cls: cl, TD2: t2, TD1: t1, Dmin: D, D2min: r4(D2), D2max: r4(D2 + t2), D1min: r4(D1), D1max: r4(D1 + t1) });
+    }
+    return out;
+  }
+  // ---------------- 梯形 Acme（ASME B1.5）、短牙 Acme（ASME B1.8） ----------------
+  const ACME_LIST = '1/4:16 5/16:14 3/8:12 7/16:12 1/2:10 5/8:8 3/4:6 7/8:6 1:5 1 1/8:5 1 1/4:5 1 3/8:4 1 1/2:4 1 3/4:4 2:4 2 1/4:3 2 1/2:3 2 3/4:3 3:2 3 1/2:2 4:2 4 1/2:2 5:2';
+  const ACMES = pl(ACME_LIST);
+  // B1.5 表 9：外螺纹中径允许量 es（按公称直径范围，取范围中值计算），[上限 in, 2G, 3G, 4G]
+  const ACME_ES = [[3 / 16, .0024, .0018, .0012], [5 / 16, .0040, .0030, .0020], [7 / 16, .0049, .0037, .0024], [9 / 16, .0057, .0042, .0028], [11 / 16, .0063, .0047, .0032], [13 / 16, .0069, .0052, .0035], [15 / 16, .0075, .0056, .0037], [17 / 16, .0080, .0060, .0040], [19 / 16, .0085, .0064, .0042], [21 / 16, .0089, .0067, .0045], [23 / 16, .0094, .0070, .0047], [25 / 16, .0098, .0073, .0049], [15 / 8, .0105, .0079, .0052], [17 / 8, .0113, .0085, .0057], [19 / 8, .0120, .0090, .0060], [21 / 8, .0126, .0095, .0063], [23 / 8, .0133, .0099, .0066], [13 / 4, .0140, .0105, .0070], [15 / 4, .0150, .0112, .0075], [17 / 4, .0160, .0120, .0080], [19 / 4, .0170, .0127, .0085], [11 / 2, .0181, .0136, .0091]];
+  function acme(o) {   // o: { D, tpi, side, cls: '2G'|'3G'|'4G', stub }
+    const D = +o.D, n = +o.tpi, P = 1 / n, ext = o.side !== 'int', stub = !!o.stub, cls = stub ? '2G' : (['2G', '3G', '4G'].includes(o.cls) ? o.cls : '2G');
+    if (!(D > 0 && n > 0)) throw new Error('请填写大径和每英寸牙数');
+    const k = { '2G': [1, 0.030, 0.006], '3G': [2, 0.014, 0.0028], '4G': [3, 0.010, 0.002] }[cls];
+    const row = ACME_ES.find(r => D <= r[0] + 1e-9), W = [];
+    if (!row) throw new Error('B1.5 表 9 的允许量只到 5 1/2 in');
+    const es = row[k[0]], t2u = k[1] * Math.sqrt(P) + k[2] * Math.sqrt(D), t2 = r4(t2u);
+    const a = n <= 10 ? 0.020 : 0.010;   // B1.5 表 4：10 牙/in 及更粗 0.020，更细 0.010
+    const h = stub ? he4(0.3 * P) : 0.5 * P, D2 = D - h, mt = stub ? he4(0.05 * P) : he4(Math.max(0.05 * P, 0.005));
+    if (!(stub ? ACMES : ACMES).some(q => Math.abs(q.D - D) < 1e-6 && q.n === n)) W.push('不是标准系列规格，按同样公式计算；中径公差按公称直径直接计算（标准表对中间直径取下一个较大直径的值）');
+    const out = { std: stub ? 'STUB' : 'ACME', D, tpi: n, P, h, D2, cls, side: ext ? 'ext' : 'int', es, Td2: t2, a, W, beta: 14.5,
+      flat: stub ? 0.4224 * P : 0.3707 * P };
+    if (ext) Object.assign(out, { dmax: D, dmin: r4(D - mt), Td: mt, d2max: r4(D2 - es), d2min: r4(D2 - es - t2),
+      d1max: r4(D - 2 * h - a), d1min: stub ? r4(D - 2 * h - a - t2) : r4(D - 2 * h - a - 1.5 * t2u), Td1: stub ? t2 : 1.5 * t2u });
+    else Object.assign(out, { Dmin: D + a, Dmax: r4(D + a + (stub ? t2 : a)), D2min: r4(D2), D2max: r4(D2 + t2),
+      D1min: r4(D - (stub ? 0.6 * P : P)), D1max: r4(r4(D - (stub ? 0.6 * P : P)) + mt) });
+    return out;
+  }
+  window.TS = { mj, unj, whit, acme, MJ_LIST, WHIT, ACMES, he4, pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
 })();
