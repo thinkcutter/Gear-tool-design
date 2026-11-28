@@ -185,9 +185,26 @@ header{position:relative}
 </div>
 
 <div class="pane" id="p-tap" hidden>
-<section class="card">
-  <h2>丝锥 <span class="tag">第 5 批，开发中</span></h2>
-  <div class="say">计划内容：按 ISO 2857 丝锥螺纹公差（ISO1 / ISO2 / ISO3 等与内螺纹公差带的对应）和英制丝锥 H 极限算丝锥中径；切削锥形式、槽数、铲背量；丝锥外形图与 DXF；底孔直径；挤压丝锥（成形丝锥）的牙型和底孔。</div>
+<section class="card" id="ctap">
+  <h2>丝锥</h2>
+  <div class="meta" id="tmeta"></div>
+  <div class="play">
+    <div><svg class="fig" id="ftap" viewBox="-5 -30 210 60"></svg><div class="cap" id="ftapcap"></div></div>
+    <div class="ctl">
+      <label>丝锥类型</label><select id="tk"><option value="cut">切削丝锥</option><option value="form">挤压丝锥（成形丝锥）</option></select>
+      <label id="tcl">丝锥公差</label><select id="tc"></select>
+      <div id="tcu" style="display:none"><label>自定义中径偏差 Em / Es（µm）</label><div style="display:flex;gap:6px"><input id="tem" type="number" value="0"><input id="tes" type="number" value="0"></div></div>
+      <label>切削锥形式（DIN 2197）</label><select id="tf"></select>
+      <label>切削锥牙数</label><input id="tfn" type="number" step="0.5" value="0">
+      <label>容屑槽数 z / 切削锥后角 α（°，铲背）</label><div style="display:flex;gap:6px"><input id="tz" type="number" step="1" value="3"><input id="tal" type="number" step="any" value="6"></div>
+      <label>切削锥前端直径（mm，0 = 取底孔最小值）</label><input id="tdf" type="number" step="any" value="0">
+      <label>总长 / 螺纹长 / 柄径（mm，示例值，按图纸改）</label><div style="display:flex;gap:6px"><input id="tl1" type="number" step="any" value="0"><input id="tl2" type="number" step="any" value="0"><input id="tds" type="number" step="any" value="0"></div>
+      <div class="warn" id="tw"></div>
+    </div>
+  </div>
+  <div class="tw"><table class="res" id="tout"></table></div>
+  <div class="btns"><button id="tdxf">导出丝锥轴向轮廓 DXF</button></div>
+  <div class="hint" id="tnote"></div>
 </section>
 </div>
 
@@ -429,6 +446,7 @@ header{position:relative}
   <h2>版本记录</h2>
   <div class="meta">本页依据 GB/T 192、193、196、197、14791，GB/T 5796、13576、7306、7307，ISO 68-1、965-1、228-1、5835 和 ASTM F543 整理，标准原文不一致时以标准为准。</div>
   <ul>
+    <li><b>2026-11-28 第 5 批</b>：“丝锥”页：公制丝锥中径公差 ISO1 / ISO2 / ISO3（ISO 2857，t = 螺母 TD₂(5)，大径最小 D + 0.4t，用 Yamawa 样本 29 组数据核对全部一致）和自定义偏差；统一螺纹丝锥 H 极限（ASME B94.9）；切削丝锥和挤压丝锥底孔（螺纹百分比公式，并判断是否落在小径公差带内）；DIN 2197 切削锥 A～F 形式、切削锥半角、每齿切削厚度、铲磨凸轮升程；丝锥轴向轮廓示意图和 DXF。</li>
     <li><b>2026-11-28 第 4 批</b>：“螺纹铣刀”页：按三维包络求螺纹铣刀修正刃形（刀具回转面随刀心做与螺纹相同的螺旋运动，取不过切的最大刃形），给出每侧修正量、不修正时的中径误差、刀心插补半径、刀心进给换算、G02 / G03 螺旋插补程序和 DXF；用独立的扫掠仿真复核（内螺纹 M30×3、外螺纹 M10×1.5 结果一致），并与 Sandvik 的 M30×3 示例对比。</li>
     <li><b>2026-11-28 第 3 批</b>：加入航空螺纹 MJ（ISO 5855-2：外 4h6h、内 4H5H / 4H6H，小径加大、牙底圆弧 0.15011P～0.18042P）和 UNJ（ASME B1.15 / SAE AS8879：3A / 3B）、惠氏螺纹 BSW / BSF（BS 84：精密 / 中等 / 松级螺栓，中等 / 普通级螺母）、Acme（ASME B1.5：2G / 3G / 4G，中径允许量按表 9 直径范围）和短牙 Acme（ASME B1.8）。与 ISO 5855-2 表（torqbolt 转载）、AS8879 表（torqbolt 转载，mm）、BS 84 表（ferrofast 转载）、B1.5 / B1.8 表（engineersedge 转载）逐项比对，差异见报告。成形刀页同步支持这些牙型。</li>
     <li><b>2026-11-28 第 2 批</b>：“螺纹参数”加入管螺纹：G（ISO 228-1 / GB/T 7307，A、B 级与内螺纹极限尺寸）、R / Rc / Rp（ISO 7-1 / GB/T 7306，基准距离与公差、装配余量、有效螺纹长度、Rp 直径公差、Rc 基准平面位置公差）、NPT / NPSC（ASME B1.20.1 / GB/T 12716，E₀、E₁、L₁、L₂、E₂、L₃、E₃、V、L₄ 按标准公式，削平量按表 1，NPSC 按表 4）、NPTF / NPSF（ASME B1.20.3 / GB/T 27944，干密封牙顶牙底削平量按表 6）；与 GB/T 7307、GB/T 7306.1/.2、engineersedge、B1.20.1 表 2（Wikipedia、chicagotube 等转载）、GB/T 27944 共 489 项逐项核对一致。成形刀页：外螺纹按 55° 圆弧牙型或 60° 平顶平底牙型带入首页程序，内螺纹车刀刃形支持 55° 圆弧牙底和 NPT 削平平顶。</li>
@@ -1146,6 +1164,7 @@ function show(p, push) {
   if (push) history.replaceState(null, '', '#' + p);
   if (p === 'form') renderForm();
   if (p === 'mill') renderMill();
+  if (p === 'tap') renderTap();
 }
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.p, true));
 { const h = location.hash.slice(1); show(/^s\d+$|^rev$/.test(h) ? 'learn' : h || 'par'); if (/^s\d+$|^rev$/.test(h)) setTimeout(() => { const e = $(h); if (e) e.scrollIntoView(); }, 50); }
@@ -1868,6 +1887,102 @@ $('mdxf').onclick = () => {
   L.push('0', 'LINE', '8', 'AXIS', '10', n(-MILL.G.P), '20', '0', '30', '0', '11', n(MILL.G.P), '21', '0', '31', '0', '0', 'ENDSEC', '0', 'EOF');
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([L.join('\r\n')], { type: 'application/dxf' }));
   a.download = '螺纹铣刀修正刃形_' + MILL.C.name.replace(/[\/\s×]/g, '_') + '_D' + (+$('mdt').value) + '.dxf'; a.click();
+};
+
+// ---------- 丝锥：ISO 2857 / H 极限、底孔、切削锥、铲背、轮廓 DXF ----------
+let TAP = null, tapStd = '';
+function renderTap() {
+  const C = cur; if (!C) { $('tmeta').textContent = '先在“螺纹参数”里选好螺纹'; return; }
+  const st = C.S.std, met = st === 'M', un = st === 'UN' || st === 'UNJ';
+  $('tmeta').textContent = '当前螺纹：' + C.name + '（在“螺纹参数”页修改）';
+  if (!met && !un) { $('tout').innerHTML = ''; $('ftap').innerHTML = ''; $('tw').innerHTML = '丝锥公差目前支持公制普通螺纹 M（ISO 2857）和统一螺纹 UN / UNJ（ASME B94.9 的 H 极限），' + C.name + ' 暂不支持。'; return; }
+  const W = [], notes = [];
+  // 内螺纹（螺母）极限
+  let N;
+  if (met) { const cls = C.side === 'int' ? (C.cls.g2 + C.cls.pos + (C.cls.g1 !== C.cls.g2 ? C.cls.g1 + C.cls.pos : '')) : '6H'; N = TS.metric({ d: C.S.d, P: C.S.P, side: 'int', cls }); N.clsName = cls; if (C.side !== 'int') W.push('“螺纹参数”页选的是外螺纹，丝锥按同规格 6H 内螺纹计算'); }
+  else { const cls = C.side === 'int' ? C.cls : '2B'; N = st === 'UNJ' ? TS.unj({ D: C.S.d, tpi: C.S.tpi, cls: '3B' }) : TS.unified({ D: C.S.d, tpi: C.S.tpi, cls }); N.clsName = st === 'UNJ' ? '3B' : cls; if (C.side !== 'int') W.push('“螺纹参数”页选的是外螺纹，丝锥按同规格 ' + N.clsName + ' 内螺纹计算'); }
+  const P = met ? C.S.P : 1 / C.S.tpi, u = met ? 1 : IN, D = C.S.d;
+  // 公差选项
+  if (tapStd !== st + '|' + D + '|' + P) {
+    tapStd = st + '|' + D + '|' + P;
+    if (met) { const g = N.cls.g2, pos = N.cls.pos, def = pos === 'H' && g <= 5 ? 'ISO1' : (pos === 'H' && g === 6) || (pos === 'G' && g <= 5) ? 'ISO2' : 'ISO3';
+      $('tc').innerHTML = [['ISO1', 'ISO1（4H、5H 用）'], ['ISO2', 'ISO2（6H、4G、5G 用）'], ['ISO3', 'ISO3（7H、8H、6G 用）'], ['custom', '自定义中径偏差']].map(([v, t]) => `<option value="${v}">${t}</option>`).join(''); $('tc').value = def; $('tcl').textContent = '丝锥公差（ISO 2857）'; }
+    else { $('tc').innerHTML = Array.from({ length: 10 }, (_, i) => `<option value="${i + 1}">H${i + 1}</option>`).join(''); $('tc').value = '3'; $('tcl').textContent = '丝锥中径 H 极限（ASME B94.9）'; }
+    $('tf').innerHTML = TS.CHAMF.map(c => `<option value="${c[0]}">${c[0]} 型：${c[1]}～${c[2]} 牙，${c[3]}</option>`).join(''); $('tf').value = 'C'; $('tfn').value = 0; $('tdf').value = 0;
+    const Dm = D * u; $('tl2').value = +(2 * Dm).toFixed(1); $('tl1').value = +(Math.max(40, 6 * Dm)).toFixed(0); $('tds').value = +(Dm).toFixed(2);
+  }
+  const cu = $('tc').value === 'custom'; $('tcu').style.display = cu ? '' : 'none';
+  let T;
+  if (met) T = TS.tapISO({ d: D, P, cls: $('tc').value, Em: +$('tem').value, Es: +$('tes').value });
+  else T = TS.tapH({ D, tpi: C.S.tpi, n: +$('tc').value });
+  const form = $('tk').value === 'form';
+  // 底孔
+  const D1min = N.D1min, D1max = N.D1max, dr = v => (met ? f3(v) : f4(v) + ' in（' + f3(v * IN) + ' mm）');
+  const drills = (form ? [55, 60, 65, 70] : [60, 65, 75]).map(pc => [pc, TS.tapDrill({ D, P, pct: pc, form })]);
+  // 切削锥
+  const CF = TS.CHAMF.find(c => c[0] === $('tf').value), nCh = +$('tfn').value > 0 ? +$('tfn').value : (CF[1] + CF[2]) / 2;
+  if (nCh < CF[1] - 1e-9 || nCh > CF[2] + 1e-9) W.push(`切削锥牙数 ${nCh} 不在 ${CF[0]} 型的 ${CF[1]}～${CF[2]} 牙范围内`);
+  const Dmaj = met ? T.dmin : D, df = +$('tdf').value > 0 ? +$('tdf').value / u : D1min, lch = nCh * P;
+  const kap = Math.atan((Dmaj - df) / 2 / lch), z = Math.max(1, Math.round(+$('tz').value || 3)), al = (+$('tal').value || 0) * Math.PI / 180;
+  const hz = P * Math.tan(kap) / z, K = Math.PI * Dmaj * Math.tan(al) / z;
+  const rows = [], g = t => rows.push(`<tr class="g"><td colspan="2">${t}</td></tr>`), r = (a, b) => rows.push(`<tr><td>${a}</td><td>${b}</td></tr>`);
+  g('内螺纹（螺母）' + N.clsName);
+  r('中径 D₂', met ? `${f3(N.D2min)}～${f3(N.D2max)} mm` : `${f4(N.D2min)}～${f4(N.D2max)} in`);
+  r('小径 D₁', met ? `${f3(N.D1min)}～${f3(N.D1max)} mm` : `${f4(N.D1min)}～${f4(N.D1max)} in`);
+  if (met) {
+    g(`丝锥 ${T.cls === 'custom' ? '自定义' : T.cls}（ISO 2857；公差单位 t = TD₂(5) = ${T.t} µm）`);
+    r('中径 d₂', `${f3(T.d2min)}～${f3(T.d2max)} mm（基本中径 +${T.Em}～+${T.Es} µm）` + (T.use ? `，用于 ${T.use} 内螺纹` : ''));
+    r('大径', `最小 ${f3(T.dmin)} mm（D + 0.4t = +${T.mc} µm），最大由制造厂定`);
+    r('小径', '不规定公差（应小于内螺纹小径最小值 ' + f3(N.D1min) + ' mm）');
+    r('丝锥中径在螺母中径公差带中的位置', `${((T.d2min - N.D2min) / (N.D2max - N.D2min) * 100).toFixed(0)}%～${((T.d2max - N.D2min) / (N.D2max - N.D2min) * 100).toFixed(0)}%（从下限算起）`);
+  } else {
+    g(`丝锥 H${T.n}（ASME B94.9：最大中径 = 基本中径 + 0.0005 × ${T.n} in；${D <= 1 ? '1 in 及以下公差 0.0005' : '1 in 以上公差 0.001'} in）`);
+    if (D > 1.5 + 1e-9) W.push('ASME B94.9 的 H 极限公差只查到 1-1/2 in 及以下；大于 1-1/2 in 的按 0.001 in 公差估算，请以丝锥厂样本为准');
+    r('中径 d₂', `${f4(T.d2min)}～${f4(T.d2max)} in（${f3(T.d2min * IN)}～${f3(T.d2max * IN)} mm）`);
+    r('丝锥中径在螺母中径公差带中的位置', `${((T.d2min - N.D2min) / (N.D2max - N.D2min) * 100).toFixed(0)}%～${((T.d2max - N.D2min) / (N.D2max - N.D2min) * 100).toFixed(0)}%（从下限算起）`);
+    notes.push('H 极限的选用：样本给的推荐值不完全相同，例如 USCTI 举例 1/4-20 UNC 的 2B 推荐 H5、3B 推荐 H3；请按丝锥厂样本和实际攻出的尺寸调整。');
+  }
+  if (T.d2max > N.D2max + 1e-9) W.push('丝锥中径上限超过内螺纹中径上限，攻出的螺纹可能超差');
+  g(form ? '挤压丝锥底孔（D − 螺纹百分比 × P / 147.06）' : '切削丝锥底孔（D − 螺纹百分比 × P / 76.98）');
+  for (const [pc, v] of drills) r(pc + '% 螺纹', dr(v) + (!form ? (v >= D1min - 1e-9 && v <= D1max + 1e-9 ? '，在小径公差带内' : '，<b>不在</b>小径公差带 ' + (met ? f3(D1min) + '～' + f3(D1max) : f4(D1min) + '～' + f4(D1max)) + ' 内') : ''));
+  if (!form) r('常用经验值', met ? `D − P = ${f3(D - P)} mm` : `D − P = ${f4(D - P)} in`);
+  g(`切削锥 ${CF[0]} 型（DIN 2197：${CF[1]}～${CF[2]} 牙），取 ${nCh} 牙`);
+  r('切削锥长度', `${f3(lch * u)} mm（${nCh} × P）`);
+  r('前端直径 / 大径', `${f3(df * u)} / ${f3(Dmaj * u)} mm`);
+  r('切削锥半角 κ', `${(kap * 180 / Math.PI).toFixed(2)}°`);
+  r('每齿切削厚度（径向）', `${(hz * u * 1000).toFixed(1)} µm（= P·tanκ / z，z = ${z} 槽，锥部共 ${(nCh * z).toFixed(1)} 个刃齿）`);
+  r('切削锥铲磨凸轮升程 K', `${(K * u * 1000).toFixed(0)} µm（= π·d·tanα / z，α = ${$('tal').value}°）`);
+  notes.push('铲磨凸轮升程 K 是一个分度 πd/z 弧长上的径向落差，α 为端面内的径向后角；刃瓣上实际落差 = K × 刃瓣宽 / 分度弧长。');
+  if (form) notes.push('挤压丝锥：底孔公式按 Machinery’s Handbook；挤压丝锥的中径公差各厂不同（常比切削丝锥大，如样本中的 6HX），请按丝锥厂样本选；底孔建议钻后铰，孔径直接决定螺纹小径。');
+  notes.push('切削锥形式和牙数按 DIN 2197（ISCAR 样本转载）；切削锥前端直径、后角、槽数、长度是设计参数，图中按填写值画出。');
+  $('tout').innerHTML = rows.join(''); $('tw').innerHTML = W.join('<br>'); $('tnote').innerHTML = notes.join('<br>');
+  // 轮廓（单位 mm）
+  const Pm = P * u, Rmaj = Dmaj * u / 2, R2 = (T.d2min + T.d2max) / 2 * u / 2, Rroot = (D - 1.226869 * P) * u / 2, Rf = df * u / 2, tk = Math.tan(kap), t30 = Math.tan(Math.PI / 6);
+  const L1 = +$('tl1').value || 40, L2 = +$('tl2').value || 2 * D * u, Rs = (+$('tds').value || D * u) / 2;
+  const rz = zz => { if (zz > L2) return Rs; const uu = Math.abs(((zz % Pm) + Pm) % Pm - Pm / 2); let rr = R2 + (Pm / 4 - uu) / t30 * 1; rr = Math.min(Rmaj, Rf + zz * tk, rr); return Math.max(Rroot, rr); };
+  const pts = []; const step = Pm / 40; for (let zz = 0; zz <= L2 + 1e-9; zz += step) pts.push([zz, rz(zz)]); pts.push([L2, Rs], [L1, Rs]);
+  TAP = { pts, L1, name: C.name };
+  const svg = $('ftap'); svg.innerHTML = ''; const Lv = Math.min(L1, L2 + Math.max(4 * Pm, 0.3 * L2)), sc = 200 / Lv, H = Math.max(Rmaj, Rs) * sc;
+  svg.setAttribute('viewBox', `-5 ${-H - 10} 210 ${2 * H + 22}`);
+  const vp = pts.filter(p => p[0] <= Lv + 1e-9).concat([[Lv, Rs]]);
+  const up = vp.map(p => [p[0] * sc, -p[1] * sc]), dn = vp.slice().reverse().map(p => [p[0] * sc, p[1] * sc]);
+  mk('polygon', { points: up.concat(dn).map(p => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' '), fill: 'var(--steel)', stroke: 'var(--ink)', 'stroke-width': 0.3 }, svg);
+  mk('line', { x1: -3, x2: 205, y1: 0, y2: 0, stroke: 'var(--muted)', 'stroke-width': 0.3, 'stroke-dasharray': '4 2' }, svg);
+  if (Lv < L1) { const x = Lv * sc; mk('path', { d: `M${x - 2} ${-Rs * sc - 2} q 3 ${Rs * sc / 2} 0 ${Rs * sc} q -3 ${Rs * sc / 2} 0 ${Rs * sc + 4}`, fill: 'none', stroke: 'var(--ink)', 'stroke-width': 0.4 }, svg); }
+  const xl = lch * u * sc; mk('line', { x1: 0, x2: xl, y1: H + 4, y2: H + 4, stroke: 'var(--accent)', 'stroke-width': 0.4 }, svg); mk('line', { x1: xl, x2: xl, y1: -H, y2: H + 5, stroke: 'var(--accent)', 'stroke-width': 0.3, 'stroke-dasharray': '1.5 1' }, svg);
+  tx(svg, Math.max(xl / 2, 24), H + 9, '切削锥 ' + nCh + ' 牙 = ' + f3(lch * u) + ' mm', { fs: 4, fill: 'var(--accent)' });
+  tx(svg, Math.min(L2 * sc, 195) / 2 + xl / 2, -H - 4, '螺纹长 ' + L2 + ' mm' + (Lv < L1 ? '（柄部截断，总长 ' + L1 + ' mm）' : ''), { fs: 4, fill: 'var(--muted)' });
+  $('ftapcap').textContent = '丝锥轴向轮廓示意（左端为切削锥，牙型按丝锥中径公差带中值、大径取最小值、牙底取 d − 1.2269P；未画容屑槽）。';
+}
+['tk', 'tc', 'tf'].forEach(id => $(id).onchange = () => cur && renderTap());
+['tem', 'tes', 'tfn', 'tz', 'tal', 'tdf', 'tl1', 'tl2', 'tds'].forEach(id => $(id).oninput = () => cur && renderTap());
+$('tdxf').onclick = () => {
+  if (!TAP) return; const n = v => (+v).toFixed(6), L = ['0', 'SECTION', '2', 'HEADER', '9', '$INSUNITS', '70', '4', '0', 'ENDSEC', '0', 'SECTION', '2', 'ENTITIES'];
+  const seg = (a, b, ly) => L.push('0', 'LINE', '8', ly, '10', n(a[0]), '20', n(a[1]), '30', '0', '11', n(b[0]), '21', n(b[1]), '31', '0');
+  const p = TAP.pts; for (let i = 0; i + 1 < p.length; i++) { seg(p[i], p[i + 1], 'TAP'); seg([p[i][0], -p[i][1]], [p[i + 1][0], -p[i + 1][1]], 'TAP'); }
+  seg([0, p[0][1]], [0, -p[0][1]], 'TAP'); seg([TAP.L1, p[p.length - 1][1]], [TAP.L1, -p[p.length - 1][1]], 'TAP'); seg([-2, 0], [TAP.L1 + 2, 0], 'AXIS');
+  L.push('0', 'ENDSEC', '0', 'EOF');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([L.join('\r\n')], { type: 'application/dxf' })); a.download = '丝锥轴向轮廓_' + TAP.name.replace(/[\/\s×]/g, '_') + '.dxf'; a.click();
 };
 fillSizes(); calc();
 window.__thr = { calc, show, get cur() { return cur; }, get tool() { return TOOL; }, get mill() { return MILL; } };

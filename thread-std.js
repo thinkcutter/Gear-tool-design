@@ -418,5 +418,30 @@
     // 用螺纹轴向牙型直接做刀（不修正）时，牙侧轴向多切 dmax（每侧），中径约大（内）/ 小（外）2·dmax / tanβ
     return { e, rho, L, p, rows, dmax, dD2: 2 * dmax / tb, ratio: o.Dt / (2 * (ext ? rlim : rroot)), hw };
   }
-  window.TS = { millEnvelope, mj, unj, whit, acme, MJ_LIST, WHIT, ACMES, he4, pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
+
+  // ---------------- 丝锥 ----------------
+  // 公制丝锥 ISO 2857（= IS 6173-1）：公差单位 t = 螺母中径 5 级公差 TD2(5)；丝锥大径最小 = D + 0.4t；
+  //   中径：ISO1（4H 用，也用于 5H）Em = 0.1t、Es = 0.3t；ISO2（6H、4G、5G）0.3t～0.5t；ISO3（7H、8H、6G）0.5t～0.7t。小径不规定公差。
+  const TAPK = { ISO1: [0.1, 0.3], ISO2: [0.3, 0.5], ISO3: [0.5, 0.7] };
+  const rnd = v => Math.round(v + 1e-9);   // 偏差圆整到 µm（表值按四舍五入，如 t = 125 时 0.1t = 13）
+  function tapISO(o) {   // o: { d, P, cls, Em, Es（自定义，µm） }
+    const d = +o.d, P = +o.P, t = tolM('TD2', d, P, 5);
+    if (t.v == null) throw new Error('ISO 965-1 中没有这个规格的 TD2(5)');
+    const k = TAPK[o.cls], Em = o.cls === 'custom' ? +o.Em : rnd(k[0] * t.v), Es = o.cls === 'custom' ? +o.Es : rnd(k[1] * t.v), mc = rnd(0.4 * t.v);
+    const D2 = d - 0.649519 * P;
+    return { std: 'TAP-M', d, P, t: t.v, tsrc: t.src, cls: o.cls, Em, Es, mc, D2, d2min: D2 + Em / 1000, d2max: D2 + Es / 1000, dmin: d + mc / 1000, D1: d - 1.082532 * P,
+      use: { ISO1: '4H、5H', ISO2: '6H、4G、5G', ISO3: '7H、8H、6G' }[o.cls] || '' };
+  }
+  // 英制丝锥 H 极限（ASME B94.9；OSG、ICS 样本）：Hn 最大 = 基本中径 + 0.0005n；1 in 及以下公差 0.0005，1 in 以上～1-1/2 in 公差 0.001
+  function tapH(o) {   // o: { D, tpi, n }
+    const D = +o.D, n = Math.max(1, Math.round(o.n)), P = 1 / o.tpi, D2 = D - 0.649519 * P, mx = r4(D2) + 0.0005 * n, tol = D <= 1 + 1e-9 ? 0.0005 : 0.001;
+    return { std: 'TAP-H', D, tpi: o.tpi, n, D2: r4(D2), d2max: r4(mx), d2min: r4(mx - tol), tol };
+  }
+  // 底孔：切削丝锥 D − %·P/76.98（mm）或 D − 0.01299·%/tpi；挤压丝锥 D − %·P/147.06（Machinery's Handbook）或 D − 0.0068·%/tpi
+  function tapDrill(o) {   // o: { D, P（与 D 同单位）, pct, form }
+    return +o.D - (o.form ? +o.pct * o.P / 147.06 : +o.pct * o.P / 76.98);
+  }
+  // DIN 2197 切削锥形式：[名称, 锥部牙数下限, 上限, 说明]
+  const CHAMF = [['A', 6, 8, '长切削锥，短通孔'], ['B', 3.5, 5, '中等，带螺旋刃尖（枪尖），通孔、深孔'], ['C', 2, 3, '短，盲孔；也常用于铝、灰铸铁、黄铜'], ['D', 3.5, 5, '中等，通孔和留有足够退刀距离的盲孔'], ['E', 1.5, 2, '很短，盲孔'], ['F', 1, 1.5, '极短，退刀距离很小的盲孔，尽量不用']];
+  window.TS = { tapISO, tapH, tapDrill, CHAMF, TAPK, millEnvelope, mj, unj, whit, acme, MJ_LIST, WHIT, ACMES, he4, pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
 })();
