@@ -98,14 +98,15 @@ header{position:relative}
 <div class="pane" id="p-par">
 <section class="card" id="cpar">
   <h2>螺纹参数（内、外螺纹极限尺寸）</h2>
-  <div class="meta">公制普通螺纹按 ISO 965-1 / -2（GB/T 197、GB/T 15756）；统一螺纹 UNC / UNF / UNEF / UN / UNS 按 ASME B1.1</div>
+  <div class="meta">公制普通螺纹按 ISO 965-1 / -2（GB/T 197、GB/T 15756）；统一螺纹 UNC / UNF / UNEF / UN / UNS 按 ASME B1.1；管螺纹 G、R / Rc / Rp、NPT / NPSC、NPTF / NPSF</div>
   <div class="play">
     <div>
       <svg class="fig" id="fpar" viewBox="-110 -64 220 128"></svg>
       <div class="cap" id="fparcap"></div>
+      <svg class="fig" id="fpar2" viewBox="-100 -4 200 98" style="display:none"></svg>
     </div>
     <div class="ctl">
-      <label>螺纹标准</label><select id="ps"><option value="M">公制普通螺纹 M（ISO 965 / GB/T 197）</option><option value="UN">统一螺纹 UN（ASME B1.1，英制）</option></select>
+      <label>螺纹标准</label><select id="ps"><option value="M">公制普通螺纹 M（ISO 965 / GB/T 197）</option><option value="UN">统一螺纹 UN（ASME B1.1，英制）</option><option value="G">55° 非密封管螺纹 G（ISO 228-1 / GB/T 7307）</option><option value="R">55° 密封管螺纹 R / Rc / Rp（ISO 7-1 / GB/T 7306）</option><option value="NPT">60° 密封管螺纹 NPT / NPSC（ASME B1.20.1 / GB/T 12716）</option><option value="NPTF">干密封管螺纹 NPTF / NPSF（ASME B1.20.3 / GB/T 27944）</option></select>
       <label>规格</label><select id="pz"></select>
       <div id="pcu" style="display:none">
         <label id="pdl">大径 d（mm）</label><input id="pd" type="number" step="any" value="10">
@@ -113,7 +114,7 @@ header{position:relative}
       </div>
       <label>内 / 外螺纹</label>
       <div class="btns" id="pside" style="margin:2px 0"><button data-s="ext" class="on">外螺纹（螺栓）</button><button data-s="int">内螺纹（螺母、螺孔）</button></div>
-      <label>公差带 / 公差等级</label><select id="pc"></select>
+      <label id="pcl">公差带 / 公差等级</label><select id="pc"></select>
       <div id="pcx" style="display:none"><label>自定义公差带（如 5g6g、7H）</label><input id="pcxi" type="text" value=""></div>
       <div id="ple" style="display:none"><label>旋合长度 LE（in，0 = 按标准表的取法）</label><input id="plei" type="number" step="any" value="0"></div>
       <label>线数 n</label><select id="pn"><option>1</option><option>2</option><option>3</option><option>4</option></select>
@@ -132,19 +133,19 @@ header{position:relative}
   <h2>螺纹成形刀</h2>
   <div class="meta" id="fmeta"></div>
   <div id="fext">
-    <div class="say">外螺纹的成形车刀、盘形铣刀、指型铣刀用首页的螺旋面刀具程序计算（按轴向截面牙型生成螺旋面，再求刀具刃口），下面直接嵌入，规格已按“螺纹参数”页带入。普通螺纹和统一螺纹都是 60° 基本牙型，外螺纹牙底按整圆弧 R = 0.1443P（统一螺纹 UNR 牙底圆弧 0.108P～0.144P，也在此范围内）。</div>
+    <div class="say">外螺纹的成形车刀、盘形铣刀、指型铣刀用首页的螺旋面刀具程序计算（按轴向截面牙型生成螺旋面，再求刀具刃口），下面直接嵌入，规格已按“螺纹参数”页带入。<span id="fextnote"></span></div>
     <div class="btns"><a id="fopen" class="lnk2" href="index.html" target="_blank">在新窗口打开 ›</a></div>
     <iframe id="fif" title="外螺纹成形刀" style="width:100%;height:1400px;border:0;border-radius:12px;background:var(--card)"></iframe>
   </div>
   <div id="fint" hidden>
-    <div class="say">内螺纹车刀（螺纹刀片）的刃形就是内螺纹牙槽的轴向截面：两侧 60°，刀尖对着内螺纹大径（牙底）。按 ISO 68-1 基本牙型，内螺纹牙底是宽 <span class="f">P/8</span> 的平顶；ISO 965-1 只规定内螺纹大径的最小值，牙底轮廓不得进到基本牙型里面，所以刀尖可以做成平顶 P/8，也可以做成圆弧，圆弧半径有上限（见下）。</div>
+    <div class="say">内螺纹车刀（螺纹刀片）的刃形就是内螺纹牙槽的轴向截面，刀尖对着内螺纹大径（牙底）。普通螺纹和统一螺纹按 ISO 68-1 基本牙型，内螺纹牙底是宽 <span class="f">P/8</span> 的平顶；ISO 965-1 只规定内螺纹大径的最小值，牙底轮廓不得进到基本牙型里面，所以刀尖可以做成平顶 P/8，也可以做成圆弧，圆弧半径有上限。55° 管螺纹（G、Rp、Rc）牙底是标准圆弧 r = 0.1373P；NPT、NPTF 牙底是平顶，削平量在标准范围内选。</div>
     <div class="play">
       <div><svg class="fig" id="ftool" viewBox="-60 -10 120 80"></svg><div class="cap">刃形（前角 0°，前刀面内看）；坐标原点在刀尖，y 向刀体</div></div>
       <div class="ctl">
         <label>中径目标位置 <b id="vft"></b></label><input id="ft" type="range" min="0" max="100" step="5" value="50">
         <div class="hint">0% = 中径下限 D₂min，100% = 上限 D₂max，默认取中值</div>
-        <label>刀尖形式</label><select id="fk"><option value="flat">平顶 P/8（基本牙型）</option><option value="arc">圆弧 R</option></select>
-        <div id="fra"><label>刀尖圆弧 R（mm，0 = 取允许的最大值）</label><input id="fr" type="number" step="any" value="0"></div>
+        <div id="fksel"><label>刀尖形式</label><select id="fk"><option value="flat">平顶 P/8（基本牙型）</option><option value="arc">圆弧 R</option></select></div>
+        <div id="fra"><label id="frl">刀尖圆弧 R（mm，0 = 取允许的最大值）</label><input id="fr" type="number" step="any" value="0"></div>
         <label>刃形高度余量（mm，牙深之外）</label><input id="fx" type="number" step="any" value="0.2">
         <div class="warn" id="fw"></div>
       </div>
@@ -411,6 +412,8 @@ header{position:relative}
   <h2>版本记录</h2>
   <div class="meta">本页依据 GB/T 192、193、196、197、14791，GB/T 5796、13576、7306、7307，ISO 68-1、965-1、228-1、5835 和 ASTM F543 整理，标准原文不一致时以标准为准。</div>
   <ul>
+    <li><b>2026-11-28 第 2 批</b>：“螺纹参数”加入管螺纹：G（ISO 228-1 / GB/T 7307，A、B 级与内螺纹极限尺寸）、R / Rc / Rp（ISO 7-1 / GB/T 7306，基准距离与公差、装配余量、有效螺纹长度、Rp 直径公差、Rc 基准平面位置公差）、NPT / NPSC（ASME B1.20.1 / GB/T 12716，E₀、E₁、L₁、L₂、E₂、L₃、E₃、V、L₄ 按标准公式，削平量按表 1，NPSC 按表 4）、NPTF / NPSF（ASME B1.20.3 / GB/T 27944，干密封牙顶牙底削平量按表 6）；与 GB/T 7307、GB/T 7306.1/.2、engineersedge、B1.20.1 表 2（Wikipedia、chicagotube 等转载）、GB/T 27944 共 489 项逐项核对一致。成形刀页：外螺纹按 55° 圆弧牙型或 60° 平顶平底牙型带入首页程序，内螺纹车刀刃形支持 55° 圆弧牙底和 NPT 削平平顶。</li>
+    <li><b>2026-11-28 第 1 批</b>：页面改为五个标签；公制 ISO 965 与统一螺纹 ASME B1.1 内外螺纹极限尺寸（公制 324 项、统一螺纹 410 项与标准表一致）；内螺纹车刀刃形与 DXF；外螺纹成形刀嵌入首页程序。</li>
     <li><b>2026-11-11 审核</b>：牙型公式与 GB/T 192/196/197、GB/T 5796、GB/T 13576、GB/T 7306/7307、ISO 228-1、ISO 5835 逐项核对，粗牙螺距、G 管螺纹大径、Tr/B 优选螺距全部一致；三针公式和最佳量针按公式手算复核。<b>改正</b>：计算器 6g 上偏差原按公式 −(15+11P) 四舍五入，与 GB/T 197 表 1 有 1 μm 出入（如 P1.25 应为 −28、P2 应为 −38），改为直接查表；斜进法进刀角范围改为 0.5°～5°（按刀具厂资料）；粗牙导程角范围改为约 2°～3.5°。</li>
     <li><b>2026-11-08 首版</b>：15 节内容：螺旋线的形成、五种牙型（按标准公式实时绘制）、三个直径、螺距线数导程、旋向、导程角（真实比例）、普通螺纹基本牙型、公差与标记、管螺纹、传动和骨钉螺纹、自锁与效率曲线、三种车削进刀方式和滚压动画、三针测量（可调量针）、计算器和速查表。</li>
       <li><b>2026-11-11 算例实测</b>：用公开算例实测计算器：Tr12×3、Tr20×4 的中径、小径、内螺纹大径与 DIN 103 尺寸表一致；三针读数公式 M = d₂ + 3d<sub>w</sub> − 0.866025P 与《Machinery’s Handbook》相同，M24×1.5（d₂ 23.026，量针 0.866）读数 24.325 与公开例题一致，M3×0.5 用量针 0.290 时与 Martin + Tschopp 量针表的 3.112 一致。无需修改。</li>
@@ -1139,8 +1142,20 @@ const CLS = {
   UN: { ext: ['2A', '1A', '3A'], int: ['2B', '1B', '3B'] }
 };
 let side = 'ext', cur = null;
+const PIPE = ['G', 'R', 'NPT', 'NPTF'], isPipe = std => PIPE.includes(std);
+const PSIZES = { G: TS.P55.map(q => q.nm), R: Object.keys(TS.R7), NPT: TS.NPT.map(q => q.nm), NPTF: TS.NPT.map(q => q.nm).slice(0, 12) };
+const PCLS = {
+  G: { ext: [['A', 'A 级（较紧）'], ['B', 'B 级（较宽，优先选用）']], int: [['', '内螺纹（只有一种公差）']] },
+  R: { ext: [['R2', 'R₂ 圆锥外螺纹（与 Rc 配合，GB/T 7306.2）'], ['R1', 'R₁ 圆锥外螺纹（与 Rp 配合，GB/T 7306.1）']], int: [['Rc', 'Rc 圆锥内螺纹'], ['Rp', 'Rp 圆柱内螺纹']] },
+  NPT: { ext: [['NPT', 'NPT 圆锥外螺纹']], int: [['NPT', 'NPT 圆锥内螺纹'], ['NPSC', 'NPSC 管接头圆柱内螺纹']] },
+  NPTF: { ext: [['NPTF', 'NPTF 干密封圆锥外螺纹']], int: [['NPTF', 'NPTF 干密封圆锥内螺纹'], ['NPSF', 'NPSF 燃油圆柱内螺纹']] }
+};
 function fillSizes() {
-  const std = $('ps').value, L = std === 'M' ? MLIST : ULIST;
+  const std = $('ps').value, L = std === 'M' ? MLIST : ULIST; $('fr').value = 0;
+  if (isPipe(std)) {
+    $('pz').innerHTML = PSIZES[std].map(nm => `<option value="${nm}">${std === 'G' ? 'G ' : std === 'R' ? 'R ' : ''}${nm}${std === 'NPT' || std === 'NPTF' ? '-' + TS.NPT.find(q => q.nm === nm).n + ' ' + std : ''}</option>`).join('');
+    $('pz').value = '1/2'; $('ple').style.display = 'none'; fillCls(); return;
+  }
   const og = (lab, arr) => `<optgroup label="${lab}">` + arr.map(o => `<option value="${o.v}">${o.t}</option>`).join('') + '</optgroup>';
   $('pz').innerHTML = (std === 'M' ? og('粗牙（ISO 261 / GB/T 193）', L.filter(o => !o.fine)) + og('细牙（ISO 965-2 优选）', L.filter(o => o.fine))
     : og('UNC 粗牙', L.filter(o => o.ser === 'UNC')) + og('UNF 细牙', L.filter(o => o.ser === 'UNF')) + og('UNEF 超细牙', L.filter(o => o.ser === 'UNEF'))) + '<option value="c">自定义（任意大径、螺距）</option>';
@@ -1151,12 +1166,15 @@ function fillSizes() {
   fillCls();
 }
 function fillCls() {
+  $('pcl').textContent = { G: '公差等级', R: '螺纹类型', NPT: '螺纹类型', NPTF: '螺纹类型' }[$('ps').value] || '公差带 / 公差等级';
+  if (isPipe($('ps').value)) { $('pc').innerHTML = PCLS[$('ps').value][side].map(([v, t]) => `<option value="${v}">${t}</option>`).join(''); $('pcx').style.display = 'none'; return; }
   const L = CLS[$('ps').value][side];
   $('pc').innerHTML = L.map(c => `<option>${c}</option>`).join('') + ($('ps').value === 'M' ? '<option value="x">其它（手填）</option>' : '');
   $('pcx').style.display = 'none';
 }
 function readSpec() {
   const std = $('ps').value, z = $('pz').value; $('pcu').style.display = z === 'c' ? '' : 'none';
+  if (isPipe(std)) return { std, size: z, cls: $('pc').value, n: +$('pn').value, hand: $('ph').value, pipe: true };
   let d, P, tpi;
   if (z === 'c') { if (std === 'M') { d = +$('pd').value; P = +$('pp').value; } else { d = +$('pd').value; tpi = +$('pp').value; } }
   else if (std === 'M') { const o = MLIST.find(q => q.v === z); d = o.d; P = o.P; }
@@ -1166,7 +1184,8 @@ function readSpec() {
 }
 // ---------- 计算并出表 ----------
 function calc() {
-  const S = readSpec(); $('pw').textContent = ''; $('pnote').innerHTML = '';
+  const S = readSpec(); $('pw').textContent = ''; $('pnote').innerHTML = ''; $('fpar2').style.display = 'none';
+  if (S.pipe) return calcPipe(S);
   let R;
   try {
     if (S.std === 'M') R = TS.metric({ d: S.d, P: S.P, side, cls: S.cls });
@@ -1229,6 +1248,156 @@ function calc() {
   $('pnote').innerHTML = notes.join('<br>');
   drawPar(cur);
 }
+
+// ---------- 管螺纹：极限尺寸、基准距离、有效螺纹长度 ----------
+function calcPipe(S) {
+  let R;
+  try {
+    if (S.std === 'G') R = TS.pipeG({ size: S.size, side, cls: S.cls });
+    else if (S.std === 'R') R = TS.pipeR({ size: S.size, side, cls: S.cls });
+    else R = TS.pipeNPT({ size: S.size, side, cls: S.cls || S.std });
+  } catch (e) { $('pw').textContent = e.message; $('pout').innerHTML = ''; $('fpar').innerHTML = ''; cur = null; return; }
+  cur = Object.assign({ S, side }, R);
+  const rows = [], g = t => rows.push(`<tr class="g"><td colspan="6">${t}</td></tr>`), notes = [];
+  const row = (nm, sym, mx, mn, tol, note = '') => rows.push(`<tr><td>${nm}</td><td><i>${sym}</i></td><td class="n">${mx}</td><td class="n">${mn}</td><td class="n">${tol}</td><td class="hint">${note}</td></tr>`);
+  const tr = (n, v, note = '') => rows.push(`<tr><td>${n}</td><td colspan="2" class="n">${v}</td><td colspan="3" class="hint">${note}</td></tr>`);
+  let head = '<tr><th>项目</th><th>符号</th><th>最大（mm）</th><th>最小（mm）</th><th>公差</th><th>说明</th></tr>', name;
+  if (S.std === 'G') {
+    name = 'G' + R.size + (side === 'ext' ? R.cls : '') + (S.hand === 'L' ? ' LH' : '');
+    g('基本尺寸（ISO 228-1 / GB/T 7307，55° 圆弧牙型）');
+    row('每 25.4 mm 牙数 / 螺距', 'n / P', R.n + ' / ' + f3(R.P), '', '', 'P = 25.4 / n');
+    row('原始三角形高 / 牙高 / 圆弧半径', 'H / h / r', f3(R.H) + ' / ' + f3(R.h) + ' / ' + f3(R.r), '', '', 'H = 0.960491P，h = 0.640327P，r = 0.137329P');
+    row('大径 / 中径 / 小径', 'd / d₂ / d₁', f3(R.d) + ' / ' + f3(R.d2) + ' / ' + f3(R.d1), '', '', '中径、小径按表中牙高 h（圆整到 0.001）计算');
+    if (side === 'ext') {
+      g('外螺纹 ' + R.cls + ' 级极限尺寸（公差全部为负；B 级 = A 级的 2 倍）');
+      row('大径', 'd', f3(R.dmax), f3(R.dmin), 'Td = ' + R.Td + ' µm');
+      row('中径', 'd₂', f3(R.d2max), f3(R.d2min), 'Td₂ = ' + R.Td2 + ' µm');
+      row('小径', 'd₁', f3(R.d1max), '—', '', '只规定最大值');
+    } else {
+      g('内螺纹极限尺寸（公差全部为正）');
+      row('大径', 'D', '—', f3(R.Dmin), '', '只规定最小值');
+      row('中径', 'D₂', f3(R.D2max), f3(R.D2min), 'TD₂ = ' + R.TD2 + ' µm');
+      row('小径', 'D₁', f3(R.D1max), f3(R.D1min), 'TD₁ = ' + R.TD1 + ' µm');
+      notes.push(`底孔直径落在小径公差带 ${f3(R.D1min)}～${f3(R.D1max)} mm 内即可。`);
+    }
+    notes.push('G 螺纹本身不密封，靠端面垫片或 O 形圈密封；内螺纹可与 ISO 7-1 的 R 圆锥外螺纹旋合，此时内螺纹长度不小于 ISO 7-1 的规定。');
+  } else if (S.std === 'R') {
+    const ext = side === 'ext', cl = ext ? (S.cls === 'R1' ? 'R₁' : 'R₂') : R.cls;
+    name = cl + ' ' + R.size + (S.hand === 'L' ? ' LH' : '');
+    g('基本尺寸（ISO 7-1 / GB/T 7306，55° 圆弧牙型' + (R.taper ? '，锥度 1:16' : '') + '）');
+    row('每 25.4 mm 牙数 / 螺距', 'n / P', R.n + ' / ' + f3(R.P), '', '', '');
+    row('原始三角形高 / 牙高 / 圆弧半径', 'H / h / r', f3(R.H) + ' / ' + f3(R.h) + ' / ' + f3(R.r), '', '', R.taper ? '圆锥螺纹：H = 0.960237P，r = 0.137278P' : '圆柱内螺纹：H = 0.960491P，r = 0.137329P');
+    row('基准平面内的大径 / 中径 / 小径', 'd / d₂ / d₁', f3(R.d) + ' / ' + f3(R.d2) + ' / ' + f3(R.d1), '', '', R.taper ? '基准直径（在基准平面内）' : '');
+    if (ext) {
+      g('圆锥外螺纹：基准距离与长度（基准平面到小端面）');
+      row('基准距离', 'a', f3(R.amax), f3(R.amin), '±' + R.T1 + ' mm（±' + fr(R.T1turn) + ' 圈）', '基本值 ' + R.a + ' mm');
+      row('小端面处大径 / 中径 / 小径（基准距离为基本值时）', '', f3(R.dSmall) + ' / ' + f3(R.d2Small) + ' / ' + f3(R.d1Small), '', '', '= 基准直径 − a/16');
+      row('装配余量', '', R.La + ' mm', '', '', fr(R.LaTurn) + ' 圈');
+      row('有效螺纹长度不小于', '', R.Lu[0] + ' mm', '', '', `基准距离为最大值时 ${R.Lu[1]} mm，为最小值时 ${R.Lu[2]} mm`);
+    } else if (R.taper) {
+      g('圆锥内螺纹 Rc：基准平面在端面（参照平面）');
+      row('基准平面轴向位置', '', '+' + R.T2Rc + ' mm', '−' + R.T2Rc + ' mm', '±' + fr(R.T2turn) + ' 圈', '相对端面');
+      row('折算到中径（锥度 1:16）', 'D₂', f3(R.d2 + R.T2Rc / 16), f3(R.d2 - R.T2Rc / 16), '', '端面处中径的允许范围');
+      row('有效螺纹长度', '', '', '', '', `尾部未退刀时，应能容纳有效螺纹长度为 ${R.Lu[0]} mm 的外螺纹（GB/T 7306.2 第 8.2 条）`);
+    } else {
+      g('圆柱内螺纹 Rp：直径极限偏差 ±T₂/2（径向）');
+      row('中径', 'D₂', f3(R.D2max), f3(R.D2min), '±' + R.T2Rp + ' mm', '大径、小径按同一偏差');
+      row('小径', 'D₁', f3(R.D1max), f3(R.D1min), '±' + R.T2Rp + ' mm');
+    }
+    notes.push('R / Rc / Rp 是螺纹本身密封的管螺纹（加密封剂或胶带）；R₁ 与 Rp 配合（GB/T 7306.1），R₂ 与 Rc 配合（GB/T 7306.2），牙型和尺寸相同。');
+  } else {
+    const f5 = v => (Math.round(v * 1e5) / 1e5).toFixed(5), inch = (v, d5) => (d5 ? f5(v) : f4(v)) + '<br><span class="hint">' + f3(v * IN) + ' mm</span>', p = R.p, dry = R.std === 'NPTF';
+    head = '<tr><th>项目</th><th>符号</th><th>值（in / mm）</th><th></th><th>公差</th><th>说明</th></tr>';
+    name = R.size + '-' + R.n + ' ' + R.cls + (S.hand === 'L' ? '-LH' : '');
+    g((dry ? 'ASME B1.20.3（GB/T 27944）干密封管螺纹' : 'ASME B1.20.1（GB/T 12716）60° 密封管螺纹') + '：管子外径 D = ' + R.D + ' in，' + R.n + ' 牙/in，p = ' + f4(p) + ' in = ' + f3(p * IN) + ' mm');
+    const iv = (nm, sym, v, tol = '', note = '') => rows.push(`<tr><td>${nm}</td><td><i>${sym}</i></td><td class="n" colspan="2">${inch(v, /^E/.test(sym))}</td><td class="n">${tol}</td><td class="hint">${note}</td></tr>`);
+    if (!/NPS/.test(R.cls)) {
+      iv('小端（管端）中径', 'E₀', R.E0, '', 'E₀ = D − (0.05D + 1.1)p');
+      iv('手旋合长度（L1 量规长度）', 'L₁', R.L1, '', (R.L1 * R.n).toFixed(2) + ' 圈');
+      iv('L1 平面中径（内螺纹端面处）', 'E₁', R.E1, '±' + f4(R.tolD) + ' in', 'E₁ = E₀ + 0.0625L₁；量规 ±1 圈 = 中径 ±0.0625p');
+      iv('外螺纹有效螺纹长度', 'L₂', R.L2, '', '(0.8D + 6.8)p，' + (R.L2 * R.n).toFixed(2) + ' 圈');
+      iv('L2 平面中径', 'E₂', R.E2, '', 'E₂ = E₀ + 0.0625L₂');
+      iv('扳紧余量（内螺纹）', 'L₃', R.L3, '', (R.L3 * R.n).toFixed(0) + ' 圈' + (dry ? '' : R.n === 8 ? '（8 牙为 2 圈）' : ''));
+      iv('扳紧平面中径', 'E₃', R.E3, '', 'E₃ = E₀ − 0.0625L₃');
+      iv('螺尾（不完整牙）', 'V', R.V, '', '3.47p');
+      iv('外螺纹全长', 'L₄', R.L4, '', 'L₂ + V');
+      tr('锥度', '1:16（直径方向每英尺 3/4 in）', '半锥角 1°47′24″');
+    } else {
+      const t = R.cls === 'NPSC' ? 'NPSC：管接头用圆柱内螺纹（B1.20.1 表 4），与 NPT 外螺纹配合，加密封剂' : 'NPSF：燃油用干密封圆柱内螺纹（B1.20.3），适合韧性材料，与 NPTF 外螺纹配合';
+      g(t);
+      rows.push(`<tr><td>中径</td><td><i>D₂</i></td><td class="n">${inch(R.D2max)}</td><td class="n">${inch(R.D2min)}</td><td class="n">${f4(R.D2max - R.D2min)}</td><td class="hint">最大 / 最小</td></tr>`);
+      iv('小径最小值', 'D₁', R.D1min);
+      if (R.Lmin) iv('最短螺纹长度', '', R.Lmin);
+    }
+    if (dry) {
+      iv('牙顶削平量', 'f', R.fCrest[0], '～ ' + f4(R.fCrest[1]), `${R.fK[0]}p～${R.fK[1]}p（B1.20.3 表 6）`);
+      iv('牙底削平量', 'f', R.fRoot[0], '～ ' + f4(R.fRoot[1]), `${R.fK[1]}p～${R.fK[2]}p（牙底削平比牙顶多）；扳紧后牙侧、牙顶、牙底都要接触（B1.20.3 图 1 注），不用密封剂即可密封`);
+      iv('牙高', 'h', R.hmax, '～ ' + f4(R.hmin), '最大～最小');
+      notes.push('NPTF 量规：L1 量规 ±1 圈；L2 环规 / L3 塞规相对 L1 读数 ±1/2 圈（检查锥度）；牙顶、牙底削平量用 6 级台阶量规检查（Class 2）。');
+    } else {
+      iv('牙高（最大 / 最小）', 'h', R.hmax, '～ ' + f4(R.hmin), 'h = 0.8p（削平量最小）');
+      iv('牙顶、牙底削平量', 'f', R.fMin, '～ ' + f4(R.fMax), `${R.fK[0]}p～${R.fK[1]}p（B1.20.1 表 1）`);
+      notes.push('NPT 用 L1 螺纹量规检验：外螺纹环规小端面、内螺纹塞规缺口距工件端面在 ±1 圈以内为合格（B1.20.1 第 3.2 节）。NPT 靠密封剂密封，NPTF 不用密封剂。');
+    }
+  }
+  $('pout').innerHTML = '<caption style="text-align:left;font-weight:700;padding:4px 0 8px">' + name + '</caption>' + head + rows.join('');
+  cur.name = name;
+  $('pnote').innerHTML = notes.join('<br>');
+  drawPipe(cur);
+}
+function fr(v) { return v === 1.25 ? '1¼' : v === 1.5 ? '1½' : v === 2.75 ? '2¾' : v === 3.25 ? '3¼' : v === 4.5 ? '4½' : String(v); }
+// 管螺纹牙型（真实比例，一个半螺距）＋ 圆锥螺纹示意
+function drawPipe(C) {
+  const svg = $('fpar'); svg.innerHTML = ''; const s55 = C.std === 'G' || C.std === 'R', ext = C.side === 'ext', close = ext ? ' 110,64 -110,64' : ' 110,-64 -110,-64', fillC = ext ? 'var(--steel)' : 'var(--gear2)';
+  const P = s55 ? C.P : C.p, beta = (s55 ? 27.5 : 30) * Math.PI / 180, H = P / (2 * Math.tan(beta)), sc = 100 / P, tb = Math.tan(beta);
+  const pts = [];
+  if (s55) {   // 圆弧牙顶、牙底：削去 H/6，圆弧与牙侧相切
+    const r = (H / 6) * Math.sin(beta) / (1 - Math.sin(beta));
+    for (let i = 0; i <= 600; i++) {
+      const x = -1.1 * P + i * 2.2 * P / 600, u = Math.abs(x - Math.round(x / P) * P);   // 到牙顶中心的距离（牙顶在 x = 0、±P）
+      let y = H / 2 - u / tb;   // 尖角牙型
+      const cT = H / 2 - H / 6 - r;   // 牙顶圆心 y
+      const uT = r * Math.cos(beta);
+      if (u < uT) y = cT + Math.sqrt(Math.max(0, r * r - u * u));
+      const v = P / 2 - u;   // 到牙底中心的距离
+      const cB = -H / 2 + H / 6 + r;
+      if (v < uT) y = cB - Math.sqrt(Math.max(0, r * r - v * v));
+      pts.push([x * sc, -y * sc]);
+    }
+    tx(svg, 0, -(H / 2 - H / 6) * sc - 4, '55°，h = 0.640327P，r = 0.1373P', { fs: 5.5 });
+  } else {   // NPT / NPTF：平顶平底，按最小削平量画实线、最大削平量画虚线
+    const line = (fc, fr_) => { const a = []; for (let i = 0; i <= 600; i++) { const x = -1.1 * P + i * 2.2 * P / 600, u = Math.abs(x - Math.round(x / P) * P); let y = H / 2 - u / tb; y = Math.min(H / 2 - fc, Math.max(-H / 2 + fr_, y)); a.push([x * sc, -y * sc]); } return a; };
+    const pl = (a, st) => mk('polyline', Object.assign({ points: a.map(q => q[0].toFixed(2) + ',' + q[1].toFixed(2)).join(' '), fill: 'none' }, st), svg);
+    // line(上方削平量, 下方削平量)：外螺纹上方是牙顶、下方是牙底；内螺纹上方是牙底、下方是牙顶
+    const dry = C.std === 'NPTF', cr = dry ? C.fCrest : [C.fMin, C.fMax], ro = dry ? C.fRoot : [C.fMin, C.fMax];
+    const a0 = ext ? line(cr[0], ro[0]) : line(ro[0], cr[0]), a1 = ext ? line(cr[1], ro[1]) : line(ro[1], cr[1]);
+    mk('polygon', { points: (ext ? a1 : a0).map(q => q.join(',')).join(' ') + close, fill: fillC, opacity: 0.55 }, svg);
+    pl(a0, { stroke: 'var(--accent)', 'stroke-width': 1.2 }); pl(a1, { stroke: 'var(--blue)', 'stroke-width': 1.2, 'stroke-dasharray': '3 2' });
+    tx(svg, 0, -(H / 2) * sc - 4, '60°，削平量最小（实线）/ 最大（虚线）', { fs: 5.5 });
+  }
+  if (s55) { mk('polygon', { points: pts.map(q => q.join(',')).join(' ') + close, fill: fillC, opacity: 0.55 }, svg); mk('polyline', { points: pts.map(q => q[0].toFixed(2) + ',' + q[1].toFixed(2)).join(' '), fill: 'none', stroke: 'var(--accent)', 'stroke-width': 1.2 }, svg); }
+  mk('line', { x1: -110, x2: 110, y1: 0, y2: 0, stroke: 'var(--green)', 'stroke-width': 0.4, 'stroke-dasharray': '1 2' }, svg);
+  tx(svg, -108, -2, '中径线', { fs: 5, a: 'start', fill: 'var(--green)' });
+  $('fparcap').textContent = '轴向截面基本牙型，真实比例（牙型角平分线垂直于轴线）；' + (ext ? '外螺纹材料在下方。' : '内螺纹材料在上方。');
+  // 圆锥螺纹示意：基准平面、基准距离 / L1、有效螺纹长度
+  const s2 = $('fpar2'); s2.innerHTML = '';
+  if (!C.taper) return;
+  s2.style.display = '';
+  const isR = C.std === 'R', unit = isR ? 'mm' : 'in';
+  const Lg = isR ? C.a : C.L1, L = ext ? (isR ? C.Lu[0] : C.L2) : (isR ? C.Lu[0] : +(C.L1 + C.L3).toFixed(4));
+  const k = 170 / (L * 1.1), x0 = -85, xe = x0 + L * k, y0 = 40, sl = 0.12;   // 锥度在图中放大
+  // 外螺纹：左端为小端（参照平面），向右变粗；内螺纹：左端为端面（大端），向里变细
+  const half = x => ext ? 22 + (x - x0) * sl : 22 + (xe - x) * sl;
+  mk('polygon', { points: `${x0},${y0 - half(x0)} ${xe},${y0 - half(xe)} ${xe},${y0 + half(xe)} ${x0},${y0 + half(x0)}`, fill: ext ? 'var(--steel)' : 'var(--gear2)', opacity: 0.55, stroke: 'var(--ink)', 'stroke-width': 0.5 }, s2);
+  mk('line', { x1: -98, x2: 98, y1: y0, y2: y0, stroke: 'var(--muted)', 'stroke-width': 0.4, 'stroke-dasharray': '4 2' }, s2);
+  const xg = ext ? x0 + Lg * k : x0;
+  mk('line', { x1: xg, x2: xg, y1: 6, y2: 74, stroke: 'var(--accent)', 'stroke-width': 0.9 }, s2);
+  tx(s2, xg + (ext ? 0 : 2), 4, isR ? '基准平面' : 'L1 平面（E₁）', { fs: 5, fill: 'var(--accent)', a: ext ? 'middle' : 'start' });
+  const dim = (xa, xb, y, t) => { mk('line', { x1: xa, x2: xb, y1: y, y2: y, stroke: 'var(--ink)', 'stroke-width': 0.4 }, s2); [xa, xb].forEach(x => mk('line', { x1: x, x2: x, y1: y - 2, y2: y + 2, stroke: 'var(--ink)', 'stroke-width': 0.4 }, s2)); tx(s2, (xa + xb) / 2, y - 1.5, t, { fs: 4.6 }); };
+  if (ext) { dim(x0, xg, 80, (isR ? 'a = ' : 'L₁ = ') + Lg + ' ' + unit); dim(x0, xe, 89, (isR ? '有效螺纹 ≥ ' : 'L₂ = ') + L + ' ' + unit); tx(s2, x0, y0 + half(x0) + 6, '小端（参照平面）', { fs: 4.5, a: 'start' }); }
+  else { dim(x0, x0 + Lg * k, 80, isR ? '基准平面在端面' : 'L₁ = ' + Lg + ' in'); dim(x0, xe, 89, isR ? '应容纳有效螺纹 ' + L + ' mm 的外螺纹' : 'L₁ + L₃ = ' + L + ' in'); tx(s2, x0 + 1, y0 + half(x0) + 6, '端面（大端）', { fs: 4.5, a: 'start' }); }
+  tx(s2, 98, 4, '锥度 1:16（图中放大）', { fs: 4.5, a: 'end', fill: 'var(--muted)' });
+}
 // ---------- 牙型图：基本牙型 + 最大实体 / 最小实体牙型（偏差放大） ----------
 function drawPar(C) {
   const svg = $('fpar'); svg.innerHTML = '';
@@ -1279,13 +1448,30 @@ $('gof').onclick = () => show('form', true);
 
 // ---------- 成形刀 ----------
 let lastSrc = '';
+const TB = b => Math.tan(b * Math.PI / 180);
+// 外螺纹：给首页程序的牙型参数（mm）
+function extProfile(C) {
+  const st = C.S.std;
+  if (st === 'M' || st === 'UN') { const met = st === 'M'; return { tp: 'm60', d: met ? C.S.d : C.S.d * IN, P: met ? C.S.P : IN / C.S.tpi, note: '普通螺纹和统一螺纹都是 60° 基本牙型，外螺纹牙底按整圆弧 R = 0.1443P（统一螺纹 UNR 牙底圆弧 0.108P～0.144P，也在此范围内）。' }; }
+  if (st === 'G' || st === 'R') {
+    const P = C.P, b = 27.5, H = P / (2 * TB(b)), h = 2 * H / 3, sb = Math.sin(b * Math.PI / 180), r = (H / 6) * sb / (1 - sb);
+    return { tp: 'cu', d: C.d, P, dr: C.d - 2 * h, a1: b, a2: b, e: 2 * (H / 6) * TB(b), r1: r, r2: r, rc: r,
+      note: `55° 圆弧牙型（ISO 228-1 / ISO 7-1）：按“自定义牙型”带入，牙侧角 27.5°，牙顶、牙底圆弧 r = ${f3(r)} mm（0.1373P），牙高 0.6403P，车刀连牙顶一起成形（全牙型）。` + (C.taper ? `圆锥外螺纹：按基准平面的直径 d = ${f3(C.d)} mm 计算刃形，牙型垂直于轴线，车削时刀具沿 1:16 锥度走刀。` : '') };
+  }
+  // NPT / NPTF：60°，牙顶、牙底削平量取中值，牙顶不由车刀成形
+  const p = C.p * IN, b = 30, H = p / (2 * TB(b)), dry = C.std === 'NPTF';
+  const fc = (dry ? (C.fCrest[0] + C.fCrest[1]) / 2 : (C.fMin + C.fMax) / 2) * IN, fr_ = (dry ? (C.fRoot[0] + C.fRoot[1]) / 2 : (C.fMin + C.fMax) / 2) * IN, E1 = C.E1 * IN;
+  return { tp: 'cu', d: E1 + H - 2 * fc, P: p, dr: E1 - H + 2 * fr_, a1: b, a2: b, e: 2 * fc * TB(b), r1: 0, r2: 0, rc: 0,
+    note: `60° 平顶平底牙型：牙顶削平量取 ${f3(fc)} mm、牙底削平量取 ${f3(fr_)} mm（${dry ? 'B1.20.3 表 6' : 'B1.20.1 表 1'} 范围的中值），按 L1 平面中径 E₁ = ${f3(E1)} mm 计算刃形；牙型垂直于轴线，车削时沿 1:16 锥度走刀。` };
+}
 function renderForm() {
   const C = cur; if (!C) { $('fmeta').textContent = '先在“螺纹参数”里选好螺纹'; return; }
   $('fmeta').textContent = '当前螺纹：' + C.name + '（在“螺纹参数”页修改）';
   const ext = C.side === 'ext'; $('fext').hidden = !ext; $('fint').hidden = ext;
   if (ext) {
-    const met = C.S.std === 'M', dmm = met ? C.S.d : C.S.d * IN, Pmm = met ? C.S.P : IN / C.S.tpi;
-    const src = `index.html?embed=thread&tp=m60&d=${+dmm.toFixed(5)}&P=${+Pmm.toFixed(6)}&n=${C.S.n}&hand=${C.S.hand}`;
+    const X = extProfile(C); $('fextnote').textContent = X.note;
+    let src = `index.html?embed=thread&tp=${X.tp}&d=${+X.d.toFixed(5)}&P=${+X.P.toFixed(6)}&n=${C.S.n}&hand=${C.S.hand}`;
+    if (X.tp === 'cu') src += ['dr', 'a1', 'a2', 'e', 'r1', 'r2', 'rc'].map(k => `&${k}=${+X[k].toFixed(6)}`).join('');
     $('fopen').href = src;
     if (src !== lastSrc) { lastSrc = src; $('fif').src = src; }
   } else intTool();
@@ -1294,47 +1480,79 @@ function renderForm() {
 setInterval(() => { const f = $('fif'); if ($('p-form').hidden || $('fext').hidden) return; try { const h = f.contentDocument.documentElement.scrollHeight; if (h > 200 && Math.abs(h - f.clientHeight) > 8) f.style.height = h + 'px'; } catch (e) {} }, 800);
 
 // ---------- 内螺纹车刀刃形 ----------
+// 各标准的内螺纹槽形：牙型半角 b，原始三角形高 H，中径范围（端面 / 基准平面处），小径（底孔）参考，刀尖形式
+function intForm(C) {
+  const st = C.S.std;
+  if (st === 'M' || st === 'UN') {
+    const met = st === 'M', u = met ? 1 : IN, P = (met ? C.S.P : C.P) * u;
+    return { mode: 'iso', b: 30, P, H: 0.8660254 * P, D2: (met ? C.d2 : C.D2) * u, D2min: C.D2min * u, D2max: C.D2max * u, D1min: C.D1min * u, Dmin: (met ? C.Dmin : C.S.d) * u, note: met ? '' : `统一螺纹，按 1 in = 25.4 mm 换算，P = ${f3(P)} mm` };
+  }
+  if (st === 'G' || st === 'R') {
+    const P = C.P, b = 27.5, H = P / (2 * TB(b)), sb = Math.sin(b * Math.PI / 180), r = (H / 6) * sb / (1 - sb);
+    let D2min, D2max, D1min, Dmin, note = '';
+    if (st === 'G') { D2min = C.D2min; D2max = C.D2max; D1min = C.D1min; Dmin = C.Dmin; }
+    else if (C.cls === 'Rp') { D2min = C.D2min; D2max = C.D2max; D1min = C.D1min; Dmin = C.Dmin; }
+    else { const t = C.T2Rc / 16; D2min = C.d2 - t; D2max = C.d2 + t; D1min = C.d1 - t; Dmin = C.d - t; note = `Rc 圆锥内螺纹：中径按端面（基准平面）处、轴向位置 ±${C.T2Rc} mm 折算（锥度 1:16），车削时沿锥度走刀`; }
+    return { mode: 'arc', b, P, H, r, D2: C.d2, D2min, D2max, D1min, Dmin, note };
+  }
+  const p = C.p * IN, b = 30, H = p / (2 * TB(b)), dry = C.std === 'NPTF', fR = (dry ? C.fRoot : [C.fMin, C.fMax]).map(v => v * IN), fC = (dry ? C.fCrest : [C.fMin, C.fMax]).map(v => v * IN);
+  let D2min, D2max, D1min, note;
+  if (/NPS/.test(C.cls)) { D2min = C.D2min * IN; D2max = C.D2max * IN; D1min = C.D1min * IN; note = C.cls + ' 圆柱内螺纹，中径按标准表'; }
+  else { const t = C.tolD * IN, E1 = C.E1 * IN; D2min = E1 - t; D2max = E1 + t; D1min = E1 - t - H + 2 * fC[0]; note = `圆锥内螺纹：中径为端面（L1 平面）处 E₁ ±1 圈（±0.0625p），车削时沿 1:16 锥度走刀`; }
+  return { mode: 'trunc', b, P: p, H, fR, D2: (D2min + D2max) / 2, D2min, D2max, D1min, note };
+}
 let TOOL = null;
 function intTool() {
-  const C = cur, met = C.S.std === 'M', u = met ? 1 : IN;   // 统一螺纹换算成 mm
-  const P = (met ? C.S.P : C.P) * u, H = 0.8660254 * P, D = C.S.d * u, D2 = (met ? C.d2 : C.D2) * u;
-  const D2min = C.D2min * u, D2max = C.D2max * u, D1min = C.D1min * u, Dmin = (met ? C.Dmin : C.S.d) * u;
+  const C = cur, F = intForm(C), P = F.P, H = F.H, tb = TB(F.b), sb = Math.sin(F.b * Math.PI / 180), cb = Math.cos(F.b * Math.PI / 180);
   const pct = +$('ft').value; $('vft').textContent = pct + '%';
-  const D2t = D2min + (D2max - D2min) * pct / 100;
-  const arc = $('fk').value === 'arc'; $('fra').style.display = arc ? '' : 'none';
-  // 圆弧刀尖：与两侧 60° 牙侧相切，切点比尖角顶点低 1.5R；切点不能低于基本牙型的大径线（中径取下限时最不利）
-  const rMax = (H / 8 + (D2min - D2) / 2) / 1.5;
-  let r = arc ? (+$('fr').value > 0 ? +$('fr').value : rMax) : 0;
-  const W = [];
-  if (arc && r > rMax + 1e-9) W.push(`圆弧 R = ${f3(r)} mm 超过上限 ${f3(rMax)} mm：牙底圆弧会进到基本牙型里面（ISO 965-1 不允许），已按上限计算`), r = rMax;
-  const Dcut = arc ? D2t + H - 2 * r : D2t + 0.75 * H;   // 刀尖到达的直径（螺纹大径实际值）
-  if (Dcut < Dmin - 1e-9) W.push('车出的大径小于最小值，请检查');
-  const depth = (Dcut - D1min) / 2, hx = Math.max(0, +$('fx').value || 0), h = depth + hx;
+  const D2t = F.D2min + (F.D2max - F.D2min) * pct / 100, W = [];
+  $('fksel').style.display = F.mode === 'iso' ? '' : 'none';
+  const arc = F.mode === 'arc' || (F.mode === 'iso' && $('fk').value === 'arc');
+  $('fra').style.display = (F.mode === 'iso' && arc) || F.mode === 'trunc' ? '' : 'none';
+  $('frl').textContent = F.mode === 'trunc' ? `牙底削平量 f（mm，0 = 取中值；范围 ${f3(F.fR[0])}～${f3(F.fR[1])}）` : '刀尖圆弧 R（mm，0 = 取允许的最大值）';
+  let r = 0, e = 0, Dcut, tipTxt;
+  if (F.mode === 'iso') {
+    // 圆弧刀尖与两侧 60° 牙侧相切，切点比尖角顶点低 1.5R；切点不能低于基本牙型的大径线（中径取下限时最不利）
+    const rMax = (H / 8 + (F.D2min - F.D2) / 2) / 1.5;
+    if (arc) { r = +$('fr').value > 0 ? +$('fr').value : rMax; if (r > rMax + 1e-9) { W.push(`圆弧 R = ${f3(r)} mm 超过上限 ${f3(rMax)} mm：牙底圆弧会进到基本牙型里面（ISO 965-1 不允许），已按上限计算`); r = rMax; } }
+    else e = P / 8;
+    Dcut = arc ? D2t + H - 2 * r : D2t + 0.75 * H;
+    tipTxt = arc ? `圆弧 R = ${f3(r)} mm（允许最大 ${f3(rMax)} mm = (H/8 + (D₂min − D₂)/2) / 1.5）` : `平顶宽 P/8 = ${f3(e)} mm`;
+    if (Dcut < F.Dmin - 1e-9) W.push('车出的大径小于最小值，请检查');
+  } else if (F.mode === 'arc') {
+    r = F.r; Dcut = D2t + H - 2 * (r / sb - r);
+    tipTxt = `圆弧 r = ${f3(r)} mm（55° 管螺纹标准牙型，0.1373P，牙底削去 H/6）`;
+  } else {
+    let f = +$('fr').value > 0 ? +$('fr').value : (F.fR[0] + F.fR[1]) / 2;
+    if (f < F.fR[0] - 1e-9 || f > F.fR[1] + 1e-9) W.push(`削平量 ${f3(f)} mm 超出标准范围 ${f3(F.fR[0])}～${f3(F.fR[1])} mm`);
+    e = 2 * f * tb; Dcut = D2t + H - 2 * f;
+    tipTxt = `平顶宽 ${f3(e)} mm（牙底削平量 f = ${f3(f)} mm，平顶宽 = 2f·tan30°）`;
+  }
+  const depth = (Dcut - F.D1min) / 2, hx = Math.max(0, +$('fx').value || 0), h = depth + hx;
   const phi = Math.atan(C.S.n * P / (Math.PI * D2t)) * 180 / Math.PI;
   $('fw').innerHTML = W.join('<br>');
   // 刃形：原点在刀尖（平顶中点或圆弧最高点），y 向刀体为正，x 沿螺纹轴线
-  const e = arc ? 0 : P / 8;   // 平顶宽
   const seg = [];
   if (arc) {
-    const cy = r, tpx = r * Math.cos(Math.PI / 6), tpy = r - r * Math.sin(Math.PI / 6);   // 圆心 (0, r)，切点
-    seg.push({ t: 'L', a: [-tpx - (h - tpy) * T30, h], b: [-tpx, tpy] });
-    seg.push({ t: 'A', c: [0, cy], r, a0: 210, a1: 330 });
-    seg.push({ t: 'L', a: [tpx, tpy], b: [tpx + (h - tpy) * T30, h] });
+    const tpx = r * cb, tpy = r - r * sb;   // 圆心 (0, r)，切点
+    seg.push({ t: 'L', a: [-tpx - (h - tpy) * tb, h], b: [-tpx, tpy] });
+    seg.push({ t: 'A', c: [0, r], r, a0: 180 + F.b, a1: 360 - F.b });
+    seg.push({ t: 'L', a: [tpx, tpy], b: [tpx + (h - tpy) * tb, h] });
   } else {
-    seg.push({ t: 'L', a: [-e / 2 - h * T30, h], b: [-e / 2, 0] }, { t: 'L', a: [-e / 2, 0], b: [e / 2, 0] }, { t: 'L', a: [e / 2, 0], b: [e / 2 + h * T30, h] });
+    seg.push({ t: 'L', a: [-e / 2 - h * tb, h], b: [-e / 2, 0] }, { t: 'L', a: [-e / 2, 0], b: [e / 2, 0] }, { t: 'L', a: [e / 2, 0], b: [e / 2 + h * tb, h] });
   }
   TOOL = { seg, P, h, name: C.name };
   const wTop = 2 * (seg[seg.length - 1].b[0]);
   const rows = [
-    ['牙型角', '60°（两侧各 30°）'],
-    ['刀尖', arc ? `圆弧 R = ${f3(r)} mm（允许最大 ${f3(rMax)} mm = (H/8 + (D₂min − D₂)/2) / 1.5）` : `平顶宽 P/8 = ${f3(e)} mm`],
-    ['中径目标 D₂', `${f3(D2t)} mm（公差带 ${f3(D2min)}～${f3(D2max)}）`],
-    ['车出的大径（刀尖到达直径）', `${f3(Dcut)} mm（最小允许 ${f3(Dmin)}）`],
-    ['从底孔 D₁min 算起的牙深', `${f3(depth)} mm（半径方向，底孔 ${f3(D1min)}）`],
+    ['牙型角', `${2 * F.b}°（两侧各 ${F.b}°）`],
+    ['刀尖', tipTxt],
+    ['中径目标 D₂', `${f3(D2t)} mm（范围 ${f3(F.D2min)}～${f3(F.D2max)}）`],
+    ['车出的大径（刀尖到达直径）', `${f3(Dcut)} mm` + (F.Dmin ? `（最小允许 ${f3(F.Dmin)}）` : '')],
+    ['从底孔算起的牙深', `${f3(depth)} mm（半径方向，底孔按 ${f3(F.D1min)}）`],
     ['刃形高度 / 高度处刃宽', `${f3(h)} mm / ${f3(wTop)} mm`],
     ['中径处螺旋升角', `${phi.toFixed(2)}°（刀片两侧后角都要大于它；进刀一侧实际后角 = 名义后角 − 升角）`]
   ];
-  if (!met) rows.splice(2, 0, ['换算', `统一螺纹，按 1 in = 25.4 mm 换算，P = ${f3(P)} mm`]);
+  if (F.note) rows.splice(2, 0, ['说明', F.note]);
   $('fout').innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
   // 画图
   const svg = $('ftool'); svg.innerHTML = '';
@@ -1345,9 +1563,9 @@ function intTool() {
   const poly = pts.map(p => (p[0] * s).toFixed(2) + ',' + (p[1] * s).toFixed(2)).join(' ');
   mk('polygon', { points: poly, fill: 'var(--steel)', stroke: 'var(--ink)', 'stroke-width': 0.6 }, svg);
   mk('line', { x1: -58, x2: 58, y1: depth * s, y2: depth * s, stroke: 'var(--blue)', 'stroke-width': 0.4, 'stroke-dasharray': '2 1.5' }, svg);
-  tx(svg, 57, depth * s - 1.5, '底孔 D₁min 线', { fs: 4, a: 'end', fill: 'var(--blue)' });
-  tx(svg, 0, -4, arc ? 'R' + f3(r) : 'P/8 = ' + f3(e), { fs: 4.5, fill: 'var(--accent)' });
-  tx(svg, 0, h * s * 0.55, '60°', { fs: 4.5 });
+  tx(svg, 57, depth * s - 1.5, '底孔线', { fs: 4, a: 'end', fill: 'var(--blue)' });
+  tx(svg, 0, -4, arc ? 'R' + f3(r) : '平顶 ' + f3(e), { fs: 4.5, fill: 'var(--accent)' });
+  tx(svg, 0, h * s * 0.55, 2 * F.b + '°', { fs: 4.5 });
 }
 ['ft', 'fr', 'fx'].forEach(id => $(id).oninput = () => cur && intTool()); $('fk').onchange = () => cur && intTool();
 // DXF（R12，LINE / ARC，单位 mm）

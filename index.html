@@ -5777,7 +5777,8 @@ gl_FragColor=vec4(vC*(0.24+d)+vec3(sp),1.0);}`;
     if (q.get('embed') === 'thread') {
       document.documentElement.classList.add('embed');
       const tp = q.get('tp') || 'm60';
-      if (['m60', 'tr', 'bt'].includes(tp)) hxStore.h_tp = tp;
+      if (['m60', 'tr', 'bt', 'cu'].includes(tp)) hxStore.h_tp = tp;
+      if (tp === 'cu') for (const [k, id] of [['dr', 'h_tdr'], ['a1', 'h_ta1'], ['a2', 'h_ta2'], ['e', 'h_te'], ['r1', 'h_tr1'], ['r2', 'h_tr2'], ['rc', 'h_trc']]) if (q.get(k) !== null && isFinite(+q.get(k))) hxStore[id] = String(+q.get(k));
       if (+q.get('d') > 0) hxStore.h_td = String(+q.get('d'));
       if (+q.get('P') > 0) hxStore.h_tP = String(+q.get('P'));
       if (+q.get('n') >= 1) hxStore.h_tn = String(Math.round(+q.get('n')));
