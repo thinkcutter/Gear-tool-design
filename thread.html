@@ -446,6 +446,7 @@ header{position:relative}
   <h2>版本记录</h2>
   <div class="meta">本页依据 GB/T 192、193、196、197、14791，GB/T 5796、13576、7306、7307，ISO 68-1、965-1、228-1、5835 和 ASTM F543 整理，标准原文不一致时以标准为准。</div>
   <ul>
+    <li><b>2026-11-28 第三轮补证</b>：①螺纹铣刀：找到 Ingersoll 铣削手册的解析公式 ΔL = Ph²·r / (8π²·tanβ·(R − r)·R)，按每个半径代入后与本页三维包络数值解相差不到 0.3 µm（M30×3、M16×2、M10×1.5 等 5 例），页面加了“解析公式核对”一行；刀具厂按底孔半径和刀具半径代入的保守估算可复现 Sandvik M30×3 的 0.07 / 0.01 mm。②公制外螺纹加入小径最小值 d₃min = d₂min − H + 0.25P（DIN ISO 965-1 国家注、ASME B1.13M）和平底牙型小径最大值，与 ASME B1.13M 6g 表 24 个规格一致。③美制公制丝锥 D 极限加入大径：最小 = 基本 + 0.080P，最大按螺距加 0.025～0.100 mm（USCTI 表 341），与 B94.9 表 8b 19 个规格一致。</li>
     <li><b>2026-11-28 第二轮补证</b>：①Rp 管螺纹丝锥改为直接取 ISO 5969 表 1（俄罗斯 ГОСТ 19090-93 等同采用，15 个规格全部核对；原来按 0.3t、0.1t 圆整有 0.001 mm 差）；G 丝锥再与 Yamawa 样本 10 个规格核对一致。②英制丝锥按 ASME B94.9-1987（Machinery’s Handbook 转载）：中径公差改按表 24（按牙数和直径，1-1/2 in 以上不再用专利转述值），加入 L 极限、大径极限（最大 = 基本 + 0.130P，最小 = 最大 − 0.065P，与表 4、5、6 共 45 个规格逐项一致）、导程和半角公差。③加入美制公制丝锥 D 极限（B94.9 表 26，与表 8b 12 个规格一致）。④加入 NPT / NPTF / ANPT 圆锥管螺纹丝锥：小端伸出 L1 环规的距离及公差、锥度、导程、半角（B94.9 表 9a）。⑤公制外螺纹加入 a、b、c、d 公差位置（ISO 965-1:2013 / GB/T 197-2018 表 1）。</li>
     <li><b>2026-11-28 复查</b>：①丝锥：加入 GB/T 968-2007 的 H1～H4（H1～H3 = ISO1～ISO3，H4 手用丝锥 0.15t～0.65t）和挤压丝锥 GB/T 28253-2012 的 H1～H4（0.5t～0.7t、0.7t～0.9t、0.9t～1.1t、0.55t～1.05t，大径 Js = 0.8t），与 GB/T 28253 表 8 共 29 行、91 组中径偏差及大径偏差逐项核对（1 处表值 +40 按公式应为 +39，已注明）；加入牙型半角偏差和螺距偏差（ISO 2857/A1、A2，IS 6173-1，GB/T 28253）、挤压锥 A/C/D/E 型和前端直径 d − 0.7P、挤压丝锥预制孔 d − 0.45P；加入 G、Rp 管螺纹丝锥（ISO 5969，G1/2、G1/4 与标准例题一致）；大于 1-1/2 in 的 H 极限公差。公差单位 t 在 ISO 965-1 表中无 5 级值时按公式取（与 GB/T 28253 表一致）。②MJ 外螺纹小径最小值改为按标准表做法 d₃min = d₃max − (Td₂ + 0.06062P)，各自圆整到 0.001（原有 11 处 0.001 mm 差异消除，MJ10×1.25 与 ISO 5855-2 / IS 10980-2 表 8.557 / 8.406 一致）。</li>
     <li><b>2026-11-28 第 5 批</b>：“丝锥”页：公制丝锥中径公差 ISO1 / ISO2 / ISO3（ISO 2857，t = 螺母 TD₂(5)，大径最小 D + 0.4t，用 Yamawa 样本 29 组数据核对全部一致）和自定义偏差；统一螺纹丝锥 H 极限（ASME B94.9）；切削丝锥和挤压丝锥底孔（螺纹百分比公式，并判断是否落在小径公差带内）；DIN 2197 切削锥 A～F 形式、切削锥半角、每齿切削厚度、铲磨凸轮升程；丝锥轴向轮廓示意图和 DXF。</li>
@@ -1283,7 +1284,8 @@ function calc() {
       g('外螺纹 ' + S.cls + ' 极限尺寸（ISO 965-1 / GB/T 197）');
       row('大径', 'd', f3(R.dmax), f3(R.dmin), 'Td = ' + R.Td + ' µm', '上偏差 es = ' + um(R.es));
       row('中径', 'd₂', f3(R.d2max), f3(R.d2min), 'Td₂ = ' + R.Td2 + ' µm', '');
-      row('牙底径（参考）', 'd₃', f3(R.d3max), '', '', '最大值 = d₃ + es，最小值由中径下限和牙底圆角决定');
+      row('小径（圆弧牙底）', 'd₃', f3(R.d3max), f3(R.d3min), '', '最大 = d₃ + es；最小 = d₂min − H + 0.25P（牙底削平最小 P/8，DIN ISO 965-1 国家注、ASME B1.13M）');
+      row('小径（平底牙型）', 'd₁', f3(R.d1maxFlat), '', '', '最大 = d₂max − H/2 = d₁ + es（ASME B1.13M 平底牙型）');
       row('牙底圆角', 'R', '', f3(R.Rmin), '', '最小 0.125P（ISO 965-1）');
     } else {
       g('内螺纹 ' + S.cls + ' 极限尺寸（ISO 965-1 / GB/T 197）');
@@ -1839,6 +1841,7 @@ function renderMill() {
     ['刀具直径 / 螺纹直径', `${f3(Dt)} / ${f3(Dref)} = ${(Dt / Dref * 100).toFixed(1)}%`],
     ['导程 / 中径处导程角', `${f3(Ph)} mm / ${phi.toFixed(2)}°`],
     ['刃形最大修正量（每侧，轴向）', `${(R.dmax * 1000).toFixed(1)} µm`],
+    ['解析公式核对', `${(R.fmax * 1000).toFixed(1)} µm（ΔL = Ph²·ρ / (8π²·tanβ·R·c)，逐个半径取最大；与上面的包络数值解相差 ${Math.abs(R.fmax - R.dmax) * 1000 < 0.05 ? '< 0.1' : (Math.abs(R.fmax - R.dmax) * 1000).toFixed(1)} µm）` + (R.fCons != null && R.fCons > 0 ? `；刀具厂保守估算（R 取底孔半径、r 取刀具半径）${(R.fCons * 1000).toFixed(0)} µm` : '')],
     ['不修正时的中径误差（直接用螺纹轴向牙型做刀）', `约 ${(R.dD2 * 1000).toFixed(0)} µm（${ext ? '外螺纹中径偏小' : '内螺纹中径偏大'}）` + (G.tol ? `，中径公差 ${(G.tol * 1000).toFixed(0)} µm 的 ${(R.dD2 / G.tol * 100).toFixed(0)}%` : '')],
     ['转速 / 接触点进给 / 刀心进给', nrpm > 0 ? `${nrpm.toFixed(0)} r/min / ${Fc.toFixed(0)} mm/min / ${Fcen.toFixed(0)} mm/min（刀心进给 = 接触点进给 × e / 槽底半径）` : '—'],
     ['槽形', G.note]
@@ -1945,7 +1948,7 @@ function renderTap() {
   const cu = $('tc').value === 'custom'; $('tcu').style.display = cu ? '' : 'none';
   let T;
   if (pipe) T = TS.tapPipe({ size: C.S.size, ser: st === 'G' ? 'G' : 'Rp' });
-  else if (met && /^D\d+$/.test($('tc').value)) { try { T = TS.tapD({ d: D, P, n: +$('tc').value.slice(1) }); } catch (e) { $('tout').innerHTML = ''; $('tw').innerHTML = e.message; return; } T.dmin = D; T.isD = true; }
+  else if (met && /^D\d+$/.test($('tc').value)) { try { T = TS.tapD({ d: D, P, n: +$('tc').value.slice(1) }); } catch (e) { $('tout').innerHTML = ''; $('tw').innerHTML = e.message; return; } T.isD = true; }
   else if (met) T = TS.tapISO({ d: D, P, cls: $('tc').value, Em: +$('tem').value, Es: +$('tes').value, form });
   else { const v = $('tc').value; T = TS.tapH({ D, tpi: C.S.tpi, n: +v.replace('L', ''), L: v[0] === 'L' }); }
   // 底孔
@@ -1975,7 +1978,7 @@ function renderTap() {
   } else if (T.isD) {
     g(`丝锥 D${T.n}（ASME B94.9 公制 M 牙型磨牙丝锥：最大中径 = 基本中径 + 0.013 × ${T.n} mm，中径公差 ${T.tol} µm 按 B94.9 表 26）`);
     r('中径 d₂', `${f3(T.d2min)}～${f3(T.d2max)} mm（+${Math.round((T.d2min - T.D2) * 1000)}～+${Math.round((T.d2max - T.D2) * 1000)} µm）`);
-    r('大径', 'ASME B94.9 表 8b 另有大径极限（本页未收录公式）；图中大径按公称直径画');
+    r('大径', `${f3(T.dmin)}～${f3(T.dmax)} mm（最小 = 基本 + 0.080P，最大 = 最小 + ${Math.round((T.dmax - T.dmin) * 1000)} µm，USCTI 表 341）`);
     r('牙型半角偏差', T.ang ? `±${T.ang}′` : '—'); r('导程偏差', '±0.013 mm（任意两牙、相距不超过 25 mm）');
     r('丝锥中径在螺母中径公差带中的位置', pos(T.d2min, T.d2max));
     notes.push('D 极限是美国 ASME B94.9 的公制丝锥标记法；标准规格的推荐值：M1.6～M3 为 D3，M3.5～M5 为 D4，M6、M8 为 D5，M10、M12 为 D6，M14～M20 为 D7，M24 为 D8，M30、M36 为 D9（B94.9 表 8b，按 6H 内螺纹）。');

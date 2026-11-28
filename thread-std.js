@@ -160,7 +160,7 @@
       const Td2 = note(tolM('Td2', d, P, c.g2), 'Td2'), Td = note(tolM('Td', d, P, c.g1), 'Td'), es = dev.v / 1000;
       Object.assign(out, { Td2, Td, es: dev.v,
         dmax: d + es, dmin: d + es - Td / 1000, d2max: d2 + es, d2min: d2 + es - Td2 / 1000,
-        d3max: d3 + es, Rmin: 0.125 * P });
+        d3max: d3 + es, d3min: d2 + es - Td2 / 1000 - 0.6160254 * P, d1maxFlat: r3(r3(d2 + es) - 0.4330127 * P), Rmin: 0.125 * P });   // d3min = d2min − H + 0.25P（牙底削平 Cmin = P/8 时；DIN ISO 965-1:2017 国家注 N4、ASME B1.13M）；d1maxFlat 平底牙型小径最大值 = d2max − H/2，按 ASME B1.13M 表的做法由圆整到 0.001 的 d2max 减 H/2 再圆整（与 24 个规格表值一致）
     } else {
       if (![4, 5, 6, 7, 8].includes(c.g2) || ![4, 5, 6, 7, 8].includes(c.g1)) throw new Error('内螺纹公差等级为 4～8');
       const TD2 = note(tolM('TD2', d, P, c.g2), 'TD2'), TD1 = note(tolM('TD1', d, P, c.g1), 'TD1'), EI = dev.v / 1000;
@@ -419,7 +419,13 @@
     }
     const dmax = Math.max(...rows.map(q => Math.max(q.dL, q.dR)));
     // 用螺纹轴向牙型直接做刀（不修正）时，牙侧轴向多切 dmax（每侧），中径约大（内）/ 小（外）2·dmax / tanβ
-    return { e, rho, L, p, rows, dmax, dD2: 2 * dmax / tb, ratio: o.Dt / (2 * (ext ? rlim : rroot)), hw };
+    // 解析近似（小角度展开）：刀具截圆 ρ 与螺纹半径 R 相切、中心距 c（内螺纹 c = R − ρ，外螺纹 c = R + ρ），
+    //   轴向过切 = pθ − tanβ·R·c·θ²/(2ρ)，最大值 ΔL = p²ρ / (2·tanβ·R·c) = Ph²·ρ / (8π²·tanβ·R·c)（Ingersoll 铣削手册的公式）
+    const fAx = rows.map(q => L * L * q.rho / (8 * Math.PI * Math.PI * tb * q.r0 * Math.abs(ext ? q.r0 + q.rho : q.r0 - q.rho)));
+    const fmax = Math.max(...fAx.filter(v => isFinite(v)));
+    // 刀具厂常用的保守估算：内螺纹取 R = 底孔半径、r = 刀具半径（Ingersoll 手册；可复现 Sandvik M30×3 的 0.07 / 0.01 mm）
+    const fCons = ext ? null : L * L * rho / (8 * Math.PI * Math.PI * tb * (rlim - rho) * rlim);
+    return { e, rho, L, p, rows, dmax, dD2: 2 * dmax / tb, ratio: o.Dt / (2 * (ext ? rlim : rroot)), hw, fmax, fCons };
   }
 
   // ---------------- 丝锥 ----------------
@@ -499,7 +505,9 @@
     const d = +o.d, P = +o.P, n = Math.max(1, Math.round(o.n)), row = DTOL[P]; if (!row) throw new Error('ASME B94.9 表 26 没有这个螺距');
     const tol = row[d <= 6.3 + 1e-9 ? 0 : d <= 25 + 1e-9 ? 1 : d <= 90 + 1e-9 ? 2 : 3]; if (tol == null) throw new Error('ASME B94.9 表 26 中这个直径和螺距的组合没有公差');
     const D2 = r3(d - 0.649519 * P), d2max = o.U ? r3(D2 - 0.013 * n + tol / 1000) : r3(D2 + 0.013 * n), d2min = o.U ? r3(D2 - 0.013 * n) : r3(d2max - tol / 1000);
-    return { std: 'TAP-D', d, P, n, U: !!o.U, D2, d2max, d2min, tol, ang: P <= 2.5 + 1e-9 ? 30 : P <= 4 + 1e-9 ? 25 : null };
+    // 大径（USCTI 表 341 = B94.9）：最小 = 基本 + W，W = 0.080P；最大 = 最小 + X，X 按螺距：≤ 0.6 为 0.025，0.7～1 为 0.041，1.25～2.5 为 0.064，3～6 为 0.100 mm（与 B94.9 表 8b 全部规格一致）
+    const X = P <= 0.6 + 1e-9 ? 0.025 : P <= 1 + 1e-9 ? 0.041 : P <= 2.5 + 1e-9 ? 0.064 : 0.100, dmin = r3(d + 0.08 * P);
+    return { std: 'TAP-D', d, P, n, U: !!o.U, D2, d2max, d2min, tol, dmin, dmax: r3(dmin + X), ang: P <= 2.5 + 1e-9 ? 30 : P <= 4 + 1e-9 ? 25 : P <= 6 + 1e-9 ? 20 : null };
   }
   // 圆锥管螺纹丝锥 NPT / NPTF / ANPT（ASME B94.9 表 9a，MH 转载）：丝锥小端穿过 L1 锥度环规的伸出量及公差（in），每英尺锥度范围，导程、半角公差
   const NPTTAP = { '1/16': 0.312, '1/8': 0.312, '1/4': 0.459, '3/8': 0.454, '1/2': 0.579, '3/4': 0.565, '1': 0.678, '1 1/4': 0.686, '1 1/2': 0.699, '2': 0.667, '2 1/2': 0.925, '3': 0.925, '3 1/2': 0.938, '4': 0.950 };
