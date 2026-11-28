@@ -317,7 +317,7 @@
     const cls = o.cls || (ext ? '4h6h' : (d <= 5 ? '4H6H' : '4H5H'));
     const R = metric({ d, P, side: o.side, cls });
     R.std = 'MJ'; R.d1 = d - 0.974279 * P; R.W = R.W || [];
-    if (ext) Object.assign(R, { d3max: R.d2max - 0.50518 * P, d3min: R.d2min - 0.56580 * P, Rmin: 0.15011 * P, Rmax: 0.18042 * P });
+    if (ext) { const d3x = r3(R.d2max - 0.50518 * P), T3 = r3(R.Td2 / 1000 + 0.06062 * P); Object.assign(R, { d3max: d3x, d3min: r3(d3x - T3), Td3: T3, Rmin: 0.15011 * P, Rmax: 0.18042 * P }); }   // 标准表做法：d3max、Td3 = Td2 + 0.06062P 各圆整到 0.001，d3min = d3max − Td3（ISO 5855-2 / IS 10980-2 表）
     else { const t = R.TD1 / 1000; R.D1min = d - 0.974279 * P; R.D1max = R.D1min + t; }
     if (!MJ_LIST.some(q => q[0] === d && q[1] === P)) R.W.push('不是 ISO 5855-2 表 1 中的规格，按同样规则计算');
     return R;
@@ -420,28 +420,71 @@
   }
 
   // ---------------- 丝锥 ----------------
-  // 公制丝锥 ISO 2857（= IS 6173-1）：公差单位 t = 螺母中径 5 级公差 TD2(5)；丝锥大径最小 = D + 0.4t；
-  //   中径：ISO1（4H 用，也用于 5H）Em = 0.1t、Es = 0.3t；ISO2（6H、4G、5G）0.3t～0.5t；ISO3（7H、8H、6G）0.5t～0.7t。小径不规定公差。
-  const TAPK = { ISO1: [0.1, 0.3], ISO2: [0.3, 0.5], ISO3: [0.5, 0.7] };
-  const rnd = v => Math.round(v + 1e-9);   // 偏差圆整到 µm（表值按四舍五入，如 t = 125 时 0.1t = 13）
-  function tapISO(o) {   // o: { d, P, cls, Em, Es（自定义，µm） }
-    const d = +o.d, P = +o.P, t = tolM('TD2', d, P, 5);
-    if (t.v == null) throw new Error('ISO 965-1 中没有这个规格的 TD2(5)');
-    const k = TAPK[o.cls], Em = o.cls === 'custom' ? +o.Em : rnd(k[0] * t.v), Es = o.cls === 'custom' ? +o.Es : rnd(k[1] * t.v), mc = rnd(0.4 * t.v);
+  // 公差单位 t = 螺母中径 5 级公差 TD2(5)（ISO 965-1 表值；表中空缺时按 ISO 965-1 公式 1.06 × Td2(6) 并按 R40 圆整，GB/T 28253 表 8 的 M1×0.2 等即按此取 t = 50）
+  function tapT(d, P) {
+    const a = tolM('TD2', d, P, 5); if (a.v != null) return a;
+    const i = rngOf(d); if (i < 0) return { v: null, src: 'none' };
+    return { v: roundR40(1.06 * F.Td26(P, i)), src: 'formula' };
+  }
+  // 切削丝锥：ISO 2857 / GB/T 968-2007（H1 = ISO1，H2 = ISO2，H3 = ISO3；H4 为 GB/T 968 增加的手用丝锥）；大径下偏差 Js = 0.4t
+  // 挤压丝锥：GB/T 28253-2012 附录 A 表 A.1；大径下偏差 Js = 0.8t
+  //   [Em, Es, Js]（× t）
+  const TAPK = { ISO1: [0.1, 0.3, 0.4], ISO2: [0.3, 0.5, 0.4], ISO3: [0.5, 0.7, 0.4], H4: [0.15, 0.65, 0.4],
+    F1: [0.5, 0.7, 0.8], F2: [0.7, 0.9, 0.8], F3: [0.9, 1.1, 0.8], F4: [0.55, 1.05, 0.8] };
+  const TAPUSE = { ISO1: '4H、5H', ISO2: 'ISO 2857：6H、4G、5G；GB/T 968：5G、6H', ISO3: 'ISO 2857：6G、7H、8H；GB/T 968：6G、7H、7G', H4: '6H、7H（GB/T 968）',
+    F1: '4H、5H', F2: '5G、6H', F3: '6G、7H、7G', F4: '6H、7H' };
+  const rnd = v => Math.round(v + 1e-9);   // 偏差圆整到 µm（四舍五入；如 0.55 × 75 = 41.25 → 41，1.05 × 75 = 78.75 → 79，GB/T 28253 表 8）
+  function tapISO(o) {   // o: { d, P, cls, Em, Es（自定义，µm）, form }
+    const d = +o.d, P = +o.P, t = tapT(d, P);
+    if (t.v == null) throw new Error('这个直径超出 ISO 965-1 的直径段，无法确定公差单位 t');
+    const cu = o.cls === 'custom', k = TAPK[o.cls] || [0, 0, o.form ? 0.8 : 0.4];
+    const Em = cu ? +o.Em : rnd(k[0] * t.v), Es = cu ? +o.Es : rnd(k[1] * t.v), mc = rnd(k[2] * t.v);
     const D2 = d - 0.649519 * P;
-    return { std: 'TAP-M', d, P, t: t.v, tsrc: t.src, cls: o.cls, Em, Es, mc, D2, d2min: D2 + Em / 1000, d2max: D2 + Es / 1000, dmin: d + mc / 1000, D1: d - 1.082532 * P,
-      use: { ISO1: '4H、5H', ISO2: '6H、4G、5G', ISO3: '7H、8H、6G' }[o.cls] || '' };
+    return { std: 'TAP-M', d, P, t: t.v, tsrc: t.src, cls: o.cls, Em, Es, mc, kJs: k[2], D2, d2min: D2 + Em / 1000, d2max: D2 + Es / 1000, dmin: d + mc / 1000, D1: d - 1.082532 * P,
+      use: TAPUSE[o.cls] || '', ang: tapAngle(P, o.cls), pit: tapPitch(P, o.cls) };
+  }
+  // 牙型半角（牙侧角）偏差，分：ISO 2857/A1:1984 表 3 = IS 6173-1 表 3 = GB/T 28253 表 8 H1～H3 列（P ≤ 0.25 ±70′，≤ 0.4 ±50′，≤ 0.6 ±35′，≤ 0.8 ±30′，≤ 1.5 ±25′，≤ 3 ±20′，≤ 6 ±15′；“上限含”）
+  //   挤压丝锥 H4：GB/T 28253 表 8 H4 列（≤ 0.25 ±70′，0.3～0.45 ±60′，0.5～1.25 ±50′，1.5～1.75 ±45′，2～2.5 ±40′，3 ±35′）
+  function tapAngle(P, cls) {
+    const e = 1e-9;
+    if (cls === 'F4') { if (P > 3 + e) return null; return P <= 0.25 + e ? 70 : P <= 0.45 + e ? 60 : P <= 1.25 + e ? 50 : P <= 1.75 + e ? 45 : P <= 2.5 + e ? 40 : 35; }
+    if (cls === 'H4' || cls === 'custom') return null;
+    return P <= 0.25 + e ? 70 : P <= 0.4 + e ? 50 : P <= 0.6 + e ? 35 : P <= 0.8 + e ? 30 : P <= 1.5 + e ? 25 : P <= 3 + e ? 20 : P <= 6 + e ? 15 : null;
+  }
+  // 螺距偏差 ±µm 及测量牙数：IS 6173-1 表 4（= ISO 2857/A2:1986）、GB/T 28253 表 8：P ≤ 1.5 为 ±8，1.75 ±9，2～2.5 ±10，3 ±12，3.5 ±13，4 ±14，4.5 ±15，5 ±16，5.5 ±17，6 ±18；
+  //   测量牙数（GB/T 28253 表 8）：P ≤ 0.6 为 12 牙，0.7～1.25 为 9 牙，≥ 1.5 为 7 牙。挤压丝锥 H4：12 牙 ±20、9 牙 ±25、1.5～2 ±35、≥ 2.5 ±50
+  function tapPitch(P, cls) {
+    const e = 1e-9, n = P <= 0.6 + e ? 12 : P <= 1.25 + e ? 9 : 7;
+    if (cls === 'F4') { if (P > 3 + e) return null; return { n, v: n === 12 ? 20 : n === 9 ? 25 : P <= 2 + e ? 35 : 50 }; }
+    if (cls === 'H4' || cls === 'custom') return null;
+    const T = [[1.5, 8], [1.75, 9], [2.5, 10], [3, 12], [3.5, 13], [4, 14], [4.5, 15], [5, 16], [5.5, 17], [6, 18]].find(q => P <= q[0] + e);
+    return T ? { n, v: T[1] } : null;
+  }
+  // 管螺纹磨牙丝锥 ISO 5969:1979（+ Cor 1:1991）：G 系列 t = 螺母中径公差 TD2（ISO 228-1），Em = +0.2t，Es = +0.4t，大径最小 = d + 0.3t；
+  //   Rp 系列 t = ISO 7-1 圆柱内螺纹直径公差全宽（2 × 圈数 × P / 16），Em = −0.3t，Es = −0.1t，大径最小 = d − 0.3t；牙型半角 ±30′；螺距同 ISO 2857；小径不规定。
+  //   核对：ISO 5969 表 5 G1/2：20.998 / 19.821 / 19.850 mm，表 2 G1/4：0.4853～0.4863 in。
+  function tapPipe(o) {   // o: { size, ser: 'G' | 'Rp' }
+    const S = P55.find(q => q.nm === o.size); if (!S) throw new Error('没有这个管螺纹尺寸代号');
+    const P = 25.4 / S.n, h = r3(0.640327 * P), d = S.d, d2 = r3(d - h);
+    let t, Em, Es, Js;
+    if (o.ser === 'Rp') { const T = R7[o.size]; if (!T) throw new Error('ISO 7-1 没有这个尺寸'); t = 2 * T[10] * P / 16 * 1000; /* ISO 7-1：±T2/2 = 圈数 × P / 16（直径），用未圆整值（Rp1/4：0.3 × 208.9 = 62.7 → 63，与 ISO 5969 表一致） */ Em = -rnd(0.3 * t); Es = -rnd(0.1 * t); Js = -rnd(0.3 * t); }
+    else { t = tolG(S.nm, S.n)[0]; Em = rnd(0.2 * t); Es = rnd(0.4 * t); Js = rnd(0.3 * t); }
+    return { std: 'TAP-' + o.ser, size: S.nm, P, d, d2, t: Math.round(t), Em, Es, mc: Js, d2min: d2 + Em / 1000, d2max: d2 + Es / 1000, dmin: d + Js / 1000, ang: 30, pit: tapPitch(P, 'ISO1') };
   }
   // 英制丝锥 H 极限（ASME B94.9；OSG、ICS 样本）：Hn 最大 = 基本中径 + 0.0005n；1 in 及以下公差 0.0005，1 in 以上～1-1/2 in 公差 0.001
   function tapH(o) {   // o: { D, tpi, n }
-    const D = +o.D, n = Math.max(1, Math.round(o.n)), P = 1 / o.tpi, D2 = D - 0.649519 * P, mx = r4(D2) + 0.0005 * n, tol = D <= 1 + 1e-9 ? 0.0005 : 0.001;
-    return { std: 'TAP-H', D, tpi: o.tpi, n, D2: r4(D2), d2max: r4(mx), d2min: r4(mx - tol), tol };
+    const D = +o.D, n = Math.max(1, Math.round(o.n)), P = 1 / o.tpi, D2 = D - 0.649519 * P, mx = r4(D2) + 0.0005 * n, e = 1e-9;
+    // 公差：1 in 及以下 0.0005，1～1-1/2 in 0.001（OSG、Tapmatic、Newman 样本）；1-1/2～2-1/4 in 0.0015，2-1/4～4 in 0.002（美国专利 US 5664915 对 B94.9 的叙述）
+    const tol = D <= 1 + e ? 0.0005 : D <= 1.5 + e ? 0.001 : D <= 2.25 + e ? 0.0015 : 0.002;
+    return { std: 'TAP-H', D, tpi: o.tpi, n, D2: r4(D2), d2max: r4(mx), d2min: r4(mx - tol), tol, big: D > 1.5 + e };
   }
   // 底孔：切削丝锥 D − %·P/76.98（mm）或 D − 0.01299·%/tpi；挤压丝锥 D − %·P/147.06（Machinery's Handbook）或 D − 0.0068·%/tpi
   function tapDrill(o) {   // o: { D, P（与 D 同单位）, pct, form }
     return +o.D - (o.form ? +o.pct * o.P / 147.06 : +o.pct * o.P / 76.98);
   }
   // DIN 2197 切削锥形式：[名称, 锥部牙数下限, 上限, 说明]
+  // GB/T 28253 表 7 挤压锥形式：[名称, 牙数下限, 上限, 说明]；挤压锥小端直径 d − 0.7P（h13）
+  const FLEAD = [['A', 6, 8, '≥ 6P，粗锥（初锥）'], ['C', 2, 3, '2～3P，精锥（底锥）'], ['D', 3.5, 5.5, '3.5～5.5P，单支挤压丝锥推荐'], ['E', 1, 2, '< 2P']];
   const CHAMF = [['A', 6, 8, '长切削锥，短通孔'], ['B', 3.5, 5, '中等，带螺旋刃尖（枪尖），通孔、深孔'], ['C', 2, 3, '短，盲孔；也常用于铝、灰铸铁、黄铜'], ['D', 3.5, 5, '中等，通孔和留有足够退刀距离的盲孔'], ['E', 1.5, 2, '很短，盲孔'], ['F', 1, 1.5, '极短，退刀距离很小的盲孔，尽量不用']];
-  window.TS = { tapISO, tapH, tapDrill, CHAMF, TAPK, millEnvelope, mj, unj, whit, acme, MJ_LIST, WHIT, ACMES, he4, pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
+  window.TS = { tapPipe, tapT, tapAngle, tapPitch, TAPUSE, FLEAD, tapISO, tapH, tapDrill, CHAMF, TAPK, millEnvelope, mj, unj, whit, acme, MJ_LIST, WHIT, ACMES, he4, pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
 })();
