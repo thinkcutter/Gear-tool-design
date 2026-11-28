@@ -453,19 +453,21 @@
       use: TAPUSE[o.cls] || '', ang: tapAngle(P, o.cls), pit: tapPitch(P, o.cls) };
   }
   // 牙型半角（牙侧角）偏差，分：ISO 2857/A1:1984 表 3 = IS 6173-1 表 3 = GB/T 28253 表 8 H1～H3 列（P ≤ 0.25 ±70′，≤ 0.4 ±50′，≤ 0.6 ±35′，≤ 0.8 ±30′，≤ 1.5 ±25′，≤ 3 ±20′，≤ 6 ±15′；“上限含”）
+  //   切削丝锥 H4（GB/T 968）：原文表 1 未能完整读到；搜索引擎收录的表 1 文字识别片段可辨认 P0.2 ±70′/±70′、P0.3 ±50′/±60′、P1.5 ±25′/±45′ 及 H4 螺距 ±20、±25、±35 µm，
+  //     与 GB/T 28253 表 8 H4 列逐项相同，故 P ≤ 3 按该列取值（P2～3 的 ±40′/±35′、P ≥ 2.5 的 ±50 µm 片段中未见）；P > 3 无数据
   //   挤压丝锥 H4：GB/T 28253 表 8 H4 列（≤ 0.25 ±70′，0.3～0.45 ±60′，0.5～1.25 ±50′，1.5～1.75 ±45′，2～2.5 ±40′，3 ±35′）
   function tapAngle(P, cls) {
     const e = 1e-9;
-    if (cls === 'F4') { if (P > 3 + e) return null; return P <= 0.25 + e ? 70 : P <= 0.45 + e ? 60 : P <= 1.25 + e ? 50 : P <= 1.75 + e ? 45 : P <= 2.5 + e ? 40 : 35; }
-    if (cls === 'H4' || cls === 'custom') return null;
+    if (cls === 'F4' || cls === 'H4') { if (P > 3 + e) return null; return P <= 0.25 + e ? 70 : P <= 0.45 + e ? 60 : P <= 1.25 + e ? 50 : P <= 1.75 + e ? 45 : P <= 2.5 + e ? 40 : 35; }
+    if (cls === 'custom') return null;
     return P <= 0.25 + e ? 70 : P <= 0.4 + e ? 50 : P <= 0.6 + e ? 35 : P <= 0.8 + e ? 30 : P <= 1.5 + e ? 25 : P <= 3 + e ? 20 : P <= 6 + e ? 15 : null;
   }
   // 螺距偏差 ±µm 及测量牙数：IS 6173-1 表 4（= ISO 2857/A2:1986）、GB/T 28253 表 8：P ≤ 1.5 为 ±8，1.75 ±9，2～2.5 ±10，3 ±12，3.5 ±13，4 ±14，4.5 ±15，5 ±16，5.5 ±17，6 ±18；
   //   测量牙数（GB/T 28253 表 8）：P ≤ 0.6 为 12 牙，0.7～1.25 为 9 牙，≥ 1.5 为 7 牙。挤压丝锥 H4：12 牙 ±20、9 牙 ±25、1.5～2 ±35、≥ 2.5 ±50
   function tapPitch(P, cls) {
     const e = 1e-9, n = P <= 0.6 + e ? 12 : P <= 1.25 + e ? 9 : 7;
-    if (cls === 'F4') { if (P > 3 + e) return null; return { n, v: n === 12 ? 20 : n === 9 ? 25 : P <= 2 + e ? 35 : 50 }; }
-    if (cls === 'H4' || cls === 'custom') return null;
+    if (cls === 'F4' || cls === 'H4') { if (P > 3 + e) return null; return { n, v: n === 12 ? 20 : n === 9 ? 25 : P <= 2 + e ? 35 : 50 }; }
+    if (cls === 'custom') return null;
     const T = [[1.5, 8], [1.75, 9], [2.5, 10], [3, 12], [3.5, 13], [4, 14], [4.5, 15], [5, 16], [5.5, 17], [6, 18]].find(q => P <= q[0] + e);
     return T ? { n, v: T[1] } : null;
   }
@@ -490,12 +492,13 @@
   const HTOL = [[28, [0.0005, 0.0010, 0.0010, 0.0015]], [18, [0.0005, 0.0010, 0.0015, 0.0015]], [8, [0.0005, 0.0010, 0.0015, 0.0020]], [6, [0.0010, 0.0010, 0.0020, 0.0025]], [4, [0.0010, 0.0015, 0.0020, 0.0025]]];
   function tapHtol(D, n) { const e = 1e-9, row = (HTOL.find(r => n >= r[0] - e) || HTOL[HTOL.length - 1])[1]; return row[D <= 1 + e ? 0 : D <= 1.5 + e ? 1 : D <= 2.5 + e ? 2 : 3]; }
   // H 极限：最大中径 = 基本中径 + 0.0005n，最小 = 最大 − 表 24 公差；L 极限：最小 = 基本 − 0.0005n，最大 = 最小 + 公差（MH 第 897 页）
-  //   大径（与 B94.9 表 4、5、6 逐项核对得出）：最大 = 基本 + 0.130P，最小 = 最大 − 0.065P（各按四舍六入五成双到 0.0001）；32 牙/in 及更粗适用，更细的机螺钉规格表值另有规律，不计算
+  //   大径：最大 = 基本 + A，最小 = 最大 − B；A = 0.130P，B = 0.087P（48～80 牙）、0.076P（36～47 牙）、0.065P（4～35 牙）（USCTI 2000 表 329 公式；各按四舍六入五成双到 0.0001，与 B94.9 表 4、5、6 核对）
+  //   40 牙时 0.130P = 0.00325 正好是半个单位，USCTI 表 4-40 / 6-40 进位、5-40 舍去，MH 4-40 舍去，各来源相差 0.0001
   //   导程公差 ±0.0005 in（任意两牙、相距不超过 1 in）；牙型半角：6～9 牙 ±25′，10 牙及更细 ±30′（B94.9 表 5、6 注）
   function tapH(o) {   // o: { D, tpi, n, L（true = L 极限） }
     const D = +o.D, n = Math.max(1, Math.round(o.n)), tpi = +o.tpi, P = 1 / tpi, D2 = r4(D - 0.649519 * P), tol = tapHtol(D, tpi);
     const d2max = o.L ? r4(D2 - 0.0005 * n + tol) : r4(D2 + 0.0005 * n), d2min = o.L ? r4(D2 - 0.0005 * n) : r4(d2max - tol);
-    const mx = r4(D + he4(0.13 * P)), mn = tpi <= 32 ? r4(mx - he4(0.065 * P)) : null;
+    const B = tpi >= 48 - 1e-9 ? 0.087 : tpi >= 36 - 1e-9 ? 0.076 : 0.065, mx = r4(D + he4(0.13 * P)), mn = r4(mx - he4(B * P));
     return { std: 'TAP-H', D, tpi, n, L: !!o.L, D2, d2max, d2min, tol, dmax: mx, dmin: mn, lead: 0.0005, ang: tpi >= 10 ? 30 : tpi >= 6 ? 25 : null };
   }
   // ASME B94.9 公制 M 牙型磨牙丝锥 D / DU 极限（MH 表 26、表 8b）：D 极限最大中径 = 基本中径 + 0.013n mm，最小 = 最大 − 表 26 公差；DU：最小 = 基本 − 0.013n
@@ -517,6 +520,21 @@
     const tpf = g ? (n === 8 ? [47 / 64, 25 / 32] : [23 / 32, 25 / 32]) : (n === 8 ? [47 / 64, 51 / 64] : n >= 18 ? [23 / 32, 27 / 32] : [23 / 32, 13 / 16]);
     return { std: 'TAP-NPT', size: o.size, n, proj: pr, tol, tpf, lead: g ? 0.0005 : 0.003, ang: g ? (n === 8 ? 25 : 30) : (n === 8 ? 40 : 45) };
   }
+  // 圆柱管螺纹磨牙丝锥（USCTI 表 335 / 335-A，DGI 2024 样本第 779 页转载）：[大径最小 G, 最大 H, 中径最小 K, 最大 L]（in）
+  //   NPS 丝锥（标 NPS，用于 NPS、NPSC、NPSM）；NPSF 干密封丝锥。核对：表中“量规缺口处中径”一列与 NPT 的 E1 完全相同；
+  //   大径最大 H = K + 0.8P − c（c：27 牙 0.0010，18/14 牙 0.0020，11½/8 牙 0.0021；NPSF：K + F − 0.0005/0.0001），G = H − 0.0010（11½、8 牙为 − 0.0015）；
+  //   1-1/2 的大径最小原表识别为“0.1890”，按 G = H − 0.0015 取 1.8897
+  const NPSTAP = {
+    NPS: { '1/8': [0.4022, 0.4032, 0.3746, 0.3751], '1/4': [0.5347, 0.5357, 0.4933, 0.4938], '3/8': [0.6701, 0.6711, 0.6287, 0.6292], '1/2': [0.8347, 0.8357, 0.7806, 0.7811], '3/4': [1.0447, 1.0457, 0.9906, 0.9916],
+      '1': [1.3062, 1.3077, 1.2402, 1.2412], '1 1/4': [1.6507, 1.6522, 1.5847, 1.5862], '1 1/2': [1.8897, 1.8912, 1.8237, 1.8252], '2': [2.3639, 2.3654, 2.2979, 2.2994],
+      '2 1/2': [2.8604, 2.8619, 2.7640, 2.7660], '3': [3.4868, 3.4883, 3.3904, 3.3924], '3 1/2': [3.9872, 3.9887, 3.8908, 3.8928], '4': [4.4855, 4.4870, 4.3891, 4.3911] },
+    NPSF: { '1/16': [0.3008, 0.3018, 0.2772, 0.2777], '1/8': [0.3932, 0.3942, 0.3696, 0.3701], '1/4': [0.5239, 0.5249, 0.4859, 0.4864], '3/8': [0.6593, 0.6603, 0.6213, 0.6218],
+      '1/2': [0.8230, 0.8240, 0.7712, 0.7717], '3/4': [1.0335, 1.0345, 0.9817, 0.9822], '1': [1.2933, 1.2943, 1.2295, 1.2305] } };
+  function tapNPS(o) {   // o: { size, ser: 'NPS' | 'NPSF' }
+    const S = NPT.find(q => q.nm === o.size), t = (NPSTAP[o.ser] || {})[o.size];
+    if (!S || !t) throw new Error(o.ser === 'NPSF' ? 'USCTI 表 335-A 只有 1/16～1 的 NPSF 丝锥' : 'USCTI 表 335 只有 1/8～4 的 NPS 丝锥');
+    return { std: 'TAP-NPS', ser: o.ser, size: o.size, n: S.n, dmin: t[0], dmax: t[1], d2min: t[2], d2max: t[3], ang: o.ser === 'NPS' && S.n === 8 ? 25 : 30, lead: 0.0005 };
+  }
   // 底孔：切削丝锥 D − %·P/76.98（mm）或 D − 0.01299·%/tpi；挤压丝锥 D − %·P/147.06（Machinery's Handbook）或 D − 0.0068·%/tpi
   function tapDrill(o) {   // o: { D, P（与 D 同单位）, pct, form }
     return +o.D - (o.form ? +o.pct * o.P / 147.06 : +o.pct * o.P / 76.98);
@@ -525,5 +543,5 @@
   // GB/T 28253 表 7 挤压锥形式：[名称, 牙数下限, 上限, 说明]；挤压锥小端直径 d − 0.7P（h13）
   const FLEAD = [['A', 6, 8, '≥ 6P，粗锥（初锥）'], ['C', 2, 3, '2～3P，精锥（底锥）'], ['D', 3.5, 5.5, '3.5～5.5P，单支挤压丝锥推荐'], ['E', 1, 2, '< 2P']];
   const CHAMF = [['A', 6, 8, '长切削锥，短通孔'], ['B', 3.5, 5, '中等，带螺旋刃尖（枪尖），通孔、深孔'], ['C', 2, 3, '短，盲孔；也常用于铝、灰铸铁、黄铜'], ['D', 3.5, 5, '中等，通孔和留有足够退刀距离的盲孔'], ['E', 1.5, 2, '很短，盲孔'], ['F', 1, 1.5, '极短，退刀距离很小的盲孔，尽量不用']];
-  window.TS = { tapD, tapNPT, tapHtol, tapPipe, tapT, tapAngle, tapPitch, TAPUSE, FLEAD, tapISO, tapH, tapDrill, CHAMF, TAPK, millEnvelope, mj, unj, whit, acme, MJ_LIST, WHIT, ACMES, he4, pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
+  window.TS = { tapD, tapNPT, tapNPS, NPSTAP, tapHtol, tapPipe, tapT, tapAngle, tapPitch, TAPUSE, FLEAD, tapISO, tapH, tapDrill, CHAMF, TAPK, millEnvelope, mj, unj, whit, acme, MJ_LIST, WHIT, ACMES, he4, pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
 })();
