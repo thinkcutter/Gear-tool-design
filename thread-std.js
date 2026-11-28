@@ -382,5 +382,41 @@
       D1min: r4(D - (stub ? 0.6 * P : P)), D1max: r4(r4(D - (stub ? 0.6 * P : P)) + mt) });
     return out;
   }
-  window.TS = { mj, unj, whit, acme, MJ_LIST, WHIT, ACMES, he4, pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
+
+  // ---------------- 螺纹铣刀刃形（三维包络） ----------------
+  // 螺纹铣刀（环形刃、无螺旋角）轴线与螺纹轴线平行，刀心沿半径 e 的螺旋线插补，导程 = 螺纹导程。
+  // 刀具与螺旋面一起做同一个螺旋运动，相对位置不变，所以只要检查一个位置：刀具回转面上半径 ρ 的那一圈，
+  // 在螺纹的每个角度 θ 上都必须落在槽内（槽中心在 z = pθ，p = 导程/2π）。刀具该圈的左、右边界取
+  //   zL(ρ) = max（槽左侧 + pθ），zR(ρ) = min（槽右侧 + pθ），即不过切的最大刃形，切点处正好与螺旋面相切（包络）。
+  // o: { side: 'int'|'ext', P, n, hand, beta（半角，°）, r2（目标中径半径）, rroot（槽底 / 刀尖到达半径）, Rr（槽底圆弧，0 = 平底）,
+  //      rlim（材料边界：内螺纹为底孔半径，外螺纹为大径半径）, Dt（刀具切削直径） }
+  function millEnvelope(o) {
+    const P = +o.P, n = Math.max(1, Math.round(o.n || 1)), L = n * P, sg = o.hand === 'L' ? -1 : 1, p = sg * L / (2 * Math.PI);
+    const b = o.beta * Math.PI / 180, tb = Math.tan(b), sb = Math.sin(b), ext = o.side === 'ext', Rr = Math.max(0, +o.Rr || 0), r2 = +o.r2, rroot = +o.rroot, rlim = +o.rlim;
+    let hw;
+    if (!ext) { const rv = r2 + (P / 4) / tb, rc = rv - Rr / sb, rt = rc + Rr * sb; hw = r => (Rr > 0 && r >= rt) ? Math.sqrt(Math.max(0, Rr * Rr - (r - rc) ** 2)) : P / 4 - (r - r2) * tb; }
+    else { const rv = r2 - (P / 4) / tb, rc = rv + Rr / sb, rt = rc - Rr * sb; hw = r => (Rr > 0 && r <= rt) ? Math.sqrt(Math.max(0, Rr * Rr - (r - rc) ** 2)) : P / 4 + (r - r2) * tb; }
+    const rho = o.Dt / 2, e = ext ? rroot + rho : rroot - rho, depth = Math.abs(rroot - rlim);
+    if (!(rho > 0)) throw new Error('请填写刀具直径');
+    if (!ext && e <= 0) throw new Error('刀具直径不能大于槽底直径');
+    if (!ext && o.Dt >= 2 * rlim) throw new Error('刀具直径 ' + (+o.Dt).toFixed(3) + ' 不小于底孔直径 ' + (2 * rlim).toFixed(3) + '，刀具进不了孔');
+    if (depth >= rho) throw new Error('刀具半径小于牙深，请加大刀具直径');
+    const N = 3600, K = 48, rows = [];
+    for (let i = 0; i <= K; i++) {
+      const rh = rho - depth * i / K;   // 从刀尖（槽底）到牙顶边界
+      let fL = -Infinity, fR = Infinity, tL = 0, tR = 0;
+      for (let j = 0; j <= N; j++) {
+        const ps = -Math.PI + 2 * Math.PI * j / N, x = e + rh * Math.cos(ps), y = rh * Math.sin(ps), r = Math.hypot(x, y);
+        if (!ext && (r < rlim || r > rroot + 1e-9)) continue; if (ext && (r > rlim || r < rroot - 1e-9)) continue;
+        const th = Math.atan2(y, x), c0 = p * th, c = c0 - P * Math.round(c0 / P), h = hw(r);
+        if (c - h > fL) { fL = c - h; tL = th; } if (c + h < fR) { fR = c + h; tR = th; }
+      }
+      const r0 = ext ? e - rh : e + rh, h0 = hw(r0);
+      rows.push({ rho: rh, r0, zL: fL, zR: fR, h0, dL: fL + h0, dR: h0 - fR, thL: tL * 180 / Math.PI, thR: tR * 180 / Math.PI });
+    }
+    const dmax = Math.max(...rows.map(q => Math.max(q.dL, q.dR)));
+    // 用螺纹轴向牙型直接做刀（不修正）时，牙侧轴向多切 dmax（每侧），中径约大（内）/ 小（外）2·dmax / tanβ
+    return { e, rho, L, p, rows, dmax, dD2: 2 * dmax / tb, ratio: o.Dt / (2 * (ext ? rlim : rroot)), hw };
+  }
+  window.TS = { millEnvelope, mj, unj, whit, acme, MJ_LIST, WHIT, ACMES, he4, pipeG, pipeR, pipeNPT, P55, R7, NPT, NPSC, NPSF, tolG, metric, unified, seriesOf, COARSE, FINE, UNLIST, rngOf, tolM, devM, TLE, RNG, r4, r3, roundR40 };
 })();

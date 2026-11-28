@@ -157,13 +157,30 @@ header{position:relative}
 </div>
 
 <div class="pane" id="p-mill" hidden>
-<section class="card">
-  <h2>螺纹铣刀 <span class="tag">第 4 批，开发中</span></h2>
-  <div class="say">计划内容：单齿、多齿螺纹铣刀的刃形修正。铣刀绕自身轴线转、同时沿螺旋线插补，刀具轴向截面不等于螺纹牙型，修正量取决于刀具直径与螺纹直径之比、导程角和牙型角，程序将按三维包络（刀具回转面与螺旋面相切）求修正后的刃形，并给出刀具直径的选取范围、插补走刀和 G 代码。</div>
-  <ul>
-    <li>依据：螺纹铣削刃形干涉与修正的包络计算（Fromentin 等，ENSAM 论文）；刀具直径与螺纹直径之比的建议值以刀具厂样本为准（Sandvik 建议内螺纹铣刀直径不超过螺纹直径的 70%）。</li>
-    <li>覆盖本页“螺纹参数”中的公制、统一螺纹，以及后续加入的管螺纹、梯形螺纹等。</li>
-  </ul>
+<section class="card" id="cmill">
+  <h2>螺纹铣刀</h2>
+  <div class="meta" id="mmeta"></div>
+  <div class="say">螺纹铣刀是环形刃（没有螺旋角），轴线与螺纹轴线平行，刀心沿螺旋线插补，每转一圈沿轴向走一个导程。刃口与螺纹的螺旋面方向不一致，<b>刀具轴向刃形不能直接用螺纹的轴向牙型</b>，要按三维包络修正：刀具回转面随刀心做同一个螺旋运动，相对螺旋面不动，刃形上半径 ρ 的一圈在每个角度上都不能进到牙体里，取不过切的最大刃形，切点处与螺旋面相切。修正量随刀具直径与螺纹直径之比、导程角增大而增大。</div>
+  <div class="play">
+    <div><svg class="fig" id="fmill" viewBox="-60 -8 120 90"></svg><div class="cap" id="fmillcap"></div></div>
+    <div class="ctl">
+      <label>刀具切削直径 Dc（mm）</label><input id="mdt" type="number" step="any" value="0">
+      <div class="hint" id="mdth"></div>
+      <label>刃形对应的中径位置 <b id="vmt"></b></label><input id="mt" type="range" min="0" max="100" step="5" value="50">
+      <div class="hint">0% = 中径最大实体（内螺纹下限 / 外螺纹上限），100% = 最小实体；外螺纹按“成形刀”页同样的牙型</div>
+      <label>刀具齿数（排数，单齿 = 1）</label><input id="mnt" type="number" step="1" min="1" value="1">
+      <label>螺纹长度（mm）</label><input id="mlth" type="number" step="any" value="20">
+      <label>铣削方式（主轴 M03 顺时针）</label><select id="mdir"><option value="climb">顺铣</option><option value="conv">逆铣</option></select>
+      <label>刀具刃数 z / 每齿进给 fz（mm）/ 切削速度 vc（m/min）</label>
+      <div style="display:flex;gap:6px"><input id="mz" type="number" step="1" value="3"><input id="mfz" type="number" step="any" value="0.05"><input id="mvc" type="number" step="any" value="100"></div>
+      <div class="warn" id="mw"></div>
+    </div>
+  </div>
+  <div class="tw"><table class="res" id="mout"></table></div>
+  <div class="tw"><table class="res" id="mprof"></table></div>
+  <div class="btns"><button id="mdxf">导出修正刃形 DXF</button><button id="mcopy">复制 G 代码</button></div>
+  <pre id="mgc" style="background:var(--chip);border-radius:10px;padding:10px 12px;font-size:13px;overflow-x:auto;white-space:pre"></pre>
+  <div class="hint" id="mnote"></div>
 </section>
 </div>
 
@@ -412,6 +429,7 @@ header{position:relative}
   <h2>版本记录</h2>
   <div class="meta">本页依据 GB/T 192、193、196、197、14791，GB/T 5796、13576、7306、7307，ISO 68-1、965-1、228-1、5835 和 ASTM F543 整理，标准原文不一致时以标准为准。</div>
   <ul>
+    <li><b>2026-11-28 第 4 批</b>：“螺纹铣刀”页：按三维包络求螺纹铣刀修正刃形（刀具回转面随刀心做与螺纹相同的螺旋运动，取不过切的最大刃形），给出每侧修正量、不修正时的中径误差、刀心插补半径、刀心进给换算、G02 / G03 螺旋插补程序和 DXF；用独立的扫掠仿真复核（内螺纹 M30×3、外螺纹 M10×1.5 结果一致），并与 Sandvik 的 M30×3 示例对比。</li>
     <li><b>2026-11-28 第 3 批</b>：加入航空螺纹 MJ（ISO 5855-2：外 4h6h、内 4H5H / 4H6H，小径加大、牙底圆弧 0.15011P～0.18042P）和 UNJ（ASME B1.15 / SAE AS8879：3A / 3B）、惠氏螺纹 BSW / BSF（BS 84：精密 / 中等 / 松级螺栓，中等 / 普通级螺母）、Acme（ASME B1.5：2G / 3G / 4G，中径允许量按表 9 直径范围）和短牙 Acme（ASME B1.8）。与 ISO 5855-2 表（torqbolt 转载）、AS8879 表（torqbolt 转载，mm）、BS 84 表（ferrofast 转载）、B1.5 / B1.8 表（engineersedge 转载）逐项比对，差异见报告。成形刀页同步支持这些牙型。</li>
     <li><b>2026-11-28 第 2 批</b>：“螺纹参数”加入管螺纹：G（ISO 228-1 / GB/T 7307，A、B 级与内螺纹极限尺寸）、R / Rc / Rp（ISO 7-1 / GB/T 7306，基准距离与公差、装配余量、有效螺纹长度、Rp 直径公差、Rc 基准平面位置公差）、NPT / NPSC（ASME B1.20.1 / GB/T 12716，E₀、E₁、L₁、L₂、E₂、L₃、E₃、V、L₄ 按标准公式，削平量按表 1，NPSC 按表 4）、NPTF / NPSF（ASME B1.20.3 / GB/T 27944，干密封牙顶牙底削平量按表 6）；与 GB/T 7307、GB/T 7306.1/.2、engineersedge、B1.20.1 表 2（Wikipedia、chicagotube 等转载）、GB/T 27944 共 489 项逐项核对一致。成形刀页：外螺纹按 55° 圆弧牙型或 60° 平顶平底牙型带入首页程序，内螺纹车刀刃形支持 55° 圆弧牙底和 NPT 削平平顶。</li>
     <li><b>2026-11-28 第 1 批</b>：页面改为五个标签；公制 ISO 965 与统一螺纹 ASME B1.1 内外螺纹极限尺寸（公制 324 项、统一螺纹 410 项与标准表一致）；内螺纹车刀刃形与 DXF；外螺纹成形刀嵌入首页程序。</li>
@@ -1127,6 +1145,7 @@ function show(p, push) {
   document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-selected', b.dataset.p === p ? 'true' : 'false'));
   if (push) history.replaceState(null, '', '#' + p);
   if (p === 'form') renderForm();
+  if (p === 'mill') renderMill();
 }
 document.querySelectorAll('#tabs button').forEach(b => b.onclick = () => show(b.dataset.p, true));
 { const h = location.hash.slice(1); show(/^s\d+$|^rev$/.test(h) ? 'learn' : h || 'par'); if (/^s\d+$|^rev$/.test(h)) setTimeout(() => { const e = $(h); if (e) e.scrollIntoView(); }, 50); }
@@ -1282,7 +1301,7 @@ function calc() {
   if (S.n > 1) notes.push('多线螺纹：导程 Ph = ' + S.n + ' × P；极限尺寸按螺距 P 查表（ISO 965-1、ASME B1.1 的表格针对单线螺纹）。');
   $('pw').innerHTML = W.join('<br>');
   $('pnote').innerHTML = notes.join('<br>');
-  drawPar(cur);
+  drawPar(cur); $('mdt').value = 0;
 }
 
 // ---------- 管螺纹：极限尺寸、基准距离、有效螺纹长度 ----------
@@ -1379,7 +1398,7 @@ function calcPipe(S) {
   $('pout').innerHTML = '<caption style="text-align:left;font-weight:700;padding:4px 0 8px">' + name + '</caption>' + head + rows.join('');
   cur.name = name;
   $('pnote').innerHTML = notes.join('<br>');
-  drawPipe(cur);
+  drawPipe(cur); $('mdt').value = 0;
 }
 function fr(v) { return v === 1.25 ? '1¼' : v === 1.5 ? '1½' : v === 2.75 ? '2¾' : v === 3.25 ? '3¼' : v === 4.5 ? '4½' : String(v); }
 // 管螺纹牙型（真实比例，一个半螺距）＋ 圆锥螺纹示意
@@ -1525,6 +1544,7 @@ function calcNew(S) {
   $('pout').innerHTML = '<caption style="text-align:left;font-weight:700;padding:4px 0 8px">' + name + '</caption>' + head + rows.join('');
   cur.name = name; $('pw').innerHTML = (R.W || []).join('<br>'); $('pnote').innerHTML = notes.join('<br>');
   if (S.std === 'MJ' || S.std === 'UNJ') drawPar(cur); else if (S.std === 'WH') drawPipe(cur); else drawAcme(cur);
+  $('mdt').value = 0;
 }
 function drawAcme(C) {
   const svg = $('fpar'); svg.innerHTML = ''; const P = C.P, b = 14.5 * Math.PI / 180, tb = Math.tan(b), h = C.h, sc = 100 / P, ext = C.side === 'ext';
@@ -1752,8 +1772,105 @@ $('fdxf').onclick = () => {
   const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([L.join('\r\n')], { type: 'application/dxf' }));
   a.download = '内螺纹车刀刃形_' + TOOL.name.replace(/[\/\s×]/g, '_') + '.dxf'; a.click();
 };
+
+// ---------- 螺纹铣刀：三维包络修正刃形、插补、G 代码 ----------
+let MILL = null;
+function millGroove(C, pct) {
+  // 返回 mm 单位的槽形：{ side, P, beta, r2, rroot, Rr, rlim, note, tol（中径公差 mm）, D（公称直径） }
+  const side = C.side;
+  if (side === 'int') {
+    const F = intForm(C), P = F.P, H = F.H, b = F.b, tb = TB(b), sb = Math.sin(b * Math.PI / 180), D2t = F.D2min + (F.D2max - F.D2min) * pct / 100;
+    let rroot, Rr = 0, note;
+    if (F.mode === 'iso') { rroot = (D2t + 0.75 * H) / 2; note = '槽底按基本牙型平顶 P/8'; }
+    else if (F.mode === 'arc') { Rr = F.r; rroot = (D2t + H - 2 * (F.r / sb - F.r)) / 2; note = '槽底按标准圆弧 r = ' + f3(F.r) + ' mm'; }
+    else if (F.mode === 'trunc') { const f = (F.fR[0] + F.fR[1]) / 2; rroot = (D2t + H - 2 * f) / 2; note = '槽底削平量取中值 ' + f3(f) + ' mm'; }
+    else { rroot = F.Dcut / 2; note = '槽底（内螺纹大径）取公差带中值'; }
+    return { side, P, beta: b, r2: D2t / 2, rroot, Rr, rlim: F.D1min / 2, note, tol: F.D2max - F.D2min, Dnom: 2 * rroot };
+  }
+  const X = extProfile(C), P = X.P, b = X.tp === 'm60' ? 30 : X.a1, tb = TB(b);
+  const e = X.tp === 'm60' ? P / 8 : X.e, Rr = X.tp === 'm60' ? 0.1443376 * P : X.r1, dr = X.tp === 'm60' ? X.d - 1.226869 * P : X.dr;
+  const r2 = X.d / 2 - ((P - e) / 2 - P / 4) / tb;
+  return { side, P, beta: b, r2, rroot: dr / 2, Rr, rlim: X.d / 2, note: '外螺纹牙型与“成形刀”页相同（' + (X.tp === 'm60' ? '基本牙型，牙底圆弧 0.1443P' : '自定义牙型参数') + '）', Dnom: X.d };
+}
+function renderMill() {
+  const C = cur; if (!C) { $('mmeta').textContent = '先在“螺纹参数”里选好螺纹'; return; }
+  $('mmeta').textContent = '当前螺纹：' + C.name + '（在“螺纹参数”页修改）';
+  const W = [], notes = [];
+  if (C.taper) W.push('圆锥螺纹：刃形按基准平面（或 L1 平面）的牙型计算；铣削时刀心插补半径要随 Z 按 1:16 锥度变化（每走 1 mm 半径变 1/32 mm），下面的 G 代码只适用于圆柱螺纹，不输出。');
+  const pct = +$('mt').value; $('vmt').textContent = pct + '%';
+  let G;
+  try { G = millGroove(C, pct); } catch (e) { $('mw').textContent = e.message; return; }
+  const ext = G.side === 'ext', Dref = ext ? 2 * G.rlim : 2 * G.rroot;
+  if (!(+$('mdt').value > 0)) { const d0 = ext ? 0.7 * Dref : Math.min(0.7 * Dref, 2 * G.rlim * 0.95); $('mdt').value = +(Math.floor(d0 * 10) / 10).toFixed(1); }
+  const Dt = +$('mdt').value;
+  $('mdth').textContent = ext ? '外螺纹铣刀直径可以大于螺纹直径的 70%（ISCAR）' : `内螺纹：Sandvik、ISCAR 建议刀具直径不超过螺纹大径的 70%（本螺纹约 ${f3(0.7 * Dref)} mm），且必须小于底孔 ${f3(2 * G.rlim)} mm`;
+  let R;
+  try { R = TS.millEnvelope({ side: G.side, P: G.P, n: C.S.n || 1, hand: C.S.hand, beta: G.beta, r2: G.r2, rroot: G.rroot, Rr: G.Rr, rlim: G.rlim, Dt }); }
+  catch (e) { $('mw').innerHTML = e.message; $('mout').innerHTML = ''; $('mprof').innerHTML = ''; $('mgc').textContent = ''; return; }
+  MILL = { R, G, C };
+  if (!ext && Dt > 0.7 * Dref + 1e-9) W.push(`刀具直径 ${f3(Dt)} mm 超过螺纹大径的 70%（${f3(0.7 * Dref)} mm），牙型误差会明显变大`);
+  const tb = TB(G.beta), Ph = R.L, phi = Math.atan(Ph / (Math.PI * 2 * G.r2)) * 180 / Math.PI;
+  // 进给：按刀尖接触点（槽底半径）的进给换算刀心进给
+  const z = Math.max(1, +$('mz').value || 1), fz = +$('mfz').value || 0, vc = +$('mvc').value || 0, nrpm = vc > 0 ? 1000 * vc / (Math.PI * Dt) : 0;
+  const Fc = fz * z * nrpm, Fcen = Fc * R.e / G.rroot;
+  const rows = [
+    ['刀心插补半径 e', `${f3(R.e)} mm（${ext ? '槽底半径 + 刀具半径' : '槽底半径 − 刀具半径'}，刀尖正好到槽底 ${f3(2 * G.rroot)} mm）`],
+    ['刀具直径 / 螺纹直径', `${f3(Dt)} / ${f3(Dref)} = ${(Dt / Dref * 100).toFixed(1)}%`],
+    ['导程 / 中径处导程角', `${f3(Ph)} mm / ${phi.toFixed(2)}°`],
+    ['刃形最大修正量（每侧，轴向）', `${(R.dmax * 1000).toFixed(1)} µm`],
+    ['不修正时的中径误差（直接用螺纹轴向牙型做刀）', `约 ${(R.dD2 * 1000).toFixed(0)} µm（${ext ? '外螺纹中径偏小' : '内螺纹中径偏大'}）` + (G.tol ? `，中径公差 ${(G.tol * 1000).toFixed(0)} µm 的 ${(R.dD2 / G.tol * 100).toFixed(0)}%` : '')],
+    ['转速 / 接触点进给 / 刀心进给', nrpm > 0 ? `${nrpm.toFixed(0)} r/min / ${Fc.toFixed(0)} mm/min / ${Fcen.toFixed(0)} mm/min（刀心进给 = 接触点进给 × e / 槽底半径）` : '—'],
+    ['槽形', G.note]
+  ];
+  $('mout').innerHTML = rows.map(r => `<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`).join('');
+  // 刃形表：ρ、左右边界（相对刃形中心）、修正量
+  const sel = R.rows.filter((q, i) => i % 6 === 0 || i === R.rows.length - 1);
+  $('mprof').innerHTML = '<tr><th>刃形半径 ρ（mm）</th><th>对应螺纹半径</th><th>左侧 z（mm）</th><th>右侧 z（mm）</th><th>刃宽（mm）</th><th>修正量 左 / 右（µm）</th></tr>' +
+    sel.map(q => `<tr><td class="n">${f3(q.rho)}</td><td class="n">${f3(q.r0)}</td><td class="n">${f4(q.zL)}</td><td class="n">${f4(q.zR)}</td><td class="n">${f4(q.zR - q.zL)}</td><td class="n">${(q.dL * 1000).toFixed(1)} / ${(q.dR * 1000).toFixed(1)}</td></tr>`).join('');
+  // 图：修正后刃形（实线）与螺纹轴向牙型（虚线），修正量放大
+  const svg = $('fmill'); svg.innerHTML = '';
+  const span = Math.max(G.P, Math.abs(G.rroot - G.rlim) * 2.2), s = 100 / span, k = R.dmax > 0 ? Math.max(1, Math.round(0.05 * G.P / R.dmax)) : 1;
+  const ys = q => (R.rho - q.rho) * s, top = R.rows.map(q => q);
+  const ptsA = top.map(q => [(q.zL + q.dL * (k - 1)) * s, ys(q)]), ptsB = top.slice().reverse().map(q => [(q.zR - q.dR * (k - 1)) * s, ys(q)]);   // 修正量放大 k 倍：刃形向内收
+  const ptsN = top.map(q => [-q.h0 * s, ys(q)]).concat(top.slice().reverse().map(q => [q.h0 * s, ys(q)]));
+  mk('polygon', { points: ptsA.concat(ptsB).map(p => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' '), fill: 'var(--steel)', stroke: 'var(--accent)', 'stroke-width': 0.6 }, svg);
+  mk('polyline', { points: ptsN.map(p => p[0].toFixed(2) + ',' + p[1].toFixed(2)).join(' '), fill: 'none', stroke: 'var(--blue)', 'stroke-width': 0.5, 'stroke-dasharray': '2 1.5' }, svg);
+  const hmax = ys(top[top.length - 1]);
+  svg.setAttribute('viewBox', `-60 -8 120 ${hmax + 16}`);
+  tx(svg, 0, -2, '刀尖（槽底）', { fs: 4 }); tx(svg, 0, hmax + 7, '刃形中心线，向下为刀具中心方向', { fs: 3.6, fill: 'var(--muted)' });
+  $('fmillcap').textContent = `实线：修正后的刀具轴向刃形；虚线：螺纹轴向牙型（未修正）。修正量放大 ${k} 倍显示。`;
+  // G 代码（圆柱螺纹）
+  const nt = Math.max(1, Math.round(+$('mnt').value || 1)), Lth = +$('mlth').value || 0, climb = $('mdir').value === 'climb', rh = C.S.hand !== 'L';
+  const ccw = ext ? !climb : climb, up = ccw === rh, Gc = ccw ? 'G03' : 'G02';
+  const N = Math.max(1, Math.ceil((Lth - (nt - 1) * G.P) / Ph - 1e-9)), zLow0 = -Lth, F4 = v => (Math.round(v * 1e4) / 1e4).toFixed(4);
+  const zs = up ? zLow0 : zLow0 + N * Ph, ze = up ? zLow0 + N * Ph : zLow0, clr = 2;
+  const L = [];
+  L.push(`(${C.name} ${ext ? 'EXTERNAL' : 'INTERNAL'} THREAD MILLING, CUTTER D${F4(Dt)}, ${nt} TOOTH ROW${nt > 1 ? 'S' : ''})`);
+  L.push('(THREAD AXIS AT X0 Y0, Z0 = TOP FACE, Z = CENTER OF LOWEST TOOTH PROFILE)');
+  L.push('G90 G17 G40', 'M03 S' + (nrpm > 0 ? nrpm.toFixed(0) : '1000'), 'G00 X' + F4(ext ? R.e + clr : 0) + ' Y0', 'G00 Z' + F4(zs));
+  L.push('G01 X' + F4(R.e) + ' Y0 F' + (Fcen > 0 ? (Fcen / 2).toFixed(0) : '50') + ' (RADIAL ENTRY)');
+  for (let i = 1; i <= N; i++) L.push(`${Gc} X${F4(R.e)} Y0 Z${F4(zs + (up ? 1 : -1) * i * Ph)} I${F4(-R.e)} J0` + (i === 1 ? ' F' + (Fcen > 0 ? Fcen.toFixed(0) : '100') : ''));
+  L.push('G01 X' + F4(ext ? R.e + clr : 0) + ' Y0 (RADIAL EXIT)', 'G00 Z' + F4(Math.max(5, 0) ) , 'M05');
+  $('mgc').textContent = C.taper ? '' : L.join('\n');
+  notes.push(`${ext ? '外' : '内'}螺纹 ${rh ? '右' : '左'}旋、主轴 M03、${climb ? '顺铣' : '逆铣'}：刀心 ${ccw ? '逆时针 G03' : '顺时针 G02'}，从${up ? '下往上' : '上往下'}走 ${N} 圈（每圈 ${f3(Ph)} mm）。方向按几何推导：M03 时内螺纹顺铣刀心逆时针、外螺纹顺铣刀心顺时针；右旋螺纹逆时针转一圈沿 +Z 走一个导程。`);
+  notes.push('表中最后一行是牙顶边界（内螺纹小径 / 外螺纹大径）：该半径的刃口只在边界一点接触，修正量回到 0，刃形在这一段逐渐过渡。');
+  notes.push('切入、切出用径向直线（切入进给减半）；程序里没有刀具半径补偿，刀心半径 e 已按刀具直径算好，换刀或刀具磨损时要重算。多齿刀的齿距等于螺距 P。');
+  $('mw').innerHTML = W.join('<br>'); $('mnote').innerHTML = notes.join('<br>');
+}
+['mdt', 'mt', 'mnt', 'mlth', 'mz', 'mfz', 'mvc'].forEach(id => $(id).oninput = () => cur && renderMill()); $('mdir').onchange = () => cur && renderMill();
+$('mcopy').onclick = () => { const t = $('mgc').textContent; if (t && navigator.clipboard) navigator.clipboard.writeText(t); };
+$('mdxf').onclick = () => {
+  if (!MILL) return; const { R } = MILL, rows = R.rows, n = v => (+v).toFixed(6);
+  // 刃形：x = 轴向 z，y = 半径 ρ（刀具轴线在 y = 0），左侧由牙顶边界到刀尖，右侧由刀尖回到牙顶边界
+  const pts = rows.slice().reverse().map(q => [q.zL, q.rho]).concat(rows.map(q => [q.zR, q.rho]));
+  const L = ['0', 'SECTION', '2', 'HEADER', '9', '$INSUNITS', '70', '4', '0', 'ENDSEC', '0', 'SECTION', '2', 'ENTITIES'];
+  for (let i = 0; i + 1 < pts.length; i++) L.push('0', 'LINE', '8', 'MILL_PROFILE', '10', n(pts[i][0]), '20', n(pts[i][1]), '30', '0', '11', n(pts[i + 1][0]), '21', n(pts[i + 1][1]), '31', '0');
+  L.push('0', 'LINE', '8', 'AXIS', '10', n(-MILL.G.P), '20', '0', '30', '0', '11', n(MILL.G.P), '21', '0', '31', '0', '0', 'ENDSEC', '0', 'EOF');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([L.join('\r\n')], { type: 'application/dxf' }));
+  a.download = '螺纹铣刀修正刃形_' + MILL.C.name.replace(/[\/\s×]/g, '_') + '_D' + (+$('mdt').value) + '.dxf'; a.click();
+};
 fillSizes(); calc();
-window.__thr = { calc, show, get cur() { return cur; }, get tool() { return TOOL; } };
+window.__thr = { calc, show, get cur() { return cur; }, get tool() { return TOOL; }, get mill() { return MILL; } };
 })();
 </script>
 <script>window.addEventListener('load', () => TC.observe(document.body));   // 参数名能对上术语表的自动加 “?”（英文名、符号、出处）</script>
