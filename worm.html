@@ -103,7 +103,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <ul>
     <li><b>传动比</b> <span class="f">i = n<sub>1</sub> / n<sub>2</sub> = z<sub>2</sub> / z<sub>1</sub></span>：蜗杆转一圈，蜗轮转过 <span class="f">z<sub>1</sub></span> 个齿。注意它<b>不等于</b>直径比 <span class="f">d<sub>2</sub>/d<sub>1</sub></span>，这一点和齿轮不同。</li>
     <li>头数常取 <b>1、2、4</b>（也有 6）。头数少，传动比大、容易自锁，但效率低；头数多，效率高，但导程角大、蜗杆不好加工。</li>
-    <li>蜗轮齿数 <span class="f">z<sub>2</sub></span> 一般取 <b>28～80</b>：太少啮合区小，容易根切；太多蜗轮太大，蜗杆跨度长、刚度不够。</li>
+    <li>蜗轮齿数 <span class="f">z<sub>2</sub></span> 一般取 <b>28～80</b>（机械设计教材的通用取值）：理论上 z<sub>2</sub> ≥ 17 就不根切，但 z<sub>2</sub> &lt; 26 时啮合区明显变小，≥ 30 时始终有两对以上齿啮合；动力传动 z<sub>2</sub> 太多则蜗轮太大、蜗杆跨度长、刚度不够。80 是经验上限，不是不能超过。</li>
     <li>常用传动比 5、7.5、10、12.5、15、20、25、30、40、50、60、70、80，其中 <b>10、20、40、80</b> 为基本传动比，优先选用。</li>
   </ul>
   <div class="vo">头数就是蜗杆上绕了几条螺纹。蜗杆转一圈，蜗轮就转过几个齿，所以传动比等于蜗轮齿数除以蜗杆头数。</div>
@@ -195,7 +195,7 @@ footer{color:var(--muted);font-size:13px;text-align:center;margin-top:24px}
   <ul>
     <li>中心距 <span class="f">a = (d<sub>1</sub> + d<sub>2</sub> + 2 x<sub>2</sub> m) / 2</span>；标准中心距优先取 40、50、63、80、100、125、160、200、250、315、400、500。</li>
     <li>蜗轮喉圆 <span class="f">d<sub>a2</sub> = d<sub>2</sub> + 2m(1 + x<sub>2</sub>)</span>，齿根圆 <span class="f">d<sub>f2</sub> = d<sub>2</sub> − 2m(1.2 − x<sub>2</sub>)</span>，喉母圆半径 <span class="f">r<sub>g2</sub> = a − d<sub>a2</sub>/2</span>。</li>
-    <li>蜗轮外径和宽度常用经验值：<span class="f">d<sub>e2</sub> ≤ d<sub>a2</sub> + 2m</span>（单头）、<span class="f">+1.5m</span>（2～3 头）、<span class="f">+m</span>（4 头）；<span class="f">b<sub>2</sub> ≤ 0.75 d<sub>a1</sub></span>（≤3 头）、<span class="f">0.67 d<sub>a1</sub></span>（4～6 头）。</li>
+    <li>蜗轮外径和宽度按机械设计手册的圆柱蜗杆传动几何尺寸表：<span class="f">d<sub>e2</sub> ≤ d<sub>a2</sub> + 2m</span>（单头）、<span class="f">+1.5m</span>（2 头）、<span class="f">+m</span>（4 头）；<span class="f">b<sub>2</sub> ≤ 0.75 d<sub>a1</sub></span>（1、2 头）、<span class="f">0.67 d<sub>a1</sub></span>（4 头）。表里没有 3 头和 6 头，程序 3 头按 2 头、6 头按 4 头取。</li>
     <li>变位系数一般在 −1～+1 之间，常用 −0.5～+0.5；变位后蜗轮齿厚变化，蜗轮滚刀不用换。</li>
   </ul>
   <div class="vo">蜗杆从来不变位，只给蜗轮变位。变位以后，蜗杆的节线离开分度线，中心距跟着变。</div>

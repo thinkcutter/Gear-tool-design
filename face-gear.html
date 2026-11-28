@@ -945,11 +945,11 @@ const FG = (() => {
       ['齿形角范围', M.amin.toFixed(2) + '° ～ ' + M.amax.toFixed(2) + '°'], ['L·cosα（C）', f3(M.stat.reduce((s, q) => s + q.C, 0) / M.stat.length)],
       ['槽底宽', f3(M.wbMin) + ' ～ ' + f3(M.wbMax)], ['槽底过渡最小圆角', 'R' + f3(M.rfMin)],
       ['刀轴在齿顶面外', f3(tool.D / 2 - M.h) + ' mm'], ['刀柄外圆离齿顶面', f3(clr) + ' mm'],
-      ['每槽刀数', `${nL} 层齿面 + ${nB} 刀槽底`], ['层间刀纹高度（估算）', f4(Math.pow(cut.dz / Math.cos(M.amax * FG.D2R), 2) / (8 * tool.rc)) + ' mm'], ['A 轴随动摆角', cut.swivel ? (pmin * FG.R2D).toFixed(2) + '° ～ ' + (pmax * FG.R2D).toFixed(2) + '°' : '关闭'],
+      ['每槽刀数', `${nL} 层齿面 + ${nB} 刀槽底`], ['层间刀纹高度', (() => { const s = cut.dz / Math.cos(M.amax * FG.D2R), r = tool.rc; return s < 2 * r ? f4(r - Math.sqrt(r * r - s * s / 4)) + ' mm' : '层距大于刀尖圆角直径，刀纹不连续'; })()], ['A 轴随动摆角', cut.swivel ? (pmin * FG.R2D).toFixed(2) + '° ～ ' + (pmax * FG.R2D).toFixed(2) + '°' : '关闭'],
       ['走刀范围（沿槽）', f3(P.La) + ' ～ ' + f3(P.Lb)], ['程序行数 / 每槽点数', G.lines + ' / ' + G.pathPts],
       ['每槽切削长度', (G.lenPerGroove / 1000).toFixed(2) + ' m'], ['每槽时间（按 F）', G.minPerGroove.toFixed(1) + ' min'],
       ['总时间（不含快移）', (G.minPerGroove * nG / 60).toFixed(1) + ' h']];
-    $('res').innerHTML = rows.map(r => `<div${/时间|摆角/.test(r[0]) ? ' class="hl"' : ''}><span>${r[0]}</span><span>${r[1]}</span></div>`).join('') + '<div class="resnote">层间刀纹高度 = (每层深度 ÷ cos 最大齿形角)² ÷ (8 × 刀尖圆角)，是相邻两层之间刀尖圆角留下的“扇贝”高度，也就是“逐点校核”里“多留”的主要来源。</div>';
+    $('res').innerHTML = rows.map(r => `<div${/时间|摆角/.test(r[0]) ? ' class="hl"' : ''}><span>${r[0]}</span><span>${r[1]}</span></div>`).join('') + '<div class="resnote">层间刀纹高度 = r − √(r² − s²/4)：r 为刀尖圆角，s = 每层深度 ÷ cos 最大齿形角，是相邻两层刀尖圆角沿齿面的间距；结果是两段圆弧交点到齿面的距离，即相邻两层之间留下的“扇贝”高度，也是“逐点校核”里“多留”的主要来源。常用近似式 s²/(8r)（与车削理论粗糙度 f²/8r 同一个式子）在 s = 0.5r 时偏小 1.6%、s = r 时偏小 6.7%，这里用精确式。</div>';
     if (!cut.swivel && tool.D > 20) W.push('A 轴随动已关闭：刀径较大时前后两边会啃到齿面，建议打开后先做“逐点校核”');
     if (src === 'xt' && geo.consist > 0.005) W.push(`各齿槽之间相差 ${(geo.consist * 1000).toFixed(1)} µm，刀路按第 ${geo.repIndex + 1} 个齿槽计算`);
     $('warn').textContent = W.join('；');
